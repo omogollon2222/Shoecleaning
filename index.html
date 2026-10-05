@@ -91,23 +91,54 @@ nav.tabs .plus svg{width:26px;height:26px}
 .empty{text-align:center;padding:40px 16px;color:var(--muted)}
 .empty strong{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:4px}
 
-/* Cajitas de estado */
-.boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-@media(min-width:620px){.boxes{grid-template-columns:repeat(4,1fr)}}
-.box{position:relative;border:2px solid transparent;background:var(--bg2,var(--surface));border-radius:16px;padding:14px 14px 12px;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px;min-height:104px;border-top:6px solid var(--c)}
-.box .ic{font-size:1.25rem;line-height:1}
-.box b{font-family:"Bricolage Grotesque",sans-serif;font-size:2.1rem;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--c)}
-.box span.l{font-weight:700;font-size:.92rem;line-height:1.2}
-.box small{color:var(--muted);font-size:.74rem}
-.box[aria-pressed="true"]{border-color:var(--c);background:var(--cbg)}
-.box.zero b{color:var(--muted);opacity:.6}
-.box.urgent:not(.zero)::after{content:"Por procesar";position:absolute;top:10px;right:10px;background:var(--danger);color:#fff;font-size:.66rem;font-weight:800;border-radius:999px;padding:3px 8px;letter-spacing:.02em}
+/* Etapas del proceso */
+.stages{display:flex;margin:0 0 10px;filter:drop-shadow(0 4px 10px rgba(12,47,75,.10))}
+.stage{flex:1;min-width:0;border:0;background:var(--cbg);color:var(--ink);padding:10px 6px 10px 18px;margin-left:-8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:92px;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%)}
+.stage:first-child{margin-left:0;padding-left:8px;border-radius:12px 0 0 12px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%)}
+.stage:last-child{padding-right:8px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,12px 50%)}
+.stage .sn{font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--c);opacity:.9}
+.stage b{font-family:"Bricolage Grotesque",sans-serif;font-size:1.7rem;font-weight:800;line-height:1.05;color:var(--c);font-variant-numeric:tabular-nums}
+.stage span.l{font-weight:700;font-size:.74rem;line-height:1.15}
+.stage[aria-pressed="true"]{background:var(--c);color:#fff}
+.stage[aria-pressed="true"] b,.stage[aria-pressed="true"] .sn{color:#fff}
+.stage.zero b{opacity:.45}
 .b-recibido{--c:var(--recv);--cbg:var(--recv-bg)} .b-proceso{--c:var(--prod);--cbg:var(--prod-bg)}
 .b-listo{--c:var(--ready);--cbg:var(--ready-bg)} .b-entregado{--c:var(--done);--cbg:var(--done-bg)}
+:root[data-theme="dark"] .stage[aria-pressed="true"]{color:#0a1b29}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .stage[aria-pressed="true"],:root:not([data-theme="light"]) .stage[aria-pressed="true"] b,:root:not([data-theme="light"]) .stage[aria-pressed="true"] .sn{color:#0a1b29}}
+.alertbar{display:flex;align-items:center;gap:8px;background:var(--recv-bg);border-left:4px solid var(--danger);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:.9rem;width:100%;text-align:left;border-top:0;border-right:0;border-bottom:0;color:var(--ink)}
+.alertbar b{color:var(--danger)}
 .listhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:4px 0 10px}
 .listhead h2{font-size:1.15rem}
 .dayline{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin:0 0 12px}
 .dayline b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* Acceso y roles */
+.hdr-r{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.userchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-weight:700;font-size:.78rem;display:flex;gap:6px;align-items:center;max-width:170px}
+.userchip[hidden]{display:none}
+.userchip{flex-direction:column;align-items:flex-end;gap:0;border-radius:12px;padding:4px 10px;line-height:1.15}
+.userchip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.userchip small{font-size:.68rem;color:var(--muted);font-weight:600}
+@media(max-width:480px){.top p{display:none}}
+.gate{max-width:400px;margin:18px auto 0}
+.gate .card{background:var(--surface);border-radius:18px;padding:22px 18px;box-shadow:var(--shadow)}
+.gate h2{font-size:1.45rem;margin-bottom:4px}
+.rolepill{display:inline-block;font-size:.72rem;font-weight:800;border-radius:6px;padding:2px 8px;margin-top:4px}
+.r-admin{background:var(--foam);color:var(--brand-deep)} .r-recepcion{background:var(--ready-bg);color:var(--ready)} .r-operaciones{background:var(--prod-bg);color:var(--prod)}
+.rolepick{display:grid;gap:8px}
+.rolepick button{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;text-align:left}
+.rolepick button[aria-pressed="true"]{border-color:var(--brand);background:var(--foam)}
+.rolepick small{display:block;color:var(--muted)}
+.flag{display:inline-flex;align-items:center;gap:4px;background:#e07b00;color:#fff;font-weight:800;font-size:.74rem;border-radius:6px;padding:3px 8px;white-space:nowrap;transform-origin:left bottom;animation:raise .5s ease-out}
+.flag.flag-late{background:var(--danger)}
+@keyframes raise{from{transform:translateY(6px) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.flag{animation:none}}
+.headl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.crow{width:100%;text-align:left;border:0;border-left:5px solid var(--c,var(--line));padding:0;display:block;font:inherit;color:inherit;cursor:pointer}
+.ops-items{font-size:1rem;font-weight:600;margin-top:2px}
+.ops-notes{background:var(--foam);border-radius:8px;padding:6px 10px;margin-top:8px;font-size:.88rem}
 
 /* Order ticket */
 .ticket{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;border-left:5px solid var(--c,var(--line))}
@@ -134,6 +165,8 @@ nav.tabs .plus svg{width:26px;height:26px}
 .snack .btn{min-height:40px;padding:8px 12px;font-size:.88rem}
 .s-listo{--c:var(--ready)} .s-listo .status{background:var(--ready-bg);color:var(--ready)}
 .s-entregado{--c:var(--done)} .s-entregado .status{background:var(--done-bg);color:var(--done)}
+.ticket.t-soon{--c:#e07b00;background:color-mix(in srgb,#ffb347 16%,var(--surface))}
+.ticket.t-late{--c:var(--danger);background:color-mix(in srgb,var(--danger) 9%,var(--surface))}
 .ticket .actions{display:flex;gap:8px;padding:0 14px 14px}
 .ticket .actions .btn{flex:1;padding:10px 12px;min-height:44px;font-size:.93rem}
 .ticket .actions .icon{flex:0 0 46px;padding:0}
@@ -243,21 +276,16 @@ table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
       <h1 id="bizName">Shoe Cleaning</h1>
       <p>Lavandería de zapatos y accesorios</p>
     </div>
-    <div class="sync" id="sync">Cargando…</div>
+    <div class="hdr-r"><button class="userchip" id="userBtn" hidden></button><div class="sync" id="sync">Cargando…</div></div>
   </header>
   <main id="view"></main>
 </div>
 
 <nav class="tabs" aria-label="Secciones">
-  <div class="inner">
-    <button data-tab="pedidos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Pedidos</button>
-    <button data-tab="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/></svg>Clientes</button>
-    <button data-tab="nuevo" aria-label="Nuevo pedido"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>Nuevo</button>
-    <button data-tab="analisis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Análisis</button>
-    <button data-tab="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
-  </div>
+  <div class="inner" id="navInner"></div>
 </nav>
 
+<script src="firebase-config.js"></script>
 <script>
 (function(){
 "use strict";
@@ -307,6 +335,18 @@ let draft = null;
 let mode = "local";
 let db = null, downloads = null;
 let ordersCol = null, settingsDoc = null;
+const cloud = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey);
+let fb = null, fbAuth = null, cloudUsers = [], bootstrapping = false, bootstrapped = true, cloudError = false, unsub = [];
+let me = null, ready = !(window.claude && window.claude.use) && !cloud, gateShown = null, opsFilter = "todos";
+const ROLE = {admin:"Administrador", recepcion:"Recepción", operaciones:"Operaciones"};
+const ROLE_DESC = {admin:"Ve y configura todo", recepcion:"Recibe pedidos, cobra y entrega", operaciones:"Cola de trabajo: lavado a listo"};
+const ICON = {"pedidos": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2\"/><path d=\"M9 8h6M9 12h6M9 16h4\"/></svg>", "clientes": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8\" r=\"3.5\"/><path d=\"M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5\"/><path d=\"M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2\"/></svg>", "nuevo": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>", "analisis": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20V10M10 20V4M16 20v-7M22 20H2\"/></svg>", "ajustes": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z\"/></svg>", "entregas": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7l9-4 9 4v10l-9 4-9-4z\"/><path d=\"M3 7l9 4 9-4M12 11v10\"/><path d=\"M8.5 15.5l2 2 4-4\"/></svg>", "consultar": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.5-3.5\"/></svg>", "cola": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 6h13M8 12h13M8 18h13\"/><circle cx=\"3.5\" cy=\"6\" r=\"1\"/><circle cx=\"3.5\" cy=\"12\" r=\"1\"/><circle cx=\"3.5\" cy=\"18\" r=\"1\"/></svg>"};
+const TABS = {
+  admin:[["pedidos","Pedidos"],["clientes","Clientes"],["nuevo","Nuevo"],["analisis","Análisis"],["ajustes","Ajustes"]],
+  recepcion:[["nuevo","Nuevo"],["entregas","Entregas"],["consultar","Consultar"],["clientes","Clientes"]],
+  operaciones:[["cola","Cola"],["consultar","Buscar"]]
+};
+const HOME = {admin:"pedidos", recepcion:"nuevo", operaciones:"cola"};
 
 /* ---------- Utilidades ---------- */
 const $ = s => document.querySelector(s);
@@ -441,23 +481,276 @@ async function removeOrder(id){
   else saveLocal();
 }
 async function saveSettings(){
-  if(mode==="db"){ try{ await settingsDoc.set(clean(settings)); }catch(e){ toast("No se pudieron guardar los ajustes."); } }
+  if(mode==="db"){ try{ const st = clean(settings); if(cloud) delete st.users; await settingsDoc.set(st); }catch(e){ toast("No se pudieron guardar los ajustes."); } }
   else saveLocal();
 }
 
 /* ---------- Navegación ---------- */
-function go(v){ view = v; if(v==="nuevo" && !draft) newDraft(); render(); window.scrollTo(0,0); }
-document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", ()=>go(b.dataset.tab)));
+function go(v){ if(!allowed(v)) return; view = v; if(v==="nuevo" && !draft) newDraft(); render(); window.scrollTo(0,0); }
+
+/* ---------- Acceso ---------- */
+const isOps = () => !!me && me.role==="operaciones";
+const isAdmin = () => !!me && me.role==="admin";
+const allowed = v => !!me && TABS[me.role].some(t=>t[0]===v && v!=="consultar");
+const newSalt = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+async function hashPw(salt, pw){
+  const data = new TextEncoder().encode(salt + ":" + pw);
+  try{ if(window.crypto && crypto.subtle){ const b = await crypto.subtle.digest("SHA-256", data); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); } }catch(e){}
+  let h = 5381; for(const c of data) h = ((h<<5)+h+c)>>>0; return "x"+h.toString(16);
+}
+const users = () => cloud ? cloudUsers : (Array.isArray(settings.users) ? settings.users : []);
+function setSession(u){ if(cloud) return; try{ if(u) localStorage.setItem("sc_session", u); else localStorage.removeItem("sc_session"); }catch(e){} }
+function restoreSession(){
+  if(cloud) return;
+  let u = null; try{ u = localStorage.getItem("sc_session"); }catch(e){}
+  const f = u && users().find(x=>x.u===u);
+  me = f ? {u:f.u, name:f.name, role:f.role} : null;
+}
+function refreshMe(){
+  if(!me) return;
+  const f = users().find(x=>x.u===me.u);
+  if(!f){ logout(true); return; }
+  me = {u:f.u, name:f.name, role:f.role};
+}
+function logout(silent){ if(cloud && fbAuth){ closeSheet(); fbAuth.signOut().catch(()=>{}); if(!silent) toast("Sesión cerrada"); return; } me = null; setSession(null); closeSheet(); draft = null; gateShown = null; render(); if(!silent) toast("Sesión cerrada"); }
+function renderNav(){
+  const nav = document.querySelector("nav.tabs");
+  if(!me){ nav.hidden = true; return; }
+  nav.hidden = false;
+  const tabs = TABS[me.role];
+  const inner = $("#navInner");
+  inner.style.gridTemplateColumns = `repeat(${tabs.length},1fr)`;
+  inner.innerHTML = tabs.map(([k,l]) => k==="nuevo"
+    ? `<button data-tab="nuevo" aria-label="Nuevo pedido" ${view===k?'aria-current="page"':""}><span class="plus">${ICON.nuevo}</span>${l}</button>`
+    : `<button data-tab="${k}" ${view===k?'aria-current="page"':""}>${ICON[k]}${l}</button>`).join("");
+  inner.querySelectorAll("button").forEach(b => b.onclick = () => b.dataset.tab==="consultar" ? openConsult() : go(b.dataset.tab));
+}
+function renderUser(){
+  const b = $("#userBtn");
+  if(!me){ b.hidden = true; return; }
+  b.hidden = false;
+  b.innerHTML = `<span>👤 ${esc(me.name||me.u)}</span><small>${ROLE[me.role]}</small>`; b.setAttribute("aria-label", "Sesión de "+(me.name||me.u)+", "+ROLE[me.role]);
+  b.onclick = () => openSheet(`<h2>${esc(me.name||me.u)}</h2><p class="muted" style="margin:0">@${esc(me.u)} · <span class="rolepill r-${me.role}">${ROLE[me.role]}</span></p>
+    <div class="stack">${cloud?`<button class="btn ghost block" id="myPw">Cambiar mi contraseña</button>`:""}<button class="btn block" id="doLogout">Cerrar sesión</button><button class="btn ghost block" data-close>Cancelar</button></div>`) || ($("#doLogout").onclick = () => logout(), $("#myPw") && ($("#myPw").onclick = myPwSheet));
+}
+function renderGate(){
+  renderNav(); renderUser();
+  if(!ready){ if(gateShown!=="loading"){ gateShown="loading"; $("#view").innerHTML = `<div class="empty"><strong>Cargando…</strong></div>`; } return; }
+  const want = cloud ? (cloudError ? "error" : bootstrapped ? "login" : "setup") : (users().length ? "login" : "setup");
+  if(gateShown===want && $("#gate")) return;
+  gateShown = want;
+  const v = $("#view");
+  if(want==="error"){
+    v.innerHTML = `<div class="gate" id="gate"><div class="card"><h2>Sin conexión</h2><p class="muted">No se pudo conectar con la nube. Revisa tu internet y vuelve a intentar.</p><button class="btn block" onclick="location.reload()">Reintentar</button></div></div>`;
+    return;
+  }
+  if(want==="setup"){
+    v.innerHTML = `<div class="gate" id="gate"><form class="card" id="gateForm" autocomplete="off">
+      <h2>Bienvenido 👋</h2><p class="muted small" style="margin:0 0 16px">Crea el usuario <b>administrador</b>. Con él podrás crear los usuarios de recepción y operaciones.</p>
+      <div class="field"><label for="g_n">Tu nombre</label><input class="input" id="g_n" required placeholder="Ej. Osiris"></div>
+      <div class="field"><label for="g_u">Usuario</label><input class="input" id="g_u" required autocapitalize="none" placeholder="Ej. admin"></div>
+      <div class="field"><label for="g_p">Contraseña</label><input class="input" id="g_p" type="password" required minlength="4" autocomplete="new-password"></div>
+      <div class="field"><label for="g_p2">Repite la contraseña</label><input class="input" id="g_p2" type="password" required minlength="4" autocomplete="new-password"></div>
+      <button class="btn block" type="submit">Crear administrador y entrar</button></form></div>`;
+    $("#gateForm").onsubmit = async e => {
+      e.preventDefault();
+      const u = $("#g_u").value.trim().toLowerCase(), n = $("#g_n").value.trim(), p1 = $("#g_p").value, p2 = $("#g_p2").value;
+      if(!u || !n){ toast("Completa nombre y usuario"); return; }
+      if(p1.length<4){ toast("La contraseña debe tener al menos 4 caracteres"); return; }
+      if(p1!==p2){ toast("Las contraseñas no coinciden"); return; }
+      if(cloud){ await cloudSetup(u, n, p1); return; }
+      const salt = newSalt();
+      settings.users = [{u, name:n, role:"admin", salt, h: await hashPw(salt,p1)}];
+      await saveSettings();
+      me = {u, name:n, role:"admin"}; setSession(u); view = HOME.admin; gateShown = null; render();
+      toast("Administrador creado");
+    };
+  } else {
+    v.innerHTML = `<div class="gate" id="gate"><form class="card" id="gateForm">
+      <h2>Iniciar sesión</h2><p class="muted small" style="margin:0 0 16px">Ingresa con tu usuario y contraseña.</p>
+      <div class="field"><label for="l_u">Usuario</label><input class="input" id="l_u" required autocapitalize="none" autocomplete="username"></div>
+      <div class="field"><label for="l_p">Contraseña</label><input class="input" id="l_p" type="password" required autocomplete="current-password"></div>
+      <button class="btn block" type="submit" style="min-height:52px">Entrar</button>
+      <p class="small muted" style="margin:14px 0 0">¿Olvidaste tu contraseña? Pide al administrador que te asigne una nueva.</p></form></div>`;
+    $("#gateForm").onsubmit = async e => {
+      e.preventDefault();
+      const u = $("#l_u").value.trim().toLowerCase(), p = $("#l_p").value;
+      if(cloud){
+        const btn = $("#gateForm button[type=submit]"); btn.disabled = true; btn.textContent = "Entrando…";
+        try{ await fbAuth.signInWithEmailAndPassword(toEmail(u), p); }
+        catch(err){ toast(/network/.test(err.code||"") ? "Sin conexión a internet" : "Usuario o contraseña incorrectos"); btn.disabled = false; btn.textContent = "Entrar"; $("#l_p").value=""; $("#l_p").focus(); }
+        return;
+      }
+      const f = users().find(x=>x.u===u);
+      if(!f || (await hashPw(f.salt,p))!==f.h){ toast("Usuario o contraseña incorrectos"); $("#l_p").value=""; $("#l_p").focus(); return; }
+      me = {u:f.u, name:f.name, role:f.role}; setSession(f.u); view = HOME[f.role]; draft = null; gateShown = null; render(); window.scrollTo(0,0);
+    };
+  }
+  const first = v.querySelector("input"); if(first) first.focus({preventScroll:true});
+}
+
+/* ---------- Entrega: banderita ---------- */
+function dueLevel(o){
+  if(!o.dueDate || o.status==="entregado") return "ok";
+  const t = todayStr(), m = todayStr(1);
+  if(o.dueDate < t) return "late"; if(o.dueDate===t) return "today"; if(o.dueDate===m) return "tomorrow"; return "ok";
+}
+function flagHTML(o){
+  const d = dueLevel(o);
+  return d==="late" ? `<span class="flag flag-late">⚠️ Atrasado</span>` : d==="today" ? `<span class="flag">🚩 Entrega HOY</span>` : d==="tomorrow" ? `<span class="flag">🚩 Entrega mañana</span>` : "";
+}
+const dueCls = o => { const d = dueLevel(o); return d==="late" ? "t-late" : (d==="today"||d==="tomorrow") ? "t-soon" : ""; };
+const consultBtn = () => `<button class="btn ghost block" data-consult style="margin-bottom:14px">${ICON.consultar} Consultar estado de un pedido</button>`;
+
+/* ---------- Consultar estado ---------- */
+function openConsult(){
+  openSheet(`<h2>Consultar estado</h2><p class="muted small" style="margin:0 0 12px">Busca por N° de recibo, celular o nombre.</p>
+    <input class="search" id="cs" type="search" placeholder="Ej. 574, 0991234567 o Ana" autocomplete="off">
+    <div id="csr"><p class="small muted">Escribe al menos 2 caracteres.</p></div>
+    <div class="stack"><button class="btn ghost block" data-close>Cerrar</button></div>`);
+  const inp = $("#cs"); inp.focus();
+  inp.oninput = () => {
+    const s = inp.value.trim().toLowerCase(), d = digits(s), box = $("#csr");
+    if(s.length<2){ box.innerHTML = `<p class="small muted">Escribe al menos 2 caracteres.</p>`; return; }
+    const res = orders.filter(o => (o.name||"").toLowerCase().includes(s) || (o.num||"").toLowerCase().includes(s) || (d.length>=2 && (digits(o.num).includes(d) || (o.phoneKey||"").includes(d) || digits(o.phone).includes(d))))
+      .sort((a,b)=>b.createdAt-a.createdAt).slice(0,25);
+    box.innerHTML = res.length ? res.map(o => {
+      const st = ST[o.status], idx = FLOW.indexOf(o.status), sal = saldo(o);
+      return `<button class="ticket crow s-${o.status} ${dueCls(o)}" data-open="${o.id}"><div class="body">
+        <div class="head"><span class="headl"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</span><span class="status">${st.ic} ${st.l}</span></div>
+        <div class="name">${esc(o.name)}</div><div class="items">${esc(itemsText(o))}</div>
+        <div class="meta"><span>${o.status==="entregado"?"Entregado "+fmtDate(o.deliveredAt||o.createdAt):"Entrega: "+fmtDue(o.dueDate)}</span>${isOps()?"":sal>0?`<span>Saldo <b>${money(sal)}</b></span>`:`<span class="muted">Pagado</span>`}</div>
+        ${progressHTML(o)}</div></button>`; }).join("") : `<div class="empty" style="padding:20px">Sin resultados</div>`;
+    box.querySelectorAll("[data-open]").forEach(b => b.onclick = () => orderSheet(b.dataset.open));
+  };
+}
+
+/* ---------- Vista: Entregas (recepción) ---------- */
+function viewEntregas(){
+  let list = orders.filter(o=>o.status==="listo").sort((a,b)=>(a.dueDate||"").localeCompare(b.dueDate||"") || (a.readyAt||0)-(b.readyAt||0));
+  const inProc = orders.filter(o=>o.status==="recibido"||PROC.includes(o.status)).length;
+  const porCobrar = list.reduce((t,o)=>t+saldo(o),0);
+  if(q){ const s = q.toLowerCase(); list = list.filter(o => (o.name||"").toLowerCase().includes(s) || (o.num||"").toLowerCase().includes(s) || (o.phone||"").includes(s)); }
+  let h = consultBtn() + `<div class="dayline"><span><b>${list.length}</b> listo${list.length===1?"":"s"} para entregar</span><span><b>${money(porCobrar)}</b> por cobrar</span><span><b>${inProc}</b> en taller</span></div>
+  <div class="listhead"><h2>Entregar y cobrar</h2></div>
+  <input class="search" id="q" type="search" placeholder="Buscar por nombre, teléfono o N°" value="${esc(q)}">`;
+  if(!list.length) h += `<div class="empty"><strong>Nada por entregar</strong>Cuando operaciones marque un pedido como listo, aparecerá aquí.</div>`;
+  list.forEach(o => h += ticketHTML(o));
+  return h;
+}
+
+/* ---------- Vista: Cola (operaciones) ---------- */
+function viewCola(){
+  const queue = orders.filter(o=>o.status==="recibido"||PROC.includes(o.status));
+  const cnt = {todos:queue.length, recibido:0, lavado:0, secado:0, esterilizacion:0};
+  queue.forEach(o=>cnt[o.status]++);
+  let list = opsFilter==="todos" ? queue : queue.filter(o=>o.status===opsFilter);
+  list = list.slice().sort((a,b)=>(a.dueDate||"9").localeCompare(b.dueDate||"9") || a.createdAt-b.createdAt);
+  const late = queue.filter(o=>dueLevel(o)==="late").length, soon = queue.filter(o=>["today","tomorrow"].includes(dueLevel(o))).length;
+  const chip = (k,l) => `<button class="chip" data-of="${k}" aria-pressed="${opsFilter===k}">${l} <span class="n">${cnt[k]}</span></button>`;
+  let h = `<div class="listhead"><h2>Cola de trabajo</h2><span class="small muted">${queue.length} pendiente${queue.length===1?"":"s"}</span></div>`;
+  if(late) h += `<div class="alertbar">⚠️ <span><b>${late} atrasado${late===1?"":"s"}</b> · pasó la fecha de entrega</span></div>`;
+  if(soon) h += `<div class="alertbar" style="border-left-color:#e07b00;background:color-mix(in srgb,#ffb347 18%,var(--surface))">🚩 <span><b style="color:#b35f00">${soon} pedido${soon===1?"":"s"}</b> se entrega${soon===1?"":"n"} hoy o mañana</span></div>`;
+  h += `<div class="chips" role="group" aria-label="Filtrar por etapa">${chip("todos","Todos")}${chip("recibido","📥 Por lavar")}${chip("lavado","🧼 Lavado")}${chip("secado","💨 Secado")}${chip("esterilizacion","✨ Esteriliz.")}</div>`;
+  if(!list.length) h += `<div class="empty"><strong>Sin trabajo pendiente</strong>${queue.length?"No hay pedidos en esta etapa.":"Todo está listo. ¡Buen trabajo!"}</div>`;
+  list.forEach(o => {
+    const st = ST[o.status];
+    h += `<article class="ticket s-${o.status} ${dueCls(o)}">
+      <div class="body" data-open="${o.id}" role="button" tabindex="0" aria-label="Ver pedido ${esc(o.num)}">
+        <div class="head"><span class="headl"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</span><span class="status">${st.ic} ${st.l}</span></div>
+        <div class="name">${esc(o.name)}</div>
+        <div class="ops-items">${esc(itemsText(o))}</div>
+        ${o.notes?`<div class="ops-notes">📝 ${esc(o.notes)}</div>`:""}
+        <div class="meta"><span>Entrega: <b class="${dueLevel(o)==="late"?"late":""}">${fmtDue(o.dueDate)}</b></span><span class="muted">Recibido ${fmtDate(o.createdAt)}</span></div>
+        ${progressHTML(o)}
+      </div>
+      <div class="actions"><button class="btn ${o.status==="esterilizacion"?"ok":""}" data-adv="${o.id}">${st.btn}</button></div>
+    </article>`;
+  });
+  return h;
+}
+function opsSheet(o){
+  openSheet(`<div class="row" style="justify-content:space-between"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</div>
+    <h2 style="margin-top:10px">${esc(o.name)}</h2>
+    <div class="panel pad" style="margin-top:12px"><div class="totals">${(o.items||[]).map(i=>`<div><span>${esc(i.label)}</span><b>${i.qty}</b></div>`).join("")}</div></div>
+    ${o.notes?`<p><b>Notas:</b> ${esc(o.notes)}</p>`:""}
+    <p class="small">Entrega: <b>${fmtDue(o.dueDate)}</b> · Recibido ${fmtDate(o.createdAt,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</p>
+    <span class="lbl" style="margin-top:12px">Etapa</span>
+    <div class="stwrap" role="group" id="stSeg">${FLOW.slice(0,5).map(k=>`<button type="button" data-st="${k}" aria-pressed="${o.status===k}">${ST[k].ic} ${ST[k].l.replace(" para entregar","")}</button>`).join("")}</div>
+    <div class="stack"><button class="btn ghost block" data-close>Cerrar</button></div>`);
+  $("#stSeg").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => {
+    if(busy.has(o.id)) return; busy.add(o.id); setTimeout(()=>busy.delete(o.id), 350);
+    const k = b.dataset.st; const patch = {status:k, [k+"At"]:Date.now(), [k+"By"]:me.u};
+    if(k==="listo" && !o.readyAt) patch.readyAt = Date.now();
+    await patchOrder(o.id, patch); closeSheet(); render();
+    toast(k==="listo" ? `${o.num} listo. Recepción avisará al cliente.` : `${o.num} → ${ST[k].ic} ${ST[k].l}`);
+  });
+}
+
+/* ---------- Usuarios (admin) ---------- */
+function usersPanel(){
+  return `<div class="lbl">Usuarios y roles</div><div class="panel pad">
+    ${users().map(u=>`<div class="hist" style="align-items:center"><span><b>${esc(u.name)}</b> <span class="muted small">@${esc(u.u)}</span><br><span class="rolepill r-${u.role}">${ROLE[u.role]}</span></span>
+      <span class="row" style="gap:6px">${cloud?"":`<button class="btn ghost" style="min-height:38px;padding:6px 10px" data-upw="${esc(u.u)}">Cambiar clave</button>`}${u.u!==me.u?`<button class="btn danger" style="min-height:38px;padding:6px 10px" data-udel="${esc(u.u)}">${cloud?"Desactivar":"Quitar"}</button>`:""}</span></div>`).join("")}
+    <button class="btn block" id="uAdd" style="margin-top:10px">Agregar usuario</button>
+    ${cloud?`<p class="small muted" style="margin:10px 0 0">Cada usuario cambia su propia contraseña tocando su nombre arriba a la derecha. Si alguien la olvida, desactívalo y créale un usuario nuevo (por ejemplo maria2).</p>`:""}</div>`;
+}
+function userSheet(){
+  let role = "recepcion";
+  openSheet(`<h2>Nuevo usuario</h2>
+    <div class="field" style="margin-top:12px"><label for="u_n">Nombre</label><input class="input" id="u_n" placeholder="Ej. María"></div>
+    <div class="field"><label for="u_u">Usuario</label><input class="input" id="u_u" autocapitalize="none" placeholder="Ej. maria"></div>
+    <div class="field"><label for="u_p">Contraseña</label><input class="input" id="u_p" type="text" autocomplete="off" placeholder="Mínimo ${cloud?6:4} caracteres"></div>
+    <span class="lbl">Rol</span><div class="rolepick" id="u_r">${Object.keys(ROLE).map(k=>`<button type="button" data-r="${k}" aria-pressed="${k===role}"><b>${ROLE[k]}</b><small>${ROLE_DESC[k]}</small></button>`).join("")}</div>
+    <div class="stack"><button class="btn block" id="u_save">Crear usuario</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
+  $("#u_r").querySelectorAll("[data-r]").forEach(b => b.onclick = () => { role = b.dataset.r; $("#u_r").querySelectorAll("[data-r]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  $("#u_save").onclick = async () => {
+    const n = $("#u_n").value.trim(), u = $("#u_u").value.trim().toLowerCase().replace(/\s+/g,""), p = $("#u_p").value;
+    if(!n || !u){ toast("Completa nombre y usuario"); return; }
+    if(users().some(x=>x.u===u)){ toast("Ese usuario ya existe"); return; }
+    if(p.length<(cloud?6:4)){ toast(`La contraseña debe tener al menos ${cloud?6:4} caracteres`); return; }
+    if(cloud){ const sb = $("#u_save"); sb.disabled = true; sb.textContent = "Creando…"; if(await cloudCreateUser(u,n,role,p)){ closeSheet(); toast(`Usuario ${u} creado (${ROLE[role]})`); } else { sb.disabled = false; sb.textContent = "Crear usuario"; } return; }
+    const salt = newSalt();
+    settings.users = users().concat([{u, name:n, role, salt, h: await hashPw(salt,p)}]);
+    await saveSettings(); closeSheet(); render(); toast(`Usuario ${u} creado (${ROLE[role]})`);
+  };
+}
+function pwSheet(u){
+  const f = users().find(x=>x.u===u); if(!f) return;
+  openSheet(`<h2>Cambiar contraseña</h2><p class="muted" style="margin:0">${esc(f.name)} · @${esc(f.u)}</p>
+    <div class="field" style="margin-top:14px"><label for="pw1">Nueva contraseña</label><input class="input" id="pw1" type="text" autocomplete="off"></div>
+    <div class="stack"><button class="btn block" id="pwSave">Guardar</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
+  $("#pwSave").onclick = async () => {
+    const p = $("#pw1").value; if(p.length<4){ toast("Mínimo 4 caracteres"); return; }
+    const salt = newSalt(), h = await hashPw(salt,p);
+    settings.users = users().map(x => x.u===u ? Object.assign({}, x, {salt, h}) : x);
+    await saveSettings(); closeSheet(); toast("Contraseña actualizada");
+  };
+}
+async function delUser(u){
+  const f = users().find(x=>x.u===u); if(!f || u===me.u) return;
+  if(f.role==="admin" && users().filter(x=>x.role==="admin").length<=1){ toast("Debe quedar al menos un administrador"); return; }
+  if(!confirm(`¿${cloud?"Desactivar":"Quitar"} el usuario ${f.u} (${f.name})?`)) return;
+  if(cloud){ try{ await fb.doc("users/"+f.uid).delete(); toast("Usuario desactivado"); }catch(err){ toast(fbErr(err)); } return; }
+  settings.users = users().filter(x=>x.u!==u); await saveSettings(); render(); toast("Usuario quitado");
+}
+
 
 function render(){
-  document.querySelectorAll("nav.tabs button").forEach(b => { if(b.dataset.tab===view) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   $("#bizName").textContent = settings.business;
+  if(!ready || !me){ renderGate(); return; }
+  gateShown = null;
+  if(!allowed(view)) view = HOME[me.role];
+  if(view==="nuevo" && !draft) newDraft();
+  renderNav(); renderUser();
   const v = $("#view");
   if(view==="pedidos") v.innerHTML = viewOrders();
   else if(view==="nuevo") v.innerHTML = viewNew();
   else if(view==="clientes") v.innerHTML = viewClients();
   else if(view==="analisis") v.innerHTML = viewAnalytics();
   else if(view==="ajustes") v.innerHTML = viewSettings();
+  else if(view==="entregas") v.innerHTML = viewEntregas();
+  else if(view==="cola") v.innerHTML = viewCola();
   bind();
 }
 
@@ -474,20 +767,18 @@ function viewOrders(){
   if(filter==="entregado") list = list.slice().sort((a,b)=>(b.deliveredAt||0)-(a.deliveredAt||0)).slice(0,60);
   else list = list.slice().sort((a,b)=> (a.dueDate||"").localeCompare(b.dueDate||"") || a.createdAt-b.createdAt);
   if(q){ const s = q.toLowerCase(); list = list.filter(o => (o.name||"").toLowerCase().includes(s) || (o.num||"").toLowerCase().includes(s) || (o.phone||"").includes(s)); }
-  const BOX = {
-    recibido:{ic:"📥",l:"Recibido",sub:"Por lavar"},
-    proceso:{ic:"🧼",l:"En proceso",sub:"Lavado · secado · esteriliz."},
-    listo:{ic:"✅",l:"Pendiente de entrega",sub:"Listo, avisar al cliente"},
-    entregado:{ic:"🤝",l:"Entregado",sub:"Historial"}
-  };
-  const box = k => { const late = k!=="entregado" ? lateIn(k) : 0;
-    return `<button class="box b-${k} ${counts[k]?"":"zero"} ${k==="recibido"?"urgent":""}" data-filter="${k}" aria-pressed="${filter===k}">
-      <span class="ic" aria-hidden="true">${BOX[k].ic}</span><b>${counts[k]}</b><span class="l">${BOX[k].l}</span>
-      <small>${late?`<span class="late">${late} atrasado${late===1?"":"s"}</span>`:BOX[k].sub}</small></button>`; };
+  const BOX = {recibido:"Recibido", proceso:"En proceso", listo:"Pendiente de entrega", entregado:"Entregado"};
+  const KEYS = ["recibido","proceso","listo","entregado"];
+  const stage = (k,i) => `<button class="stage b-${k} ${counts[k]?"":"zero"}" data-filter="${k}" aria-pressed="${filter===k}" aria-label="Etapa ${i+1}: ${BOX[k]}, ${counts[k]} pedidos">
+      <span class="sn">Etapa ${i+1}</span><b>${counts[k]}</b><span class="l">${BOX[k]}</span></button>`;
+  const lateR = lateIn("recibido");
+  const alert = counts.recibido ? `<button class="alertbar" data-filter="recibido">📥 <span><b>${counts.recibido} pedido${counts.recibido===1?"":"s"} por procesar</b>${lateR?` · ${lateR} atrasado${lateR===1?"":"s"}`:""}</span></button>`
+    : `<div class="alertbar" style="border-left-color:var(--ready)">✨ <span>Nada por procesar. ¡Todo al día!</span></div>`;
   const heads = {recibido:"Por procesar · lo más urgente primero", proceso:"En proceso · por fecha de entrega", listo:"Pendientes de entrega", entregado:"Entregados recientes"};
   let h = `${mode==="local"?'<div class="notice">Los datos se guardan solo en este dispositivo. Descarga un respaldo desde Ajustes cada semana.</div>':""}
   <div class="dayline"><span>Hoy: <b>${money(today.reduce((s,o)=>s+(o.total||0),0))}</b> en ventas</span><span><b>${today.length}</b> pedido${today.length===1?"":"s"} nuevo${today.length===1?"":"s"}</span></div>
-  <div class="boxes" role="group" aria-label="Pedidos por estado">${box("recibido")}${box("proceso")}${box("listo")}${box("entregado")}</div>
+  <nav class="stages" role="group" aria-label="Etapas del pedido">${KEYS.map(stage).join("")}</nav>
+  ${alert}
   <div class="listhead"><h2>${heads[filter]}</h2><span class="small muted">${list.length}</span></div>
   <input class="search" id="q" type="search" placeholder="Buscar por nombre, teléfono o N°" value="${esc(q)}">`;
   if(!list.length){
@@ -502,9 +793,9 @@ function ticketHTML(o){
   const st = ST[o.status];
   const late = isLate(o);
   const s = saldo(o);
-  return `<article class="ticket s-${o.status}">
+  return `<article class="ticket s-${o.status} ${dueCls(o)}">
     <div class="body" data-open="${o.id}" role="button" tabindex="0" aria-label="Ver pedido ${esc(o.num)}">
-      <div class="head"><span class="num">N° ${esc(o.num)}</span><span class="status">${st.ic} ${st.l}</span></div>
+      <div class="head"><span class="headl"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</span><span class="status">${st.ic} ${st.l}</span></div>
       <div class="name">${esc(o.name)}${o.loyaltyRedeemed?'<span class="loyal-tag">Fidelidad -'+(o.discountPct||0)+'%</span>':""}</div>
       <div class="items">${esc(itemsText(o))}</div>
       <div class="meta">
@@ -552,7 +843,7 @@ function viewNew(){
       <input class="price" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" data-price="${s.key}" value="${esc(draft.price[s.key])}" aria-label="Precio ${esc(s.label)}">
     </div>`;
   });
-  return `<h2 style="font-size:1.4rem;margin-bottom:4px">Nuevo pedido</h2>
+  return `${me && me.role==="recepcion"?consultBtn():""}<h2 style="font-size:1.4rem;margin-bottom:4px">Nuevo pedido</h2>
   <p class="muted small" style="margin:0 0 16px">Próximo N° <span class="num">${esc(settings.prefix+String(settings.nextNumber).padStart(6,"0"))}</span></p>
   <div class="field"><label for="f_phone">Teléfono (WhatsApp)</label><input class="input" id="f_phone" type="tel" inputmode="tel" autocomplete="off" placeholder="099 123 4567" value="${esc(draft.phone)}"></div>
   <div id="suggest"></div>
@@ -615,15 +906,15 @@ async function submitNew(){
   if(!c.items.length){ toast("Agrega al menos un artículo"); return; }
   if(c.total<=0){ toast("Revisa los precios: el total es $0.00"); return; }
   if(draft.abonoMode==="abono" && parseNum(draft.abono) > c.total){ toast("El abono no puede ser mayor que el total"); $("#f_abono").focus(); return; }
-  const num = settings.prefix + String(settings.nextNumber).padStart(6,"0");
-  const o = {id:uid(), num, name:draft.name.trim(), phone:draft.phone.trim(), phoneKey:phoneKey(draft.phone),
+  const o = {id:uid(), num:"", name:draft.name.trim(), phone:draft.phone.trim(), phoneKey:phoneKey(draft.phone),
     items:c.items, subtotal:c.subtotal, discount:c.discount, discountPct:c.apply?settings.loyaltyPct:0, total:c.total,
     abono:c.abono, paidFull:c.saldo<=0, method:draft.method, notes:draft.notes.trim(),
-    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply};
+    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply, createdBy:me?me.u:""};
   saving = true; const sb = $("#save"); if(sb){ sb.disabled = true; sb.textContent = "Guardando…"; }
-  settings.nextNumber++;
-  try{ await putOrder(o); await saveSettings(); } finally { saving = false; }
-  draft = null; view = "pedidos"; filter = "recibido"; render();
+  try{ o.num = await takeNumber(); await putOrder(o); if(!cloud) await saveSettings(); }
+  catch(err){ saving = false; if(sb){ sb.disabled = false; sb.textContent = "Registrar pedido"; } toast("No se pudo registrar. Revisa tu conexión."); return; }
+  finally { saving = false; }
+  draft = null; view = HOME[me.role]==="nuevo" ? "nuevo" : "pedidos"; filter = "recibido"; render();
   openSheet(`<h2>Pedido registrado</h2>
     <p><span class="num">N° ${esc(o.num)}</span> · ${esc(o.name)} · ${money(o.total)}</p>
     ${o.loyaltyRedeemed?`<p style="color:var(--ready);font-weight:600">Se aplicó el descuento de fidelidad. La tarjeta del cliente empieza de nuevo.</p>`:`<p class="muted small">Visita ${loyalty(o.phone,o.id).visits+1} de ${settings.loyaltyVisits} en su tarjeta de fidelidad.</p>`}
@@ -643,17 +934,19 @@ async function advanceNow(id){
   const o = orders.find(x=>x.id===id); if(!o) return;
   const next = ST[o.status] && ST[o.status].next;
   if(next && next!=="listo" && next!=="entregado"){
-    await patchOrder(id,{status:next,[next+"At"]:Date.now()}); render();
+    await patchOrder(id,{status:next,[next+"At"]:Date.now(),[next+"By"]:me?me.u:""}); render();
     const fresh = orders.find(x=>x.id===id);
+    if(isOps()){ toast(`${fresh.num} → ${ST[next].ic} ${ST[next].l}`); return; }
     snack(`${esc(fresh.num)} → ${ST[next].ic} ${ST[next].l}`, waLink(fresh.phone,msgStatus(fresh)), id);
   }
   else if(next==="listo"){
-    await patchOrder(id,{status:"listo",readyAt:Date.now()}); render();
+    await patchOrder(id,{status:"listo",readyAt:Date.now(),listoBy:me?me.u:""}); render();
+    if(isOps()){ toast(`${o.num} listo. Recepción avisará al cliente.`); return; }
     openSheet(`<h2>¡Listo para entregar!</h2><p>Avisa a <b>${esc(o.name)}</b> que puede retirar su pedido <span class="num">N° ${esc(o.num)}</span>.</p>
       <div class="stack"><a class="btn wa block" href="${esc(waLink(o.phone,msgReady(o)))}" target="_blank" rel="noopener" data-notify="${o.id}">${svgWA} Avisar por WhatsApp</a>
       <button class="btn ghost block" data-close>Más tarde</button></div>`);
   }
-  else if(o.status==="listo") deliverSheet(o);
+  else if(o.status==="listo" && !isOps()) deliverSheet(o);
 }
 function deliverSheet(o){
   const s = saldo(o);
@@ -667,7 +960,7 @@ function deliverSheet(o){
   $("#doDeliver").onclick = async (ev) => {
     if(ev.currentTarget.disabled) return; ev.currentTarget.disabled = true;
     const m = dm ? dm.querySelector('[aria-pressed="true"]').textContent : null;
-    const patch = {status:"entregado", deliveredAt:Date.now(), paidFull:true};
+    const patch = {status:"entregado", deliveredAt:Date.now(), paidFull:true, deliveredBy:me?me.u:""};
     if(m) patch.methodFinal = m;
     await patchOrder(o.id, patch); render();
     const fresh = orders.find(x=>x.id===o.id);
@@ -677,6 +970,7 @@ function deliverSheet(o){
 }
 function orderSheet(id){
   const o = orders.find(x=>x.id===id); if(!o) return;
+  if(isOps()){ opsSheet(o); return; }
   const l = loyalty(o.phone);
   const lines = (o.items||[]).map(i=>`<div><span>${i.qty} × ${esc(i.label)}</span><span>${money(i.qty*i.price)}</span></div>`).join("");
   openSheet(`<div class="row" style="justify-content:space-between"><span class="num">N° ${esc(o.num)}</span><span class="small muted">${fmtDate(o.createdAt,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span></div>
@@ -692,7 +986,7 @@ function orderSheet(id){
     <div class="stwrap" role="group" id="stSeg">${FLOW.map(k=>`<button type="button" data-st="${k}" aria-pressed="${o.status===k}">${ST[k].ic} ${ST[k].l.replace(" para entregar","")}</button>`).join("")}</div>
     <div class="stack">
       <a class="btn wa block" href="${esc(waLink(o.phone,msgFor(o)))}" target="_blank" rel="noopener">${svgWA} ${o.status==="listo"?"Avisar que está listo":PROC.includes(o.status)?"Enviar estado al cliente":"Enviar comprobante"}</a>
-      <button class="btn danger block" id="del">Eliminar pedido</button>
+      ${isAdmin()?`<button class="btn danger block" id="del">Eliminar pedido</button>`:""}
       <button class="btn ghost block" data-close>Cerrar</button>
     </div>`);
   $("#stSeg").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => {
@@ -705,7 +999,7 @@ function orderSheet(id){
     const fresh = orders.find(x=>x.id===o.id);
     if(k==="entregado") toast("Pedido entregado"); else snack(`${esc(fresh.num)} → ${ST[k].ic} ${ST[k].l}`, waLink(fresh.phone,msgFor(fresh)), o.id);
   });
-  $("#del").onclick = async () => {
+  if($("#del")) $("#del").onclick = async () => {
     if(!confirm("¿Eliminar el pedido "+o.num+"? Esta acción no se puede deshacer.")) return;
     await removeOrder(o.id); closeSheet(); render(); toast("Pedido eliminado");
   };
@@ -866,6 +1160,7 @@ function viewSettings(){
     <div class="field"><label for="s_cc">Código de país</label><input class="input" id="s_cc" inputmode="numeric" value="${esc(settings.cc)}"></div></div>
   </div>
   <button class="btn block" id="saveSet" style="margin-bottom:12px">Guardar ajustes</button>
+  ${usersPanel()}
   <div class="lbl">Datos</div>
   <div class="stack" style="margin-top:0">
     <button class="btn ghost block" id="export">Exportar ventas a Excel (CSV)</button>
@@ -914,7 +1209,7 @@ function restoreJSON(file){
       const ids = new Set(orders.map(o=>o.id)); let added = 0;
       for(const raw of data.orders){ if(!raw || !raw.id || ids.has(raw.id)) continue; await putOrder(norm(raw)); added++; }
       if(data.settings && confirm("¿Usar también los precios y ajustes del respaldo?")){
-        settings = Object.assign({}, JSON.parse(JSON.stringify(DEFAULTS)), data.settings);
+        const keepUsers = settings.users; settings = Object.assign({}, JSON.parse(JSON.stringify(DEFAULTS)), data.settings); if(keepUsers && keepUsers.length) settings.users = keepUsers;
         const maxN = Math.max(0, ...orders.map(o=>parseInt(String(o.num||"").replace(/\D/g,""))||0));
         settings.nextNumber = Math.max(settings.nextNumber, maxN+1);
         await saveSettings();
@@ -957,6 +1252,8 @@ function bind(){
   v.querySelectorAll("[data-wa]").forEach(a => a.addEventListener("click", () => { const o = orders.find(x=>x.id===a.dataset.wa); if(o && o.status==="listo") patchOrder(o.id,{notifiedAt:Date.now()}); }));
   v.querySelectorAll("[data-open]").forEach(b => { b.onclick = () => orderSheet(b.dataset.open); b.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); orderSheet(b.dataset.open); } }; });
   const qi = $("#q"); if(qi) qi.oninput = e => { q = e.target.value; const pos = e.target.selectionStart; render(); const n = $("#q"); n.focus(); n.setSelectionRange(pos,pos); };
+  v.querySelectorAll("[data-consult]").forEach(b => b.onclick = openConsult);
+  v.querySelectorAll("[data-of]").forEach(b => b.onclick = () => { opsFilter = b.dataset.of; render(); });
   // clientes
   v.querySelectorAll("[data-cf]").forEach(b => b.onclick = () => { clientFilter = b.dataset.cf; render(); });
   v.querySelectorAll("[data-client]").forEach(b => { b.onclick = () => clientSheet(b.dataset.client); b.onkeydown = e => { if(e.key==="Enter"){ clientSheet(b.dataset.client); } }; });
@@ -981,6 +1278,9 @@ function bind(){
   }
   if(view==="ajustes"){
     $("#saveSet").onclick = saveSettingsForm;
+    $("#uAdd").onclick = userSheet;
+    v.querySelectorAll("[data-upw]").forEach(b => b.onclick = () => pwSheet(b.dataset.upw));
+    v.querySelectorAll("[data-udel]").forEach(b => b.onclick = () => delUser(b.dataset.udel));
     $("#export").onclick = exportCSV;
     $("#backup").onclick = backupJSON;
     $("#restore").onchange = e => { const f = e.target.files && e.target.files[0]; if(f) restoreJSON(f); e.target.value = ""; };
@@ -997,16 +1297,142 @@ function onData(){
   if(id){ const n = document.getElementById(id); if(n){ n.focus({preventScroll:true}); try{ n.setSelectionRange(pos,pos); }catch(e){} } }
 }
 
+/* ---------- Nube (Firebase) ---------- */
+const FB_V = "10.12.2", FB_DOMAIN = "shoecleaning.app";
+const toEmail = u => String(u).trim().toLowerCase().replace(/[^a-z0-9._-]/g,"") + "@" + FB_DOMAIN;
+const cloneJ = o => JSON.parse(JSON.stringify(o));
+function fbErr(err){
+  const c = (err && err.code) || "";
+  if(c.includes("email-already-in-use")) return "Ese usuario ya existe";
+  if(c.includes("weak-password")) return "La contraseña debe tener al menos 6 caracteres";
+  if(c.includes("network")||c.includes("unavailable")) return "Sin conexión a internet";
+  if(c.includes("permission-denied")) return "Permiso denegado. Revisa las reglas de Firestore.";
+  if(c.includes("wrong-password")||c.includes("invalid-credential")||c.includes("invalid-login")) return "Contraseña incorrecta";
+  if(c.includes("too-many-requests")) return "Demasiados intentos. Espera unos minutos.";
+  if(c.includes("operation-not-allowed")) return "Activa Correo/contraseña en Firebase Authentication";
+  return "Error: " + (err && (err.message||err.code) || "desconocido");
+}
+async function takeNumber(){
+  if(cloud && fb){
+    const ref = fb.doc("config/settings");
+    const n = await fb.runTransaction(async t => { const d = await t.get(ref); const cur = (d.exists && d.data().nextNumber) || settings.nextNumber; t.update(ref, {nextNumber: cur+1}); return cur; });
+    settings.nextNumber = n + 1;
+    return (settings.prefix||"") + String(n).padStart(6,"0");
+  }
+  const n = settings.nextNumber; settings.nextNumber++;
+  return (settings.prefix||"") + String(n).padStart(6,"0");
+}
+function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = () => rej(new Error("No cargó " + src)); document.head.appendChild(el); }); }
+function stopCloud(){ unsub.forEach(f => { try{ f(); }catch(e){} }); unsub = []; }
+const pristineDraft = () => !draft || (!draft.name && !draft.phone && !Object.values(draft.qty).some(x=>x>0));
+async function startSession(u){
+  stopCloud();
+  if(!u){ me = null; mode = "local"; orders = []; cloudUsers = []; ready = true; gateShown = null; draft = null; closeSheet(); render(); setSync("Nube"); return; }
+  let ud = null;
+  try{ ud = await fb.doc("users/" + u.uid).get(); }catch(e){}
+  if(!ud || !ud.exists){ try{ await fbAuth.signOut(); }catch(e){} toast("Tu usuario no está activo. Habla con el administrador."); return; }
+  const d = ud.data();
+  me = {uid:u.uid, u:d.username, name:d.name, role:d.role};
+  mode = "db"; db = fb; ordersCol = fb.collection("orders"); settingsDoc = fb.doc("config/settings");
+  orders = []; ready = true; view = HOME[me.role]; draft = null; gateShown = null; render();
+  setSync("Conectando…");
+  unsub.push(ordersCol.orderBy("createdAt","desc").limit(2000).onSnapshot(snap => {
+    orders = snap.docs.map(x => x.data()).filter(Boolean).map(norm);
+    setSync(snap.metadata && snap.metadata.fromCache ? "Sin conexión · guardado local" : "Sincronizado ✓");
+    onData();
+  }, () => setSync("Sin conexión")));
+  unsub.push(settingsDoc.onSnapshot(sn => {
+    const sd = sn.exists ? sn.data() : null;
+    if(sd){ settings = Object.assign({}, cloneJ(DEFAULTS), cloneJ(sd)); delete settings.users; if(!Array.isArray(settings.services) || !settings.services.length) settings.services = cloneJ(DEFAULT_SERVICES); }
+    else if(isAdmin()) saveSettings();
+    if(view==="nuevo" && pristineDraft()){ draft = null; render(); }
+    else if(view!=="ajustes" && view!=="nuevo") render();
+  }, () => {}));
+  unsub.push(fb.collection("users").onSnapshot(snap => {
+    cloudUsers = snap.docs.map(x => { const ud2 = x.data(); return {uid:x.id, u:ud2.username, name:ud2.name, role:ud2.role}; });
+    const mine = cloudUsers.find(x => x.uid===me.uid);
+    if(!mine){ toast("Tu usuario fue desactivado"); fbAuth.signOut().catch(()=>{}); return; }
+    if(mine.role!==me.role || mine.name!==me.name){ me = Object.assign({}, me, {role:mine.role, name:mine.name}); render(); }
+    else if(view==="ajustes") render();
+  }, () => {}));
+}
+async function cloudSetup(u, n, p){
+  if(p.length<6){ toast("La contraseña debe tener al menos 6 caracteres"); return; }
+  bootstrapping = true;
+  try{
+    let cred;
+    try{ cred = await fbAuth.createUserWithEmailAndPassword(toEmail(u), p); }
+    catch(err){ if((err.code||"").includes("email-already-in-use")) cred = await fbAuth.signInWithEmailAndPassword(toEmail(u), p); else throw err; }
+    const batch = fb.batch();
+    batch.set(fb.doc("users/" + cred.user.uid), {username:u, name:n, role:"admin", createdAt:Date.now()});
+    batch.set(fb.doc("config/bootstrap"), {at:Date.now(), by:u});
+    await batch.commit();
+    const st = cloneJ(settings); delete st.users;
+    await fb.doc("config/settings").set(st);
+    bootstrapped = true; bootstrapping = false;
+    await startSession(cred.user);
+    toast("Administrador creado");
+  }catch(err){
+    bootstrapping = false;
+    try{ await fbAuth.signOut(); }catch(e){}
+    toast(fbErr(err));
+  }
+}
+async function cloudCreateUser(u, n, role, p){
+  try{
+    const sec = firebase.apps.find(a => a.name==="sec") || firebase.initializeApp(window.FIREBASE_CONFIG, "sec");
+    const sa = sec.auth();
+    try{ await sa.setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(e){}
+    const cred = await sa.createUserWithEmailAndPassword(toEmail(u), p);
+    await fb.doc("users/" + cred.user.uid).set({username:u, name:n, role, createdAt:Date.now(), createdBy:me.u});
+    await sa.signOut();
+    return true;
+  }catch(err){ toast(fbErr(err)); return false; }
+}
+function myPwSheet(){
+  openSheet(`<h2>Cambiar mi contraseña</h2>
+    <div class="field" style="margin-top:12px"><label for="mp0">Contraseña actual</label><input class="input" id="mp0" type="password" autocomplete="current-password"></div>
+    <div class="field"><label for="mp1">Nueva contraseña</label><input class="input" id="mp1" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></div>
+    <div class="stack"><button class="btn block" id="mpSave">Guardar</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
+  $("#mpSave").onclick = async () => {
+    const cur = $("#mp0").value, nw = $("#mp1").value;
+    if(nw.length<6){ toast("Mínimo 6 caracteres"); return; }
+    try{
+      const user = fbAuth.currentUser;
+      await user.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(user.email, cur));
+      await user.updatePassword(nw);
+      closeSheet(); toast("Contraseña actualizada");
+    }catch(err){ toast(fbErr(err)); }
+  };
+}
+async function initCloud(){
+  setSync("Conectando…");
+  try{
+    const base = `https://www.gstatic.com/firebasejs/${FB_V}/`;
+    await loadScript(base + "firebase-app-compat.js");
+    await Promise.all([loadScript(base + "firebase-auth-compat.js"), loadScript(base + "firebase-firestore-compat.js")]);
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    fb = firebase.firestore();
+    try{ await fb.enablePersistence({synchronizeTabs:true}); }catch(e){}
+    fbAuth = firebase.auth();
+    try{ bootstrapped = (await fb.doc("config/bootstrap").get()).exists; }catch(e){ bootstrapped = true; }
+    fbAuth.onAuthStateChanged(u => { if(bootstrapping) return; startSession(u); });
+  }catch(e){ cloudError = true; ready = true; gateShown = null; render(); }
+}
+
 loadLocal();
+if(cloud) initCloud();
+if(ready) restoreSession();
 render();
 setSync("En este dispositivo");
+setTimeout(() => { if(!ready){ if(cloud) cloudError = true; ready = true; restoreSession(); gateShown = null; render(); } }, cloud ? 20000 : 6000);
 
 (async () => {
   try{
     if(!window.claude || !window.claude.use) return;
     downloads = await window.claude.use("downloads");
     db = await window.claude.use("db");
-    if(!db){ if(view==="ajustes") render(); return; }
+    if(!db){ if(!ready){ ready = true; restoreSession(); } render(); return; }
     mode = "db";
     ordersCol = db.collection("orders");
     settingsDoc = db.doc("config/settings");
@@ -1029,10 +1455,13 @@ setSync("En este dispositivo");
       const d = s.exists ? s.data() : null;
       if(d){ settings = Object.assign({}, JSON.parse(JSON.stringify(DEFAULTS)), JSON.parse(JSON.stringify(d))); if(!Array.isArray(settings.services) || !settings.services.length) settings.services = JSON.parse(JSON.stringify(DEFAULT_SERVICES)); }
       else { saveSettings(); }
+      if(!ready){ ready = true; restoreSession(); gateShown = null; render(); return; }
+      refreshMe();
+      if(!me) return;
       if(view!=="ajustes" && view!=="nuevo") render();
       else if(view==="nuevo" && !draft) render();
     }, () => {});
-  }catch(e){ setSync("En este dispositivo"); }
+  }catch(e){ setSync("En este dispositivo"); if(!ready){ ready = true; restoreSession(); render(); } }
 })();
 })();
 </script>

@@ -264,6 +264,37 @@ table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:60;max-width:90%;text-align:center}
 .notice{background:var(--prod-bg);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:.85rem;margin-bottom:14px}
 .hist{border-top:1px solid var(--line);padding:10px 0;display:flex;justify-content:space-between;gap:10px;font-size:.9rem}
+/* Fotos */
+.photos{margin-bottom:14px}
+.photos .btn{width:100%}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
+.th{position:relative;display:inline-block}
+.th img,.thv{width:68px;height:68px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;cursor:zoom-in;background:var(--foam)}
+.th button{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:var(--danger);color:#fff;font-weight:800;line-height:1}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:80;display:grid;place-items:center;padding:16px;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;border-radius:8px}
+.phgroup{margin-top:6px}
+.phgroup b{font-size:.82rem}
+/* Tablero */
+.live{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--ready)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--ready);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ready) 60%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}}
+.kpi.hero{grid-column:1/-1;background:var(--ink);color:var(--bg)}
+.kpi.hero span,.kpi.hero small{color:inherit;opacity:.8}
+.kpi.warn b{color:var(--danger)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--line);margin-right:6px;vertical-align:1px}
+.dot.on{background:var(--ready)}
+.stagebar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stagebar div{background:var(--surface);border-radius:12px;padding:10px;box-shadow:var(--shadow);border-top:4px solid var(--c)}
+.stagebar b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:1.5rem;color:var(--c);line-height:1.1}
+.stagebar span{font-size:.72rem;font-weight:700}
+.stagebar small{display:block;color:var(--muted);font-size:.7rem}
+.bneck{background:var(--prod-bg);border-radius:10px;padding:8px 12px;font-size:.88rem;margin-bottom:12px}
+.attn{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:.9rem;cursor:pointer;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;color:inherit}
+.attn:first-child{border-top:0}
+.split{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin:8px 0 4px}
+.split i{display:block;height:100%}
 </style>
 </head>
 <body>
@@ -342,11 +373,15 @@ const ROLE = {admin:"Administrador", recepcion:"Recepción", operaciones:"Operac
 const ROLE_DESC = {admin:"Ve y configura todo", recepcion:"Recibe pedidos, cobra y entrega", operaciones:"Cola de trabajo: lavado a listo"};
 const ICON = {"pedidos": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2\"/><path d=\"M9 8h6M9 12h6M9 16h4\"/></svg>", "clientes": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8\" r=\"3.5\"/><path d=\"M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5\"/><path d=\"M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2\"/></svg>", "nuevo": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>", "analisis": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20V10M10 20V4M16 20v-7M22 20H2\"/></svg>", "ajustes": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z\"/></svg>", "entregas": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7l9-4 9 4v10l-9 4-9-4z\"/><path d=\"M3 7l9 4 9-4M12 11v10\"/><path d=\"M8.5 15.5l2 2 4-4\"/></svg>", "consultar": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.5-3.5\"/></svg>", "cola": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 6h13M8 12h13M8 18h13\"/><circle cx=\"3.5\" cy=\"6\" r=\"1\"/><circle cx=\"3.5\" cy=\"12\" r=\"1\"/><circle cx=\"3.5\" cy=\"18\" r=\"1\"/></svg>"};
 const TABS = {
-  admin:[["pedidos","Pedidos"],["clientes","Clientes"],["nuevo","Nuevo"],["analisis","Análisis"],["ajustes","Ajustes"]],
+  admin:[["tablero","Tablero"],["pedidos","Pedidos"],["nuevo","Nuevo"],["clientes","Clientes"],["analisis","Análisis"],["ajustes","Ajustes"]],
   recepcion:[["nuevo","Nuevo"],["entregas","Entregas"],["consultar","Consultar"],["clientes","Clientes"]],
   operaciones:[["cola","Cola"],["consultar","Buscar"]]
 };
-const HOME = {admin:"pedidos", recepcion:"nuevo", operaciones:"cola"};
+const HOME = {admin:"tablero", recepcion:"nuevo", operaciones:"cola"};
+ICON.tablero = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>';
+const MAX_OPS = 5, PHOTO_MAX = 3;
+let presence = {}, loginsData = [], hbTimer = null, sessionSince = 0, pendingLoginType = null;
+let pendingPhotos = {recepcion:[], entrega:[]};
 
 /* ---------- Utilidades ---------- */
 const $ = s => document.querySelector(s);
@@ -512,7 +547,7 @@ function refreshMe(){
   if(!f){ logout(true); return; }
   me = {u:f.u, name:f.name, role:f.role};
 }
-function logout(silent){ if(cloud && fbAuth){ closeSheet(); fbAuth.signOut().catch(()=>{}); if(!silent) toast("Sesión cerrada"); return; } me = null; setSession(null); closeSheet(); draft = null; gateShown = null; render(); if(!silent) toast("Sesión cerrada"); }
+function logout(silent){ clearInterval(hbTimer); if(cloud && fbAuth){ closeSheet(); const pid = me && (me.uid||me.u); const fin = () => fbAuth.signOut().catch(()=>{}); if(pid && fb && me){ fb.doc("presence/"+pid).set({uid:pid,u:me.u,name:me.name,role:me.role,lastSeen:Date.now(),since:sessionSince,offline:true}).then(fin,fin); } else fin(); if(!silent) toast("Sesión cerrada"); return; } me = null; setSession(null); closeSheet(); draft = null; gateShown = null; render(); if(!silent) toast("Sesión cerrada"); }
 function renderNav(){
   const nav = document.querySelector("nav.tabs");
   if(!me){ nav.hidden = true; return; }
@@ -577,13 +612,14 @@ function renderGate(){
       const u = $("#l_u").value.trim().toLowerCase(), p = $("#l_p").value;
       if(cloud){
         const btn = $("#gateForm button[type=submit]"); btn.disabled = true; btn.textContent = "Entrando…";
+        pendingLoginType = "login";
         try{ await fbAuth.signInWithEmailAndPassword(toEmail(u), p); }
         catch(err){ toast(/network/.test(err.code||"") ? "Sin conexión a internet" : "Usuario o contraseña incorrectos"); btn.disabled = false; btn.textContent = "Entrar"; $("#l_p").value=""; $("#l_p").focus(); }
         return;
       }
       const f = users().find(x=>x.u===u);
       if(!f || (await hashPw(f.salt,p))!==f.h){ toast("Usuario o contraseña incorrectos"); $("#l_p").value=""; $("#l_p").focus(); return; }
-      me = {u:f.u, name:f.name, role:f.role}; setSession(f.u); view = HOME[f.role]; draft = null; gateShown = null; render(); window.scrollTo(0,0);
+      me = {u:f.u, name:f.name, role:f.role}; setSession(f.u); recordLogin("login"); startPresence(); view = HOME[f.role]; draft = null; gateShown = null; render(); window.scrollTo(0,0);
     };
   }
   const first = v.querySelector("input"); if(first) first.focus({preventScroll:true});
@@ -689,7 +725,9 @@ function opsSheet(o){
 
 /* ---------- Usuarios (admin) ---------- */
 function usersPanel(){
+  const nOps = users().filter(x=>x.role==="operaciones").length;
   return `<div class="lbl">Usuarios y roles</div><div class="panel pad">
+    <p class="small muted" style="margin:0 0 6px">Operadores: <b>${nOps}/${MAX_OPS}</b></p>
     ${users().map(u=>`<div class="hist" style="align-items:center"><span><b>${esc(u.name)}</b> <span class="muted small">@${esc(u.u)}</span><br><span class="rolepill r-${u.role}">${ROLE[u.role]}</span></span>
       <span class="row" style="gap:6px">${cloud?"":`<button class="btn ghost" style="min-height:38px;padding:6px 10px" data-upw="${esc(u.u)}">Cambiar clave</button>`}${u.u!==me.u?`<button class="btn danger" style="min-height:38px;padding:6px 10px" data-udel="${esc(u.u)}">${cloud?"Desactivar":"Quitar"}</button>`:""}</span></div>`).join("")}
     <button class="btn block" id="uAdd" style="margin-top:10px">Agregar usuario</button>
@@ -708,6 +746,7 @@ function userSheet(){
     const n = $("#u_n").value.trim(), u = $("#u_u").value.trim().toLowerCase().replace(/\s+/g,""), p = $("#u_p").value;
     if(!n || !u){ toast("Completa nombre y usuario"); return; }
     if(users().some(x=>x.u===u)){ toast("Ese usuario ya existe"); return; }
+    if(role==="operaciones" && users().filter(x=>x.role==="operaciones").length>=MAX_OPS){ toast(`Máximo ${MAX_OPS} operadores. Desactiva uno para crear otro.`); return; }
     if(p.length<(cloud?6:4)){ toast(`La contraseña debe tener al menos ${cloud?6:4} caracteres`); return; }
     if(cloud){ const sb = $("#u_save"); sb.disabled = true; sb.textContent = "Creando…"; if(await cloudCreateUser(u,n,role,p)){ closeSheet(); toast(`Usuario ${u} creado (${ROLE[role]})`); } else { sb.disabled = false; sb.textContent = "Crear usuario"; } return; }
     const salt = newSalt();
@@ -751,6 +790,7 @@ function render(){
   else if(view==="ajustes") v.innerHTML = viewSettings();
   else if(view==="entregas") v.innerHTML = viewEntregas();
   else if(view==="cola") v.innerHTML = viewCola();
+  else if(view==="tablero") v.innerHTML = viewTablero();
   bind();
 }
 
@@ -800,7 +840,7 @@ function ticketHTML(o){
       <div class="items">${esc(itemsText(o))}</div>
       <div class="meta">
         <span>${o.status==="entregado"?"Entregado "+fmtDate(o.deliveredAt||o.createdAt):'Entrega: <span class="'+(late?"late":"")+'">'+fmtDue(o.dueDate)+(late?" · atrasado":"")+"</span>"}</span>
-        <span>Total <b>${money(o.total)}</b></span>
+        <span>Total <b>${money(o.total)}</b></span>${photoCount(o)?`<span class="muted">📷 ${photoCount(o)}</span>`:""}
         ${s>0?`<span>Saldo <b>${money(s)}</b></span>`:`<span class="muted">Pagado</span>`}
       </div>
       ${progressHTML(o)}
@@ -820,6 +860,7 @@ function progressHTML(o){
 
 /* ---------- Vista: Nuevo pedido ---------- */
 function newDraft(){
+  pendingPhotos.recepcion = [];
   draft = {name:"", phone:"", qty:{}, price:{}, due: todayStr(settings.deliveryDays), abonoMode:"total", abono:"", method:"Efectivo", notes:"", useReward:true};
   settings.services.forEach(s => { draft.qty[s.key]=0; draft.price[s.key]=fmt2(s.price); });
 }
@@ -859,6 +900,7 @@ function viewNew(){
     <div class="seg" role="group"><button type="button" data-ab="total" aria-pressed="${draft.abonoMode==="total"}">Pagado</button><button type="button" data-ab="abono" aria-pressed="${draft.abonoMode==="abono"}">Abono</button><button type="button" data-ab="nada" aria-pressed="${draft.abonoMode==="nada"}">Paga al retirar</button></div>
   </div>
   ${draft.abonoMode==="abono"?`<div class="field"><label for="f_abono">Monto del abono</label><input class="input" id="f_abono" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0,00" value="${esc(draft.abono)}"></div>`:""}
+  ${pickerHTML("recepcion","Fotos de recepción (opcional)")}
   <div class="field"><label for="f_notes">Notas (opcional)</label><input class="input" id="f_notes" placeholder="Ej. mancha en la punta, cordones aparte" value="${esc(draft.notes)}"></div>
   <div class="panel pad" id="totals">${totalsHTML(c)}</div>
   <button class="btn block" id="save" style="min-height:54px;font-size:1.05rem">Registrar pedido</button>`;
@@ -909,10 +951,13 @@ async function submitNew(){
   const o = {id:uid(), num:"", name:draft.name.trim(), phone:draft.phone.trim(), phoneKey:phoneKey(draft.phone),
     items:c.items, subtotal:c.subtotal, discount:c.discount, discountPct:c.apply?settings.loyaltyPct:0, total:c.total,
     abono:c.abono, paidFull:c.saldo<=0, method:draft.method, notes:draft.notes.trim(),
-    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply, createdBy:me?me.u:""};
+    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply, createdBy:me?me.u:"", photos:{recepcion:pendingPhotos.recepcion.length, entrega:0}};
+  const phs = pendingPhotos.recepcion.slice();
   saving = true; const sb = $("#save"); if(sb){ sb.disabled = true; sb.textContent = "Guardando…"; }
   try{ o.num = await takeNumber(); await putOrder(o); if(!cloud) await saveSettings(); }
   catch(err){ saving = false; if(sb){ sb.disabled = false; sb.textContent = "Registrar pedido"; } toast("No se pudo registrar. Revisa tu conexión."); return; }
+  try{ for(const data of phs) await savePhoto({orderId:o.id, num:o.num, stage:"recepcion", data, at:Date.now(), by:me?me.u:""}); }
+  catch(err){ toast("El pedido se guardó, pero no las fotos"); }
   finally { saving = false; }
   draft = null; view = HOME[me.role]==="nuevo" ? "nuevo" : "pedidos"; filter = "recibido"; render();
   openSheet(`<h2>Pedido registrado</h2>
@@ -950,18 +995,24 @@ async function advanceNow(id){
 }
 function deliverSheet(o){
   const s = saldo(o);
+  pendingPhotos.entrega = [];
   openSheet(`<h2>Confirmar entrega</h2>
     <p><span class="num">N° ${esc(o.num)}</span> · ${esc(o.name)}<br><span class="muted">${esc(itemsText(o))}</span></p>
     ${s>0?`<div class="panel pad"><div class="totals"><div class="big"><span>Cobrar saldo</span><span>${money(s)}</span></div></div>
     <div class="field" style="margin-top:12px"><span class="lbl">Medio de pago</span><div class="seg" role="group" id="dm"><button type="button" aria-pressed="true">Efectivo</button><button type="button" aria-pressed="false">Transferencia</button></div></div></div>`:`<p class="muted">El pedido ya está pagado.</p>`}
+    ${pickerHTML("entrega","Foto de entrega (opcional)")}
     <div class="stack"><button class="btn ok block" id="doDeliver">${s>0?"Cobrar "+money(s)+" y entregar":"Confirmar entrega"}</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
   const dm = $("#dm");
+  bindPicker("entrega","Foto de entrega (opcional)");
   if(dm) dm.querySelectorAll("button").forEach(b=>b.onclick=()=>dm.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)));
   $("#doDeliver").onclick = async (ev) => {
     if(ev.currentTarget.disabled) return; ev.currentTarget.disabled = true;
     const m = dm ? dm.querySelector('[aria-pressed="true"]').textContent : null;
-    const patch = {status:"entregado", deliveredAt:Date.now(), paidFull:true, deliveredBy:me?me.u:""};
+    const patch = {status:"entregado", deliveredAt:Date.now(), paidFull:true, deliveredBy:me?me.u:"", cobradoEntrega:s};
     if(m) patch.methodFinal = m;
+    const phs = pendingPhotos.entrega.slice();
+    if(phs.length) patch.photos = Object.assign({recepcion:0}, o.photos||{}, {entrega:((o.photos||{}).entrega||0)+phs.length});
+    try{ for(const data of phs) await savePhoto({orderId:o.id, num:o.num, stage:"entrega", data, at:Date.now(), by:me?me.u:""}); }catch(err){ toast("No se pudieron guardar las fotos"); }
     await patchOrder(o.id, patch); render();
     const fresh = orders.find(x=>x.id===o.id);
     openSheet(`<h2>Entregado ✓</h2><p>Envía un agradecimiento con el avance de su tarjeta de fidelidad. Así vuelve más pronto.</p>
@@ -982,6 +1033,9 @@ function orderSheet(id){
     ${o.notes?`<p><b>Notas:</b> ${esc(o.notes)}</p>`:""}
     <p class="small">Entrega: ${fmtDue(o.dueDate)} · Pago: ${esc(o.method||"—")}</p>
     <div class="small"><b>Fidelidad:</b> ${l.visits}/${settings.loyaltyVisits} visitas</div>${punchHTML(l.visits)}
+    <span class="lbl" style="margin-top:16px">Fotos</span>
+    <div id="phbox" class="small muted">${photoCount(o)?"Cargando fotos…":"Sin fotos."}</div>
+    <label class="btn ghost" style="cursor:pointer;margin-top:8px;min-height:40px">📷 Agregar foto de ${o.status==="entregado"?"entrega":"recepción"}<input type="file" accept="image/*" hidden id="phAdd"></label>
     <span class="lbl" style="margin-top:16px">Estado</span>
     <div class="stwrap" role="group" id="stSeg">${FLOW.map(k=>`<button type="button" data-st="${k}" aria-pressed="${o.status===k}">${ST[k].ic} ${ST[k].l.replace(" para entregar","")}</button>`).join("")}</div>
     <div class="stack">
@@ -989,9 +1043,22 @@ function orderSheet(id){
       ${isAdmin()?`<button class="btn danger block" id="del">Eliminar pedido</button>`:""}
       <button class="btn ghost block" data-close>Cerrar</button>
     </div>`);
+  showPhotos(o);
+  $("#phAdd").onchange = async e => {
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    const stage = o.status==="entregado" ? "entrega" : "recepcion";
+    try{
+      const data = await compressImage(f);
+      await savePhoto({orderId:o.id, num:o.num, stage, data, at:Date.now(), by:me?me.u:""});
+      const ph = Object.assign({recepcion:0, entrega:0}, o.photos||{}); ph[stage]++;
+      await patchOrder(o.id, {photos:ph}); o.photos = ph; showPhotos(o); toast("Foto guardada");
+    }catch(err){ toast("No se pudo guardar la foto"); }
+    e.target.value = "";
+  };
   $("#stSeg").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => {
     if(busy.has(o.id)) return; busy.add(o.id); setTimeout(()=>busy.delete(o.id), 350);
     const k = b.dataset.st; const patch = {status:k};
+    if(PROC.includes(k)){ patch[k+"At"] = Date.now(); patch[k+"By"] = me?me.u:""; }
     if(k==="entregado" && !o.deliveredAt){ patch.deliveredAt = Date.now(); patch.paidFull = true; }
     if(k==="listo" && !o.readyAt) patch.readyAt = Date.now();
     if(k!=="entregado" && o.status==="entregado"){ patch.deliveredAt = null; }
@@ -1117,6 +1184,7 @@ function viewAnalytics(){
   </div>
   ${star?`<div class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg><div><span>Producto estrella</span><h3>${esc(star[0])}</h3><span>${star[1].qty} unidades · ${money(star[1].rev)}</span></div></div>`:""}
   <div class="insights"><h3>Qué hacer para vender más</h3><ul>${ins.map(i=>"<li>"+i+"</li>").join("")}</ul></div>
+  ${extraAnalytics(P, start)}
 
   <h3 class="sec">Ventas por semana</h3>
   <div class="panel pad"><div class="cols">${weeks.map((w,i)=>`<div class="c ${w.s===maxWk&&w.s>0?"top":""}" title="${money(w.s)}"><span>${w.s?"$"+Math.round(w.s):""}</span><i style="height:${w.s/maxWk*100}%"></i><span>${w.l}</span></div>`).join("")}</div></div>
@@ -1275,6 +1343,7 @@ function bind(){
     v.querySelectorAll("[data-price]").forEach(i => { i.oninput = e => { draft.price[i.dataset.price] = e.target.value; refreshNew(); }; i.onblur = e => { draft.price[i.dataset.price] = fmt2(parseNum(e.target.value)); e.target.value = draft.price[i.dataset.price]; refreshNew(); }; i.onfocus = e => e.target.select(); });
     const r = $("#f_reward"); if(r) r.onchange = e => { draft.useReward = e.target.checked; refreshNew(); };
     $("#save").onclick = submitNew;
+    bindPicker("recepcion","Fotos de recepción (opcional)");
   }
   if(view==="ajustes"){
     $("#saveSet").onclick = saveSettingsForm;
@@ -1295,6 +1364,254 @@ function onData(){
   const a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;
   render();
   if(id){ const n = document.getElementById(id); if(n){ n.focus({preventScroll:true}); try{ n.setSelectionRange(pos,pos); }catch(e){} } }
+}
+
+/* ---------- Fotos ---------- */
+const photoCount = o => o && o.photos ? (o.photos.recepcion||0) + (o.photos.entrega||0) : 0;
+async function compressImage(file){
+  const img = await new Promise((res, rej) => { const u = URL.createObjectURL(file); const i = new Image(); i.onload = () => { URL.revokeObjectURL(u); res(i); }; i.onerror = () => { URL.revokeObjectURL(u); rej(new Error("img")); }; i.src = u; });
+  const MAXPX = 720; const k = Math.min(1, MAXPX / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.max(1, Math.round(img.naturalWidth*k)), h = Math.max(1, Math.round(img.naturalHeight*k));
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0,0,w,h); cx.drawImage(img, 0, 0, w, h);
+  let q = 0.62, url = cv.toDataURL("image/jpeg", q);
+  while(url.length > 80000 && q > 0.3){ q -= 0.08; url = cv.toDataURL("image/jpeg", q); }
+  return url;
+}
+let idbP = null;
+function idb(){
+  if(idbP) return idbP;
+  idbP = new Promise((res, rej) => { const r = indexedDB.open("sc_photos", 1); r.onupgradeneeded = () => { const st = r.result.createObjectStore("photos", {keyPath:"id"}); st.createIndex("orderId","orderId"); }; r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  return idbP;
+}
+async function savePhoto(ph){
+  ph.id = ph.id || uid();
+  if(cloud && fb){ await fb.collection("photos").doc(ph.id).set(ph); return; }
+  const d = await idb();
+  await new Promise((res, rej) => { const t = d.transaction("photos","readwrite"); t.objectStore("photos").put(ph); t.oncomplete = res; t.onerror = () => rej(t.error); });
+}
+async function loadPhotos(orderId){
+  if(cloud && fb){ const sn = await fb.collection("photos").where("orderId","==",orderId).get(); return sn.docs.map(x => x.data()).sort((a,b) => a.at-b.at); }
+  const d = await idb();
+  return await new Promise((res, rej) => { const r = d.transaction("photos").objectStore("photos").index("orderId").getAll(orderId); r.onsuccess = () => res((r.result||[]).sort((a,b) => a.at-b.at)); r.onerror = () => rej(r.error); });
+}
+const safeImg = u => /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u||"") ? u : "";
+function viewPhoto(u){ const d = document.createElement("div"); d.className = "lightbox"; d.setAttribute("role","dialog"); d.innerHTML = `<img src="${esc(u)}" alt="Foto ampliada">`; d.onclick = () => d.remove(); document.body.appendChild(d); }
+async function showPhotos(o){
+  const box = $("#phbox"); if(!box || !photoCount(o)) return;
+  try{
+    const list = await loadPhotos(o.id);
+    const b2 = $("#phbox"); if(!b2) return;
+    if(!list.length){ b2.textContent = "Sin fotos."; return; }
+    const grp = st => { const l = list.filter(x => x.stage===st); return l.length ? `<div class="phgroup"><b>${st==="entrega"?"Entrega":"Recepción"}</b><div class="thumbs">${l.map(x => `<img class="thv" src="${esc(safeImg(x.data))}" alt="Foto de ${st}" data-ph="${esc(x.id)}" title="${fmtDate(x.at,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}${x.by?" · "+esc(x.by):""}">`).join("")}</div></div>` : ""; };
+    b2.innerHTML = grp("recepcion") + grp("entrega");
+    b2.querySelectorAll("[data-ph]").forEach(im => im.onclick = () => viewPhoto(im.getAttribute("src")));
+  }catch(err){ const b3 = $("#phbox"); if(b3) b3.textContent = "No se pudieron cargar las fotos."; }
+}
+function pickerHTML(stage, label){
+  const arr = pendingPhotos[stage];
+  return `<div class="photos" id="pp_${stage}">
+    ${arr.length<PHOTO_MAX?`<label class="btn ghost" style="cursor:pointer">📷 ${label}<input type="file" accept="image/*" multiple hidden data-photo="${stage}"></label>`:""}
+    ${arr.length?`<div class="thumbs">${arr.map((u,i) => `<span class="th"><img src="${esc(u)}" alt="Foto ${i+1}"><button type="button" data-rmph="${i}" aria-label="Quitar foto ${i+1}">×</button></span>`).join("")}</div>`:""}
+    <small class="muted">${arr.length}/${PHOTO_MAX} fotos · se comprimen para ocupar poco espacio</small></div>`;
+}
+function bindPicker(stage, label){
+  const root = $("#pp_"+stage); if(!root) return;
+  const redo = () => { const r = $("#pp_"+stage); if(r){ r.outerHTML = pickerHTML(stage, label); bindPicker(stage, label); } };
+  const inp = root.querySelector("[data-photo]");
+  if(inp) inp.onchange = async e => {
+    const files = [...e.target.files].slice(0, PHOTO_MAX - pendingPhotos[stage].length);
+    for(const f of files){ try{ pendingPhotos[stage].push(await compressImage(f)); }catch(err){ toast("No se pudo leer una foto"); } }
+    redo();
+  };
+  root.querySelectorAll("[data-rmph]").forEach(b => b.onclick = () => { pendingPhotos[stage].splice(+b.dataset.rmph, 1); redo(); });
+}
+
+/* ---------- Personal: ingresos y presencia ---------- */
+function devName(){ const ua = navigator.userAgent; return /Android/i.test(ua) ? "Android" : /iPhone|iPad/i.test(ua) ? "iPhone" : /Windows/i.test(ua) ? "Windows" : /Mac/i.test(ua) ? "Mac" : "Otro"; }
+function localLogins(){ try{ return JSON.parse(localStorage.getItem("sc_logins")||"[]"); }catch(e){ return []; } }
+async function recordLogin(type){
+  if(!me) return;
+  const key = "sc_lastlog_" + me.u;
+  if(type==="apertura"){ try{ if(localStorage.getItem(key)===todayStr()) return; }catch(e){} }
+  try{ localStorage.setItem(key, todayStr()); }catch(e){}
+  const ev = {uid:me.uid||me.u, u:me.u, name:me.name||me.u, role:me.role, at:Date.now(), day:todayStr(), type, dev:devName()};
+  if(cloud && fb){ try{ await fb.collection("logins").add(ev); }catch(e){} return; }
+  try{ const a = localLogins(); a.push(ev); localStorage.setItem("sc_logins", JSON.stringify(a.slice(-600))); }catch(e){}
+  loginsData = localLogins();
+}
+function beat(){
+  if(!me) return;
+  const pid = me.uid || me.u;
+  const pr = {uid:pid, u:me.u, name:me.name||me.u, role:me.role, lastSeen:Date.now(), since:sessionSince, offline:false};
+  if(cloud && fb) fb.doc("presence/"+pid).set(pr).catch(()=>{}); else presence[pid] = pr;
+}
+function startPresence(){
+  sessionSince = Date.now(); beat(); clearInterval(hbTimer);
+  hbTimer = setInterval(() => { if(document.visibilityState==="visible") beat(); }, 60000);
+  if(!cloud) loginsData = localLogins();
+}
+function softRender(){ if($("#scrim") || $(".lightbox")) return; const a = document.activeElement; if(a && /INPUT|SELECT|TEXTAREA/.test(a.tagName)) return; render(); }
+setInterval(() => { if(me && view==="tablero") softRender(); }, 30000);
+
+/* ---------- Métricas ---------- */
+const sumAmt = l => l.reduce((t,x) => t + (x.amt||0), 0);
+function payments(){
+  const out = [];
+  for(const o of orders){
+    const ab = r2(o.abono||0);
+    if(ab>0) out.push({at:o.createdAt, amt:ab, method:o.method||"Efectivo", o, kind:"abono"});
+    if(o.deliveredAt){
+      const col = o.cobradoEntrega!=null ? r2(o.cobradoEntrega) : Math.max(0, r2((o.total||0) - ab));
+      if(col>0) out.push({at:o.deliveredAt, amt:col, method:o.methodFinal||o.method||"Efectivo", o, kind:"saldo"});
+    }
+  }
+  return out;
+}
+const STAGE_SEG = [
+  ["recibido","Espera para lavar","createdAt","lavadoAt"],
+  ["lavado","Lavado","lavadoAt","secadoAt"],
+  ["secado","Secado","secadoAt","esterilizacionAt"],
+  ["esterilizacion","Esterilización","esterilizacionAt","readyAt"],
+  ["listo","Espera de retiro","readyAt","deliveredAt"]
+];
+function stageStats(list){
+  return STAGE_SEG.map(([k,l,a,b]) => {
+    const v = list.map(o => (o[a] && o[b]) ? o[b]-o[a] : null).filter(x => x!=null && x>=0 && x<90*DAY).sort((x,y) => x-y);
+    return {k, l, n:v.length, avg: v.length ? v.reduce((t,x) => t+x, 0)/v.length : 0, med: v.length ? v[Math.floor(v.length/2)] : 0, max: v.length ? v[v.length-1] : 0};
+  });
+}
+function fmtDur(ms){
+  if(!ms || ms<0) return "—";
+  const m = ms/60000;
+  if(m<60) return Math.max(1, Math.round(m)) + " min";
+  const h = m/60;
+  if(h<48) return (h<10 ? h.toFixed(1).replace(".",",") : Math.round(h)) + " h";
+  return (h/24).toFixed(1).replace(".",",") + " días";
+}
+const stageStart = o => o.status==="listo" ? (o.readyAt||o.createdAt) : (PROC.includes(o.status) ? (o[o.status+"At"]||o.createdAt) : o.createdAt);
+const fmtHour = ms => new Date(ms).toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit"});
+function onTime(o){
+  if(!o.readyAt || !o.dueDate) return null;
+  const d = new Date(o.readyAt); const s = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  return s <= o.dueDate;
+}
+function staffStats(list){
+  const st = {};
+  const add = (u, f) => { if(!u) return; (st[u] = st[u] || {u, recibidos:0, etapas:0, entregas:0})[f]++; };
+  list.forEach(o => { add(o.createdBy,"recibidos"); ["lavado","secado","esterilizacion","listo"].forEach(k => add(o[k+"By"],"etapas")); add(o.deliveredBy,"entregas"); });
+  return Object.values(st);
+}
+const userName = u => { const f = users().find(x => x.u===u); return f ? f.name : u; };
+function barRows(rows, fmtV){
+  const mx = Math.max(...rows.map(r => r.v), 1); const top = rows.reduce((b,r) => r.v>b ? r.v : b, 0);
+  return `<div class="bars">${rows.map(r => `<div class="bar ${r.v===top&&r.v>0?"top":""}" style="grid-template-columns:118px 1fr 74px" title="${esc(r.l)}: ${fmtV(r.v)}${r.sub?" · "+r.sub:""}"><span>${esc(r.l)}</span><div class="track"><div class="fill" style="width:${r.v/mx*100}%"></div></div><span class="v">${fmtV(r.v)}</span></div>`).join("")}</div>`;
+}
+
+/* ---------- Vista: Tablero (admin) ---------- */
+function viewTablero(){
+  const now = Date.now(), d0 = new Date(); d0.setHours(0,0,0,0); const T = d0.getTime();
+  const active = orders.filter(o => o.status!=="entregado");
+  const today = orders.filter(o => o.createdAt>=T);
+  const payT = payments().filter(p => p.at>=T);
+  const cobr = sumAmt(payT), tra = sumAmt(payT.filter(p => p.method==="Transferencia")), efe = cobr - tra;
+  const porCobrar = active.reduce((t,o) => t+saldo(o), 0);
+  const listos = orders.filter(o => o.status==="listo");
+  const porCobrarListos = listos.reduce((t,o) => t+saldo(o), 0);
+  const delivT = orders.filter(o => o.deliveredAt && o.deliveredAt>=T).length;
+  const late = active.filter(o => dueLevel(o)==="late").length;
+  // Etapas en vivo
+  const SB = [["recibido","📥 Por lavar","--recv"],["lavado","🧼 Lavado","--prod"],["secado","💨 Secado","--prod"],["esterilizacion","✨ Esteriliz.","--prod"]];
+  const live = SB.map(([k,l,c]) => { const L = active.filter(o => o.status===k); const w = L.map(o => now-stageStart(o)); return {k, l, c, n:L.length, avg: w.length ? w.reduce((t,x)=>t+x,0)/w.length : 0, max: w.length ? Math.max(...w) : 0}; });
+  const worst = live.filter(x => x.n).sort((a,b) => (b.avg*b.n)-(a.avg*a.n))[0];
+  const attn = active.filter(o => ["late","today","tomorrow"].includes(dueLevel(o))).sort((a,b) => (a.dueDate||"").localeCompare(b.dueDate||"") || a.createdAt-b.createdAt).slice(0,8);
+  // Personal
+  const todayStrV = todayStr();
+  const staff = users().map(u => {
+    const pid = u.uid || u.u, pr = presence[pid];
+    const evs = loginsData.filter(e => e.u===u.u && e.day===todayStrV).sort((a,b) => a.at-b.at);
+    const on = pr && !pr.offline && now - pr.lastSeen < 3*60000;
+    const ss = staffStats(orders.filter(o => [o.createdAt,o.lavadoAt,o.secadoAt,o.esterilizacionAt,o.readyAt,o.deliveredAt].some(t => t && t>=T))).find(x => x.u===u.u);
+    const work = ss ? (ss.recibidos + ss.etapas + ss.entregas) : 0;
+    return {u, on, first: evs[0] ? evs[0].at : null, last: pr ? pr.lastSeen : null, work};
+  });
+  // Tiempos 30 días
+  const P30 = orders.filter(o => o.createdAt >= now-30*DAY);
+  const ss30 = stageStats(P30);
+  const lead = P30.filter(o => o.readyAt).map(o => o.readyAt-o.createdAt);
+  const ot = P30.map(onTime).filter(x => x!=null); const otPct = ot.length ? ot.filter(Boolean).length/ot.length*100 : null;
+  const slow = ss30.slice(0,4).filter(x => x.n).sort((a,b) => b.avg-a.avg)[0];
+  return `<div class="listhead"><h2>Tablero</h2><span class="live"><i></i> En vivo · ${fmtHour(now)}</span></div>
+  <div class="kpis">
+    <div class="kpi hero"><span>Cobrado hoy (caja)</span><b>${money(cobr)}</b><small>Efectivo ${money(efe)} · Transferencia ${money(tra)}</small>
+      ${cobr?`<div class="split" aria-hidden="true"><i style="width:${efe/cobr*100}%;background:#ffffff"></i><i style="width:${tra/cobr*100}%;background:color-mix(in srgb,#ffffff 45%,transparent)"></i></div>`:""}</div>
+    <div class="kpi"><span>Ventas de hoy</span><b>${money(today.reduce((t,o)=>t+(o.total||0),0))}</b><small>${today.length} pedido${today.length===1?"":"s"} nuevo${today.length===1?"":"s"}</small></div>
+    <div class="kpi ${porCobrar>0?"warn":""}"><span>Falta por cobrar</span><b>${money(porCobrar)}</b><small>${money(porCobrarListos)} en pedidos listos</small></div>
+    <div class="kpi"><span>En taller</span><b>${active.length - listos.length}</b><small>${late?`<span class="late">${late} atrasado${late===1?"":"s"}</span>`:"ninguno atrasado"}</small></div>
+    <div class="kpi"><span>Listos sin retirar</span><b>${listos.length}</b><small>${delivT} entregado${delivT===1?"":"s"} hoy</small></div>
+    <div class="kpi"><span>A tiempo (30 días)</span><b>${otPct==null?"—":otPct.toFixed(0)+"%"}</b><small>listos antes de la fecha</small></div>
+  </div>
+
+  <h3 class="sec">Operación en tiempo real</h3>
+  <div class="stagebar">${live.map(x => `<div style="--c:var(${x.c})" title="${x.n} pedidos · promedio ${fmtDur(x.avg)} en esta etapa"><span>${x.l}</span><b>${x.n}</b><small>${x.n?"prom. "+fmtDur(x.avg):"vacío"}</small></div>`).join("")}</div>
+  ${worst?`<div class="bneck">⏳ <b>Cuello de botella ahora:</b> ${worst.l.replace(/^\S+\s/,"")} — ${worst.n} pedido${worst.n===1?"":"s"}, el más antiguo lleva ${fmtDur(worst.max)}.</div>`:""}
+  <div class="panel pad"><b class="small">Requieren atención</b>
+    ${attn.length ? attn.map(o => `<button class="attn" data-open="${o.id}"><span><span class="num">${esc(o.num)}</span> ${esc(o.name)}<br><span class="small muted">${ST[o.status].ic} ${ST[o.status].l} · hace ${fmtDur(now-stageStart(o))} en esta etapa</span></span>${flagHTML(o)}</button>`).join("") : `<p class="small muted" style="margin:6px 0 0">Nada urgente. Ningún pedido vence hoy ni mañana.</p>`}
+  </div>
+
+  <h3 class="sec">Personal hoy</h3>
+  <div class="panel pad scroll"><table class="t"><thead><tr><th>Persona</th><th>Entrada</th><th>Última actividad</th><th class="r">Tareas hoy</th></tr></thead><tbody>
+    ${staff.map(x => `<tr><td><span class="dot ${x.on?"on":""}" title="${x.on?"En línea":"Desconectado"}"></span><b>${esc(x.u.name||x.u.u)}</b><br><span class="rolepill r-${x.u.role}">${ROLE[x.u.role]}</span></td><td>${x.first?fmtHour(x.first):'<span class="muted">—</span>'}</td><td>${x.last?(x.on?"En línea":fmtHour(x.last)+(x.last<T?" ("+fmtDate(x.last)+")":"")):'<span class="muted">—</span>'}</td><td class="r">${x.work}</td></tr>`).join("")}
+  </tbody></table><p class="small muted" style="margin:8px 0 0">El punto verde indica que está en línea ahora. "Tareas" cuenta pedidos recibidos, etapas avanzadas y entregas.</p></div>
+
+  <h3 class="sec">Tiempo por etapa · últimos 30 días</h3>
+  <div class="panel pad">${barRows(ss30.map(x => ({l:x.l, v:x.avg, sub:x.n+" pedidos"})), fmtDur)}
+    <p class="small muted" style="margin:10px 0 0">Del ingreso a listo: <b>${fmtDur(lead.length?lead.reduce((t,x)=>t+x,0)/lead.length:0)}</b> en promedio.${slow?` La etapa más lenta en el taller es <b>${slow.l}</b>.`:""}</p></div>
+  <button class="btn ghost block" data-go="analisis" style="margin-top:6px">Ver análisis completo</button>`;
+}
+
+/* ---------- Análisis extra ---------- */
+function extraAnalytics(P, start){
+  const now = Date.now();
+  const pays = payments().filter(p => p.at>=start);
+  const cobr = sumAmt(pays), tra = sumAmt(pays.filter(p => p.method==="Transferencia")), efe = cobr - tra;
+  const pendientes = orders.filter(o => o.status!=="entregado" && saldo(o)>0);
+  const porCobrar = pendientes.reduce((t,o) => t+saldo(o), 0);
+  const days = []; for(let i=13;i>=0;i--){ const d = new Date(now - i*DAY); d.setHours(0,0,0,0); const a = d.getTime(), b = a + DAY; days.push({l: i===0?"Hoy":String(d.getDate()), s: sumAmt(payments().filter(p => p.at>=a && p.at<b))}); }
+  const mx = Math.max(...days.map(d => d.s), 1);
+  const ss = stageStats(P);
+  const ot = P.map(onTime).filter(x => x!=null); const otPct = ot.length ? ot.filter(Boolean).length/ot.length*100 : null;
+  const lead = P.filter(o => o.deliveredAt).map(o => o.deliveredAt-o.createdAt);
+  const staff = staffStats(P).sort((a,b) => (b.recibidos+b.etapas+b.entregas)-(a.recibidos+a.etapas+a.entregas));
+  const week = loginsData.filter(e => e.at >= now-7*DAY);
+  const byDay = {}; week.forEach(e => { const k = e.day+"|"+e.u; const r = byDay[k] || (byDay[k] = {day:e.day, u:e.u, name:e.name, role:e.role, first:e.at, last:e.at, n:0}); r.first = Math.min(r.first, e.at); r.last = Math.max(r.last, e.at); r.n++; });
+  const att = Object.values(byDay).sort((a,b) => b.day.localeCompare(a.day) || a.first-b.first);
+  return `
+  <h3 class="sec">Caja</h3>
+  <div class="kpis">
+    <div class="kpi"><span>Cobrado en el periodo</span><b>${money(cobr)}</b><small>${pays.length} cobros</small></div>
+    <div class="kpi"><span>Efectivo</span><b>${money(efe)}</b><small>${cobr?(efe/cobr*100).toFixed(0)+"% del total":"—"}</small></div>
+    <div class="kpi"><span>Transferencia</span><b>${money(tra)}</b><small>${cobr?(tra/cobr*100).toFixed(0)+"% del total":"—"}</small></div>
+    <div class="kpi ${porCobrar>0?"warn":""}"><span>Falta por cobrar (hoy)</span><b>${money(porCobrar)}</b><small>${pendientes.length} pedido${pendientes.length===1?"":"s"} con saldo</small></div>
+  </div>
+  <div class="panel pad"><b class="small">Cobrado por día · últimos 14 días</b><div class="cols">${days.map(d => `<div class="c ${d.s===mx&&d.s>0?"top":""}" title="${d.l}: ${money(d.s)}"><span>${d.s?"$"+Math.round(d.s):""}</span><i style="height:${d.s/mx*100}%"></i><span>${d.l}</span></div>`).join("")}</div></div>
+  ${pendientes.length?`<div class="panel pad scroll"><b class="small">Saldos por cobrar</b><table class="t"><tbody>${pendientes.sort((a,b)=>saldo(b)-saldo(a)).slice(0,10).map(o => `<tr><td><button class="chip" style="border:0;padding:0;background:none" data-client="${esc(o.phoneKey)}"><span class="num">${esc(o.num)}</span> ${esc(o.name)}</button></td><td class="small muted">${ST[o.status].l}</td><td class="r"><b>${money(saldo(o))}</b></td></tr>`).join("")}</tbody></table></div>`:""}
+
+  <h3 class="sec">Tiempo de cada etapa</h3>
+  <div class="panel pad scroll"><table class="t"><thead><tr><th>Etapa</th><th class="r">Promedio</th><th class="r">Típico</th><th class="r">Máximo</th></tr></thead><tbody>
+    ${ss.map(x => `<tr><td>${x.l}<br><span class="small muted">${x.n} pedido${x.n===1?"":"s"}</span></td><td class="r" style="white-space:nowrap"><b>${fmtDur(x.avg)}</b></td><td class="r" style="white-space:nowrap">${fmtDur(x.med)}</td><td class="r" style="white-space:nowrap">${fmtDur(x.max)}</td></tr>`).join("")}
+  </tbody></table>
+  <p class="small muted" style="margin:8px 0 0">"Típico" es la mediana: la mitad de los pedidos tarda menos que eso. Del ingreso a la entrega: <b>${fmtDur(lead.length?lead.reduce((t,x)=>t+x,0)/lead.length:0)}</b> en promedio.</p></div>
+  <div class="kpis">
+    <div class="kpi"><span>Listos a tiempo</span><b>${otPct==null?"—":otPct.toFixed(0)+"%"}</b><small>${ot.length} pedidos medidos</small></div>
+    <div class="kpi"><span>Atrasados ahora</span><b>${orders.filter(o=>dueLevel(o)==="late").length}</b><small>pasaron su fecha</small></div>
+  </div>
+
+  <h3 class="sec">Productividad del personal</h3>
+  <div class="panel pad scroll">${staff.length?`<table class="t"><thead><tr><th>Persona</th><th class="r">Recibió</th><th class="r">Etapas</th><th class="r">Entregó</th></tr></thead><tbody>${staff.map(x => `<tr><td>${esc(userName(x.u))}</td><td class="r">${x.recibidos}</td><td class="r">${x.etapas}</td><td class="r">${x.entregas}</td></tr>`).join("")}</tbody></table>`:'<p class="small muted" style="margin:0">Aún no hay registros por persona en este periodo.</p>'}</div>
+
+  <h3 class="sec">Asistencia · últimos 7 días</h3>
+  <div class="panel pad scroll">${att.length?`<table class="t"><thead><tr><th>Día</th><th>Persona</th><th>Entrada</th><th>Último ingreso</th></tr></thead><tbody>${att.map(r => `<tr><td>${fmtDue(r.day)}</td><td>${esc(r.name||r.u)} <span class="rolepill r-${r.role}">${ROLE[r.role]||r.role}</span></td><td><b>${fmtHour(r.first)}</b></td><td>${r.n>1?fmtHour(r.last):"—"}</td></tr>`).join("")}</tbody></table>`:'<p class="small muted" style="margin:0">Los ingresos aparecen aquí cuando el personal inicia sesión.</p>'}</div>`;
 }
 
 /* ---------- Nube (Firebase) ---------- */
@@ -1323,7 +1640,7 @@ async function takeNumber(){
   return (settings.prefix||"") + String(n).padStart(6,"0");
 }
 function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = () => rej(new Error("No cargó " + src)); document.head.appendChild(el); }); }
-function stopCloud(){ unsub.forEach(f => { try{ f(); }catch(e){} }); unsub = []; }
+function stopCloud(){ clearInterval(hbTimer); unsub.forEach(f => { try{ f(); }catch(e){} }); unsub = []; }
 const pristineDraft = () => !draft || (!draft.name && !draft.phone && !Object.values(draft.qty).some(x=>x>0));
 async function startSession(u){
   stopCloud();
@@ -1333,6 +1650,7 @@ async function startSession(u){
   if(!ud || !ud.exists){ try{ await fbAuth.signOut(); }catch(e){} toast("Tu usuario no está activo. Habla con el administrador."); return; }
   const d = ud.data();
   me = {uid:u.uid, u:d.username, name:d.name, role:d.role};
+  recordLogin(pendingLoginType || "apertura"); pendingLoginType = null; startPresence();
   mode = "db"; db = fb; ordersCol = fb.collection("orders"); settingsDoc = fb.doc("config/settings");
   orders = []; ready = true; view = HOME[me.role]; draft = null; gateShown = null; render();
   setSync("Conectando…");
@@ -1355,6 +1673,10 @@ async function startSession(u){
     if(mine.role!==me.role || mine.name!==me.name){ me = Object.assign({}, me, {role:mine.role, name:mine.name}); render(); }
     else if(view==="ajustes") render();
   }, () => {}));
+  if(isAdmin()){
+    unsub.push(fb.collection("presence").onSnapshot(sn => { presence = {}; sn.docs.forEach(x => presence[x.id] = x.data()); if(view==="tablero") softRender(); }, () => {}));
+    unsub.push(fb.collection("logins").where("at",">=",Date.now()-8*DAY).onSnapshot(sn => { loginsData = sn.docs.map(x => x.data()); if(view==="tablero"||view==="analisis") softRender(); }, () => {}));
+  }
 }
 async function cloudSetup(u, n, p){
   if(p.length<6){ toast("La contraseña debe tener al menos 6 caracteres"); return; }
@@ -1423,6 +1745,7 @@ async function initCloud(){
 loadLocal();
 if(cloud) initCloud();
 if(ready) restoreSession();
+if(me && !cloud){ recordLogin("apertura"); startPresence(); }
 render();
 setSync("En este dispositivo");
 setTimeout(() => { if(!ready){ if(cloud) cloudError = true; ready = true; restoreSession(); gateShown = null; render(); } }, cloud ? 20000 : 6000);

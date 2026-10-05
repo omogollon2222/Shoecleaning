@@ -91,6 +91,24 @@ nav.tabs .plus svg{width:26px;height:26px}
 .empty{text-align:center;padding:40px 16px;color:var(--muted)}
 .empty strong{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:4px}
 
+/* Cajitas de estado */
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(min-width:620px){.boxes{grid-template-columns:repeat(4,1fr)}}
+.box{position:relative;border:2px solid transparent;background:var(--bg2,var(--surface));border-radius:16px;padding:14px 14px 12px;text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px;min-height:104px;border-top:6px solid var(--c)}
+.box .ic{font-size:1.25rem;line-height:1}
+.box b{font-family:"Bricolage Grotesque",sans-serif;font-size:2.1rem;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--c)}
+.box span.l{font-weight:700;font-size:.92rem;line-height:1.2}
+.box small{color:var(--muted);font-size:.74rem}
+.box[aria-pressed="true"]{border-color:var(--c);background:var(--cbg)}
+.box.zero b{color:var(--muted);opacity:.6}
+.box.urgent:not(.zero)::after{content:"Por procesar";position:absolute;top:10px;right:10px;background:var(--danger);color:#fff;font-size:.66rem;font-weight:800;border-radius:999px;padding:3px 8px;letter-spacing:.02em}
+.b-recibido{--c:var(--recv);--cbg:var(--recv-bg)} .b-proceso{--c:var(--prod);--cbg:var(--prod-bg)}
+.b-listo{--c:var(--ready);--cbg:var(--ready-bg)} .b-entregado{--c:var(--done);--cbg:var(--done-bg)}
+.listhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:4px 0 10px}
+.listhead h2{font-size:1.15rem}
+.dayline{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin:0 0 12px}
+.dayline b{color:var(--ink);font-variant-numeric:tabular-nums}
+
 /* Order ticket */
 .ticket{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;border-left:5px solid var(--c,var(--line))}
 .ticket .body{padding:14px 14px 12px}
@@ -280,7 +298,7 @@ const WD_ORDER = [1,2,3,4,5,6,0];
 let orders = [];
 let settings = JSON.parse(JSON.stringify(DEFAULTS));
 let view = "pedidos";
-let filter = "activos";
+let filter = "recibido";
 let q = "";
 let clientQ = "";
 let clientFilter = "todos";
@@ -447,24 +465,34 @@ function render(){
 function viewOrders(){
   const t0 = new Date(); t0.setHours(0,0,0,0);
   const today = orders.filter(o=>o.createdAt>=t0.getTime());
-  const active = orders.filter(o=>o.status!=="entregado");
-  const counts = {activos:active.length, recibido:0, proceso:0, listo:0, entregado:0};
-  orders.forEach(o=>{ if(PROC.includes(o.status)) counts.proceso++; else counts[o.status]++; });
-  let list = filter==="activos" ? active : filter==="proceso" ? orders.filter(o=>PROC.includes(o.status)) : orders.filter(o=>o.status===filter);
+  if(!["recibido","proceso","listo","entregado"].includes(filter)) filter = "recibido";
+  const inBox = (o,k) => k==="proceso" ? PROC.includes(o.status) : o.status===k;
+  const counts = {recibido:0, proceso:0, listo:0, entregado:0};
+  orders.forEach(o=>{ if(PROC.includes(o.status)) counts.proceso++; else if(o.status in counts) counts[o.status]++; });
+  const lateIn = k => orders.filter(o=>inBox(o,k) && isLate(o)).length;
+  let list = orders.filter(o=>inBox(o,filter));
   if(filter==="entregado") list = list.slice().sort((a,b)=>(b.deliveredAt||0)-(a.deliveredAt||0)).slice(0,60);
   else list = list.slice().sort((a,b)=> (a.dueDate||"").localeCompare(b.dueDate||"") || a.createdAt-b.createdAt);
   if(q){ const s = q.toLowerCase(); list = list.filter(o => (o.name||"").toLowerCase().includes(s) || (o.num||"").toLowerCase().includes(s) || (o.phone||"").includes(s)); }
-  const chip = (k,l) => `<button class="chip" data-filter="${k}" aria-pressed="${filter===k}">${l} <span class="n">${counts[k]}</span></button>`;
+  const BOX = {
+    recibido:{ic:"📥",l:"Recibido",sub:"Por lavar"},
+    proceso:{ic:"🧼",l:"En proceso",sub:"Lavado · secado · esteriliz."},
+    listo:{ic:"✅",l:"Pendiente de entrega",sub:"Listo, avisar al cliente"},
+    entregado:{ic:"🤝",l:"Entregado",sub:"Historial"}
+  };
+  const box = k => { const late = k!=="entregado" ? lateIn(k) : 0;
+    return `<button class="box b-${k} ${counts[k]?"":"zero"} ${k==="recibido"?"urgent":""}" data-filter="${k}" aria-pressed="${filter===k}">
+      <span class="ic" aria-hidden="true">${BOX[k].ic}</span><b>${counts[k]}</b><span class="l">${BOX[k].l}</span>
+      <small>${late?`<span class="late">${late} atrasado${late===1?"":"s"}</span>`:BOX[k].sub}</small></button>`; };
+  const heads = {recibido:"Por procesar · lo más urgente primero", proceso:"En proceso · por fecha de entrega", listo:"Pendientes de entrega", entregado:"Entregados recientes"};
   let h = `${mode==="local"?'<div class="notice">Los datos se guardan solo en este dispositivo. Descarga un respaldo desde Ajustes cada semana.</div>':""}
-  <div class="today">
-    <div><b>${money(today.reduce((s,o)=>s+(o.total||0),0))}</b><span>Ventas de hoy</span></div>
-    <div><b>${today.length}</b><span>Pedidos hoy</span></div>
-    <div><b>${counts.listo}</b><span>Listos por entregar</span></div>
-  </div>
-  <div class="chips" role="group" aria-label="Filtrar pedidos">${chip("activos","Activos")}${chip("recibido","Recibidos")}${chip("proceso","En proceso")}${chip("listo","Listos")}${chip("entregado","Entregados")}</div>
+  <div class="dayline"><span>Hoy: <b>${money(today.reduce((s,o)=>s+(o.total||0),0))}</b> en ventas</span><span><b>${today.length}</b> pedido${today.length===1?"":"s"} nuevo${today.length===1?"":"s"}</span></div>
+  <div class="boxes" role="group" aria-label="Pedidos por estado">${box("recibido")}${box("proceso")}${box("listo")}${box("entregado")}</div>
+  <div class="listhead"><h2>${heads[filter]}</h2><span class="small muted">${list.length}</span></div>
   <input class="search" id="q" type="search" placeholder="Buscar por nombre, teléfono o N°" value="${esc(q)}">`;
   if(!list.length){
-    h += orders.length ? `<div class="empty"><strong>No hay pedidos aquí</strong>Prueba otro filtro o registra un pedido nuevo.</div>`
+    const emptyMsg = {recibido:"No hay pedidos por procesar. ¡Todo al día!", proceso:"No hay pedidos en lavado, secado ni esterilización.", listo:"No hay pedidos esperando entrega.", entregado:"Aún no hay entregas."};
+    h += orders.length ? `<div class="empty"><strong>${q?"Sin resultados":"Cajita vacía"}</strong>${q?"Prueba con otro nombre o número.":emptyMsg[filter]}</div>`
       : `<div class="empty"><strong>Aún no hay pedidos</strong>Toca el botón + para registrar el primer cliente.<br><br><button class="btn" data-go="nuevo">Registrar pedido</button></div>`;
   }
   list.forEach(o => h += ticketHTML(o));
@@ -595,7 +623,7 @@ async function submitNew(){
   saving = true; const sb = $("#save"); if(sb){ sb.disabled = true; sb.textContent = "Guardando…"; }
   settings.nextNumber++;
   try{ await putOrder(o); await saveSettings(); } finally { saving = false; }
-  draft = null; view = "pedidos"; filter = "activos"; render();
+  draft = null; view = "pedidos"; filter = "recibido"; render();
   openSheet(`<h2>Pedido registrado</h2>
     <p><span class="num">N° ${esc(o.num)}</span> · ${esc(o.name)} · ${money(o.total)}</p>
     ${o.loyaltyRedeemed?`<p style="color:var(--ready);font-weight:600">Se aplicó el descuento de fidelidad. La tarjeta del cliente empieza de nuevo.</p>`:`<p class="muted small">Visita ${loyalty(o.phone,o.id).visits+1} de ${settings.loyaltyVisits} en su tarjeta de fidelidad.</p>`}

@@ -42,5 +42,24 @@ service cloud.firestore {
       allow read, create, update: if active();
       allow delete: if isAdmin();
     }
+
+    // Fotos de recepción y entrega (comprimidas, ~60 KB). Solo el administrador borra.
+    match /photos/{id} {
+      allow read: if active();
+      allow create: if active() && request.resource.data.data is string && request.resource.data.data.size() < 200000;
+      allow delete: if isAdmin();
+    }
+
+    // Quién está conectado: cada persona actualiza solo su propio estado.
+    match /presence/{uid} {
+      allow read: if active();
+      allow write: if active() && request.auth.uid == uid;
+    }
+
+    // Registro de ingresos del personal: cada uno registra el suyo; solo el administrador lo ve.
+    match /logins/{id} {
+      allow read: if isAdmin();
+      allow create: if active() && request.resource.data.uid == request.auth.uid;
+    }
   }
 }

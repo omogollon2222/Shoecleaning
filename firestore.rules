@@ -1,0 +1,46 @@
+rules_version = '2';
+// Reglas de seguridad de Shoe Cleaning.
+// Copia TODO este texto en Firebase → Firestore Database → Reglas → Publicar.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn()     { return request.auth != null; }
+    function profile()      { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data; }
+    function active()       { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)); }
+    function isAdmin()      { return active() && profile().role == 'admin'; }
+    function bootstrapped() { return exists(/databases/$(db)/documents/config/bootstrap); }
+
+    // Usuarios y roles: solo el administrador los crea, cambia o desactiva.
+    // Excepción: el primer administrador se crea una sola vez.
+    match /users/{uid} {
+      allow read: if active();
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow create: if isAdmin()
+        || (signedIn() && request.auth.uid == uid && !bootstrapped() && request.resource.data.role == 'admin');
+      allow update, delete: if isAdmin();
+    }
+
+    // Marca de que ya existe el primer administrador.
+    match /config/bootstrap {
+      allow read: if true;
+      allow create: if signedIn() && !bootstrapped()
+        && getAfter(/databases/$(db)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Precios y ajustes: los cambia el administrador.
+    // Recepción solo puede avanzar el número de recibo.
+    match /config/settings {
+      allow read: if active();
+      allow create: if isAdmin();
+      allow update: if isAdmin()
+        || (active() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nextNumber'])
+            && request.resource.data.nextNumber == resource.data.nextNumber + 1);
+      allow delete: if false;
+    }
+
+    // Pedidos: todos los usuarios activos los ven y actualizan. Solo el administrador borra.
+    match /orders/{id} {
+      allow read, create, update: if active();
+      allow delete: if isAdmin();
+    }
+  }
+}

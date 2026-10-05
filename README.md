@@ -6,8 +6,8 @@ App web para la lavandería de zapatos y accesorios **Shoe Cleaning**: pedidos, 
 
 | Rol | Qué ve |
 |---|---|
-| **Administrador** | Todo: pedidos por etapa, clientes, análisis, precios, usuarios |
-| **Recepción** | Registrar pedidos y cobrar, entregas, consultar estado por N°, celular o nombre |
+| **Administrador** | Tablero en tiempo real (caja, operación, personal, tiempos por etapa), pedidos, clientes, análisis, precios, usuarios (hasta 5 operadores) |
+| **Recepción** | Registrar pedidos y cobrar, fotos de recepción y entrega, entregas, consultar estado por N°, celular o nombre |
 | **Operaciones** | Cola de trabajo (por lavar → lavado → secado → esterilización → listo). 🚩 un día antes de la entrega |
 
 ## Archivos

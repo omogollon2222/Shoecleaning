@@ -1,34 +1,72 @@
 # Shoe Cleaning
 
-App web para la lavandería de zapatos y accesorios **Shoe Cleaning**: registro de pedidos, clientes, tarjeta de fidelidad y análisis de ventas. Funciona en el celular y se puede instalar como app.
+App web para la lavandería de zapatos y accesorios **Shoe Cleaning**: pedidos, clientes, tarjeta de fidelidad, análisis de ventas, usuarios con roles y trabajo en equipo entre **recepción** y **operaciones**.
 
-## Funciones
+## Roles
 
-- **Pedidos**: número automático, artículos y precios, abono o pago total, fecha de entrega.
-- **Estados**: Recibido → Lavado → Secado → Esterilización → Listo → Entregado.
-- **WhatsApp**: comprobante, avance del pedido, aviso de "listo" y agradecimiento con un toque.
-- **Fidelización**: 10 visitas en 6 meses = 30 % de descuento en la siguiente (configurable).
-- **Clientes**: historial, clientes con premio, frecuentes e inactivos.
-- **Análisis**: ventas, ticket promedio, mejor día y hora, producto estrella y recomendaciones.
-- **Datos**: exportar a Excel (CSV), descargar y restaurar respaldo.
-
-## Publicar en GitHub Pages
-
-1. Crea un repositorio nuevo en GitHub (por ejemplo `shoe-cleaning`).
-2. Sube todos los archivos de esta carpeta (**Add file → Upload files**).
-3. Ve a **Settings → Pages**, en *Branch* elige `main` y carpeta `/ (root)`, y guarda.
-4. En 1–2 minutos la app queda en `https://TU-USUARIO.github.io/shoe-cleaning/`.
-5. En el celular, abre el enlace y elige **Agregar a pantalla de inicio**.
-
-## Importante sobre los datos
-
-En esta versión los datos se guardan **en el navegador del dispositivo** (localStorage). No se comparten entre celulares. Descarga un respaldo desde **Ajustes** cada semana.
+| Rol | Qué ve |
+|---|---|
+| **Administrador** | Todo: pedidos por etapa, clientes, análisis, precios, usuarios |
+| **Recepción** | Registrar pedidos y cobrar, entregas, consultar estado por N°, celular o nombre |
+| **Operaciones** | Cola de trabajo (por lavar → lavado → secado → esterilización → listo). 🚩 un día antes de la entrega |
 
 ## Archivos
 
 | Archivo | Para qué sirve |
 |---|---|
-| `index.html` | La app completa (HTML, CSS y JavaScript) |
-| `manifest.json` | Permite instalarla como app |
-| `sw.js` | Permite abrirla sin internet |
-| `icon.svg` | Ícono de la app |
+| `index.html` | La app completa |
+| `firebase-config.js` | Conexión a la nube (se llena en el paso 4) |
+| `firestore.rules` | Reglas de seguridad para Firebase (paso 3) |
+| `manifest.json`, `sw.js`, `icon.svg` | Instalar como app y abrir sin internet |
+
+---
+
+## Conectar a la nube (Firebase) — 15 minutos
+
+Sin este paso la app funciona, pero cada celular guarda sus propios datos. Con Firebase, recepción y operaciones ven los mismos pedidos en tiempo real, y las contraseñas quedan protegidas por Google. El plan gratuito (Spark) alcanza de sobra para un local.
+
+### 1. Crear el proyecto
+1. Entra a **https://console.firebase.google.com** con tu cuenta de Google.
+2. **Crear un proyecto** → nombre: `shoe-cleaning` → puedes desactivar Google Analytics → **Crear proyecto**.
+
+### 2. Activar el inicio de sesión
+1. Menú izquierdo: **Compilación → Authentication → Comenzar**.
+2. Pestaña **Método de acceso** → **Correo electrónico/contraseña** → activa el primer interruptor → **Guardar**.
+3. Pestaña **Configuración → Dominios autorizados → Agregar dominio** → escribe `omogollon2222.github.io` → **Agregar**.
+
+### 3. Crear la base de datos
+1. Menú izquierdo: **Compilación → Firestore Database → Crear base de datos**.
+2. Ubicación: la más cercana (por ejemplo `southamerica-east1` o `nam5`). Modo: **producción**.
+3. Pestaña **Reglas** → borra lo que hay → pega TODO el contenido de `firestore.rules` → **Publicar**.
+
+### 4. Copiar la configuración
+1. Engranaje ⚙️ (arriba a la izquierda) → **Configuración del proyecto**.
+2. Abajo, en **Tus apps**, toca el ícono **`</>`** (Web) → apodo `shoe-cleaning` → **Registrar app** (no marques Hosting).
+3. Firebase muestra un bloque `const firebaseConfig = { apiKey: ..., ... }`. Copia lo que está entre las llaves `{ }`.
+4. Abre `firebase-config.js`, cambia `window.FIREBASE_CONFIG = null;` por:
+   ```js
+   window.FIREBASE_CONFIG = {
+     apiKey: "…",
+     authDomain: "…",
+     projectId: "…",
+     storageBucket: "…",
+     messagingSenderId: "…",
+     appId: "…"
+   };
+   ```
+   Estos datos no son secretos: la seguridad la dan las reglas del paso 3.
+
+### 5. Subir y empezar
+1. Sube todos los archivos a GitHub (**Add file → Upload files**).
+2. Abre `https://omogollon2222.github.io/Shoecleaning/` → crea el **administrador** (contraseña de 6 caracteres o más).
+3. **Ajustes → Usuarios y roles → Agregar usuario** para recepción y operaciones.
+
+### 6. Pasar los pedidos que ya tienes
+1. En la versión anterior: **Ajustes → Descargar respaldo**.
+2. En la nueva, como administrador: **Ajustes → Restaurar respaldo** y elige ese archivo.
+
+## Notas
+- **Contraseñas:** cada usuario cambia la suya tocando su nombre (arriba a la derecha). Si alguien la olvida, el administrador lo desactiva y le crea un usuario nuevo (por ejemplo `maria2`).
+- **Sin internet:** la app sigue funcionando y sincroniza al volver la conexión.
+- **Números de recibo:** se asignan en la nube, así dos estaciones nunca repiten número.
+- Para ver los datos crudos o exportar: Firebase → Firestore Database → Datos.

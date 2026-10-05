@@ -1,0 +1,12 @@
+{
+  "name": "Shoe Cleaning",
+  "short_name": "Shoe Cleaning",
+  "description": "Pedidos, clientes y fidelización",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f8fc",
+  "theme_color": "#2580bf",
+  "lang": "es",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

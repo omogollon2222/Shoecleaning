@@ -65,6 +65,9 @@ Sin este paso la app funciona, pero cada celular guarda sus propios datos. Con F
 1. En la versión anterior: **Ajustes → Descargar respaldo**.
 2. En la nueva, como administrador: **Ajustes → Restaurar respaldo** y elige ese archivo.
 
+## Avisos por WhatsApp en cada etapa
+Cada vez que un pedido pasa a **lavado, secado, esterilización o listo**, queda un aviso pendiente para el cliente. A recepción y al administrador les aparece un botón verde **"Avisos por enviar"** (en tiempo real, aunque el cambio lo haga operaciones). Al tocarlo se ve la lista: **Enviar** abre WhatsApp con el mensaje ya escrito y **Omitir** lo descarta. En **Ajustes → Avisar al cliente por WhatsApp** se elige entre avisar en cada etapa o solo cuando está listo.
+
 ## Notas
 - **Contraseñas:** cada usuario cambia la suya tocando su nombre (arriba a la derecha). Si alguien la olvida, el administrador lo desactiva y le crea un usuario nuevo (por ejemplo `maria2`).
 - **Sin internet:** la app sigue funcionando y sincroniza al volver la conexión.

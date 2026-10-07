@@ -161,6 +161,13 @@ nav.tabs .plus svg{width:26px;height:26px}
 .stwrap button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 12px;font-weight:600;font-size:.88rem}
 .stwrap button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .snack{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(94%,520px);background:var(--ink);color:var(--bg);padding:10px 10px 10px 16px;border-radius:14px;z-index:60;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.nqpill{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:35;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:10px 18px;background:var(--wa);color:#fff;font-weight:800;font-size:.92rem;box-shadow:0 10px 24px -8px rgba(0,0,0,.45)}
+body.hasnq .app{padding-bottom:150px}
+.nqpill svg{width:20px;height:20px}
+.nqpill b{background:#fff;color:var(--wa);border-radius:999px;min-width:24px;padding:1px 7px;text-align:center}
+.nqrow{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.nqrow .nqi{flex:1;min-width:0;font-size:.9rem;line-height:1.3}
+.nqrow .btn{min-height:40px;padding:8px 12px;font-size:.86rem}
 .snack p{margin:0;flex:1;font-weight:600;font-size:.92rem;line-height:1.3}
 .snack .btn{min-height:40px;padding:8px 12px;font-size:.88rem}
 .s-listo{--c:var(--ready)} .s-listo .status{background:var(--ready-bg);color:var(--ready)}
@@ -312,6 +319,8 @@ table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
   <main id="view"></main>
 </div>
 
+<button class="nqpill" id="nqPill" hidden></button>
+
 <nav class="tabs" aria-label="Secciones">
   <div class="inner" id="navInner"></div>
 </nav>
@@ -336,7 +345,7 @@ const DEFAULT_SERVICES = [
 const DEFAULTS = {
   business:"Shoe Cleaning", phone:"0980035702", hours:"Lunes a Sábado, 9am – 18h",
   cc:"593", prefix:"B", nextNumber:574,
-  loyaltyVisits:10, loyaltyMonths:6, loyaltyPct:30, inactiveDays:45, deliveryDays:3,
+  loyaltyVisits:10, loyaltyMonths:6, loyaltyPct:30, inactiveDays:45, deliveryDays:3, notifyAll:true,
   services:DEFAULT_SERVICES
 };
 const ST = {
@@ -419,7 +428,7 @@ function snack(text, href, id){
   document.querySelectorAll(".snack,.toast").forEach(x=>x.remove());
   const t = document.createElement("div"); t.className="snack"; t.setAttribute("role","status");
   t.innerHTML = `<p>${text}</p><a class="btn wa" href="${esc(href)}" target="_blank" rel="noopener">${svgWA} Avisar</a>`;
-  t.querySelector("a").onclick = () => { if(id) patchOrder(id,{notifiedAt:Date.now()}); setTimeout(()=>t.remove(),50); };
+  t.querySelector("a").onclick = () => { if(id) markNotified(id); setTimeout(()=>t.remove(),50); };
   document.body.appendChild(t); setTimeout(()=>t.remove(), 7000);
 }
 function toast(msg){
@@ -490,6 +499,52 @@ function msgThanks(o){
 function msgMiss(c){
   const l = loyalty(c.phone);
   return `Hola ${c.name} 👋 Te extrañamos en ${settings.business}.\n¿Tus zapatos necesitan una limpieza? Lavado, secado y esterilización listos en pocos días.\n\n⭐ Tienes ${l.visits}/${settings.loyaltyVisits} visitas en tu tarjeta.${l.eligible?` ¡Tu próxima visita tiene ${settings.loyaltyPct}% de descuento! 🎁`:""}\n\n${settings.hours}`;
+}
+
+/* ---------- Avisos por WhatsApp en cada etapa ---------- */
+// Cuando un pedido cambia de etapa queda un aviso pendiente. Recepción los envía
+// desde la bandeja (botón verde abajo) con un toque cada uno.
+const NOTIFY_SINCE = Date.UTC(2026,9,7); // avisos anteriores a esta versión no se reclaman
+const stageAt = o => o.status==="listo" ? (o.readyAt||o.listoAt||0) : (o[o.status+"At"]||0);
+function needsNotice(o){
+  if(!(settings.notifyAll ? [...PROC,"listo"] : ["listo"]).includes(o.status)) return false;
+  if(digits(o.phone).length < 7 || o.notifiedStatus===o.status) return false;
+  const at = stageAt(o);
+  if(at < NOTIFY_SINCE) return false;
+  return !(o.notifiedAt && o.notifiedAt >= at);
+}
+const pendingNotices = () => orders.filter(needsNotice).sort((a,b)=>stageAt(a)-stageAt(b));
+function markNotified(id){
+  const o = orders.find(x=>x.id===id); if(!o || o.status==="entregado") return;
+  patchOrder(id, {notifiedStatus:o.status, notifiedAt:Date.now()}).then(renderNotices);
+}
+let lastNoticeCount = -1;
+function renderNotices(){
+  const pill = $("#nqPill"); if(!pill) return;
+  const list = me && !isOps() ? pendingNotices() : [];
+  if(lastNoticeCount>=0 && list.length>lastNoticeCount && !$("#nq")){ toast("📲 Nuevo aviso por enviar al cliente"); try{ navigator.vibrate && navigator.vibrate(150); }catch(e){} }
+  lastNoticeCount = me ? list.length : -1;
+  pill.hidden = !list.length;
+  document.body.classList.toggle("hasnq", !!list.length);
+  pill.innerHTML = `${svgWA} Avisos por enviar <b>${list.length}</b>`;
+  pill.setAttribute("aria-label", `${list.length} avisos de WhatsApp por enviar`);
+  pill.onclick = noticesSheet;
+  const box = $("#nq"); if(box) box.innerHTML = noticesHTML(list);
+}
+function noticesHTML(list){
+  if(!list.length) return `<div class="empty" style="padding:20px"><strong>¡Todo avisado!</strong>No hay mensajes pendientes.</div>`;
+  return list.map(o => `<div class="nqrow"><span class="nqi"><span class="num">N° ${esc(o.num)}</span> ${esc(o.name)}<br><span class="small muted">${ST[o.status].ic} ${ST[o.status].l} · hace ${fmtDur(Date.now()-stageAt(o))}</span></span>
+    <button class="btn ghost" data-nqskip="${o.id}" aria-label="Omitir aviso de ${esc(o.num)}">Omitir</button>
+    <a class="btn wa" href="${esc(waLink(o.phone,msgFor(o)))}" target="_blank" rel="noopener" data-nqsend="${o.id}">${svgWA} Enviar</a></div>`).join("");
+}
+function noticesSheet(){
+  openSheet(`<h2>Avisos por enviar</h2><p class="muted small" style="margin:0 0 6px">Pedidos que cambiaron de etapa. Toca <b>Enviar</b>: se abre WhatsApp con el mensaje listo; al volver, sigue con el siguiente.</p>
+    <div id="nq">${noticesHTML(pendingNotices())}</div>
+    <div class="stack"><button class="btn ghost block" data-close>Cerrar</button></div>`);
+  $("#nq").addEventListener("click", e => {
+    const t = e.target.closest("[data-nqsend],[data-nqskip]"); if(!t) return;
+    markNotified(t.dataset.nqsend || t.dataset.nqskip);
+  });
 }
 
 /* ---------- Persistencia ---------- */
@@ -777,7 +832,7 @@ async function delUser(u){
 
 function render(){
   $("#bizName").textContent = settings.business;
-  if(!ready || !me){ renderGate(); return; }
+  if(!ready || !me){ renderNotices(); renderGate(); return; }
   gateShown = null;
   if(!allowed(view)) view = HOME[me.role];
   if(view==="nuevo" && !draft) newDraft();
@@ -791,7 +846,7 @@ function render(){
   else if(view==="entregas") v.innerHTML = viewEntregas();
   else if(view==="cola") v.innerHTML = viewCola();
   else if(view==="tablero") v.innerHTML = viewTablero();
-  bind();
+  bind(); renderNotices();
 }
 
 /* ---------- Vista: Pedidos ---------- */
@@ -1226,6 +1281,7 @@ function viewSettings(){
     <div class="field"><label for="s_dd">Días para entrega</label><input class="input" id="s_dd" inputmode="numeric" value="${settings.deliveryDays}"></div></div>
     <div class="two"><div class="field"><label for="s_px">Prefijo del N°</label><input class="input" id="s_px" value="${esc(settings.prefix)}"></div>
     <div class="field"><label for="s_cc">Código de país</label><input class="input" id="s_cc" inputmode="numeric" value="${esc(settings.cc)}"></div></div>
+    <div class="field"><label for="s_na">Avisar al cliente por WhatsApp</label><select class="input" id="s_na"><option value="1" ${settings.notifyAll?"selected":""}>En cada etapa (lavado, secado, esterilización y listo)</option><option value="0" ${settings.notifyAll?"":"selected"}>Solo cuando está listo</option></select></div>
   </div>
   <button class="btn block" id="saveSet" style="margin-bottom:12px">Guardar ajustes</button>
   ${usersPanel()}
@@ -1252,6 +1308,7 @@ async function saveSettingsForm(){
   settings.deliveryDays = Math.max(0, Math.round(n("#s_dd",3)));
   settings.prefix = $("#s_px").value.trim();
   settings.cc = digits($("#s_cc").value) || "593";
+  settings.notifyAll = $("#s_na").value==="1";
   await saveSettings(); draft = null; render(); toast("Ajustes guardados");
 }
 async function saveFile(filename, data, mime){
@@ -1304,7 +1361,7 @@ function openSheet(html){
   s.addEventListener("click", e => { if(e.target===s) closeSheet(); });
   document.body.appendChild(s);
   s.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => setTimeout(closeSheet, 50)));
-  s.querySelectorAll("[data-notify]").forEach(b => b.addEventListener("click", () => { patchOrder(b.dataset.notify,{notifiedAt:Date.now()}); setTimeout(closeSheet,50); }));
+  s.querySelectorAll("[data-notify]").forEach(b => b.addEventListener("click", () => { markNotified(b.dataset.notify); setTimeout(closeSheet,50); }));
   s.querySelectorAll("[data-client]").forEach(b => b.addEventListener("click", () => clientSheet(b.dataset.client)));
   const f = s.querySelector("button, a"); if(f) f.focus({preventScroll:true});
 }
@@ -1317,7 +1374,7 @@ function bind(){
   v.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
   v.querySelectorAll("[data-filter]").forEach(b => b.onclick = () => { filter = b.dataset.filter; render(); });
   v.querySelectorAll("[data-adv]").forEach(b => b.onclick = () => advance(b.dataset.adv));
-  v.querySelectorAll("[data-wa]").forEach(a => a.addEventListener("click", () => { const o = orders.find(x=>x.id===a.dataset.wa); if(o && o.status==="listo") patchOrder(o.id,{notifiedAt:Date.now()}); }));
+  v.querySelectorAll("[data-wa]").forEach(a => a.addEventListener("click", () => { markNotified(a.dataset.wa); }));
   v.querySelectorAll("[data-open]").forEach(b => { b.onclick = () => orderSheet(b.dataset.open); b.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); orderSheet(b.dataset.open); } }; });
   const qi = $("#q"); if(qi) qi.oninput = e => { q = e.target.value; const pos = e.target.selectionStart; render(); const n = $("#q"); n.focus(); n.setSelectionRange(pos,pos); };
   v.querySelectorAll("[data-consult]").forEach(b => b.onclick = openConsult);
@@ -1359,6 +1416,7 @@ function bind(){
 /* ---------- Inicio ---------- */
 function setSync(t){ $("#sync").textContent = t; }
 function onData(){
+  renderNotices();
   if(view==="nuevo"){ if($("#totals")) refreshNew(); return; }
   if(view==="ajustes") return; // no borrar lo que se está escribiendo
   const a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;

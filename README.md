@@ -68,6 +68,12 @@ Sin este paso la app funciona, pero cada celular guarda sus propios datos. Con F
 ## Avisos por WhatsApp en cada etapa
 Cada vez que un pedido pasa a **lavado, secado, esterilización o listo**, queda un aviso pendiente para el cliente. A recepción y al administrador les aparece un botón verde **"Avisos por enviar"** (en tiempo real, aunque el cambio lo haga operaciones). Al tocarlo se ve la lista: **Enviar** abre WhatsApp con el mensaje ya escrito y **Omitir** lo descarta. En **Ajustes → Avisar al cliente por WhatsApp** se elige entre avisar en cada etapa o solo cuando está listo.
 
+## Reportes en PDF por WhatsApp
+- **Administrador** (Tablero o Análisis): **📊 Resumen ejecutivo** de hoy, 7 días, 30 días, este mes o el mes anterior. Incluye ventas y caja comparadas con el periodo anterior, clientes, cumplimiento de entrega, tiempos por etapa, servicios, personal y hallazgos automáticos.
+- **Recepción** (Entregas) y administrador: **🧾 Cierre de caja** del día: total cobrado, efectivo, transferencias, abonos y saldos, efectivo contado con sobrante o faltante, operación del día, detalle de cobros, observaciones y espacio para firmas.
+- **Compartir PDF por WhatsApp** abre el menú de compartir del celular (elige WhatsApp y el PDF va adjunto). En computadora se descarga el PDF. **Enviar resumen en texto** manda el resumen como mensaje.
+- En **Ajustes → WhatsApp para recibir reportes** pon el número del dueño o gerente. Si lo dejas vacío, WhatsApp te deja elegir el contacto.
+
 ## Notas
 - **Contraseñas:** cada usuario cambia la suya tocando su nombre (arriba a la derecha). Si alguien la olvida, el administrador lo desactiva y le crea un usuario nuevo (por ejemplo `maria2`).
 - **Sin internet:** la app sigue funcionando y sincroniza al volver la conexión.

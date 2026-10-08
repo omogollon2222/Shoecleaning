@@ -161,6 +161,14 @@ nav.tabs .plus svg{width:26px;height:26px}
 .stwrap button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 12px;font-weight:600;font-size:.88rem}
 .stwrap button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .snack{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(94%,520px);background:var(--ink);color:var(--bg);padding:10px 10px 10px 16px;border-radius:14px;z-index:60;display:flex;align-items:center;gap:10px;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.nqpill{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:35;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:10px 18px;background:var(--wa);color:#fff;font-weight:800;font-size:.92rem;white-space:nowrap;box-shadow:0 10px 24px -8px rgba(0,0,0,.45)}
+body.hasnq .app{padding-bottom:150px}
+.nqpill[hidden]{display:none}
+.nqpill svg{width:20px;height:20px}
+.nqpill b{background:#fff;color:var(--wa);border-radius:999px;min-width:24px;padding:1px 7px;text-align:center}
+.nqrow{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.nqrow .nqi{flex:1;min-width:0;font-size:.9rem;line-height:1.3}
+.nqrow .btn{min-height:40px;padding:8px 12px;font-size:.86rem}
 .snack p{margin:0;flex:1;font-weight:600;font-size:.92rem;line-height:1.3}
 .snack .btn{min-height:40px;padding:8px 12px;font-size:.88rem}
 .s-listo{--c:var(--ready)} .s-listo .status{background:var(--ready-bg);color:var(--ready)}
@@ -312,6 +320,8 @@ table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
   <main id="view"></main>
 </div>
 
+<button class="nqpill" id="nqPill" hidden></button>
+
 <nav class="tabs" aria-label="Secciones">
   <div class="inner" id="navInner"></div>
 </nav>
@@ -336,7 +346,7 @@ const DEFAULT_SERVICES = [
 const DEFAULTS = {
   business:"Shoe Cleaning", phone:"0980035702", hours:"Lunes a Sábado, 9am – 18h",
   cc:"593", prefix:"B", nextNumber:574,
-  loyaltyVisits:10, loyaltyMonths:6, loyaltyPct:30, inactiveDays:45, deliveryDays:3,
+  loyaltyVisits:10, loyaltyMonths:6, loyaltyPct:30, inactiveDays:45, deliveryDays:3, notifyAll:true, reportPhone:"",
   services:DEFAULT_SERVICES
 };
 const ST = {
@@ -419,7 +429,7 @@ function snack(text, href, id){
   document.querySelectorAll(".snack,.toast").forEach(x=>x.remove());
   const t = document.createElement("div"); t.className="snack"; t.setAttribute("role","status");
   t.innerHTML = `<p>${text}</p><a class="btn wa" href="${esc(href)}" target="_blank" rel="noopener">${svgWA} Avisar</a>`;
-  t.querySelector("a").onclick = () => { if(id) patchOrder(id,{notifiedAt:Date.now()}); setTimeout(()=>t.remove(),50); };
+  t.querySelector("a").onclick = () => { if(id) markNotified(id); setTimeout(()=>t.remove(),50); };
   document.body.appendChild(t); setTimeout(()=>t.remove(), 7000);
 }
 function toast(msg){
@@ -490,6 +500,52 @@ function msgThanks(o){
 function msgMiss(c){
   const l = loyalty(c.phone);
   return `Hola ${c.name} 👋 Te extrañamos en ${settings.business}.\n¿Tus zapatos necesitan una limpieza? Lavado, secado y esterilización listos en pocos días.\n\n⭐ Tienes ${l.visits}/${settings.loyaltyVisits} visitas en tu tarjeta.${l.eligible?` ¡Tu próxima visita tiene ${settings.loyaltyPct}% de descuento! 🎁`:""}\n\n${settings.hours}`;
+}
+
+/* ---------- Avisos por WhatsApp en cada etapa ---------- */
+// Cuando un pedido cambia de etapa queda un aviso pendiente. Recepción los envía
+// desde la bandeja (botón verde abajo) con un toque cada uno.
+const NOTIFY_SINCE = Date.UTC(2026,9,7); // avisos anteriores a esta versión no se reclaman
+const stageAt = o => o.status==="listo" ? (o.readyAt||o.listoAt||0) : (o[o.status+"At"]||0);
+function needsNotice(o){
+  if(!(settings.notifyAll ? [...PROC,"listo"] : ["listo"]).includes(o.status)) return false;
+  if(digits(o.phone).length < 7 || o.notifiedStatus===o.status) return false;
+  const at = stageAt(o);
+  if(at < NOTIFY_SINCE) return false;
+  return !(o.notifiedAt && o.notifiedAt >= at);
+}
+const pendingNotices = () => orders.filter(needsNotice).sort((a,b)=>stageAt(a)-stageAt(b));
+function markNotified(id){
+  const o = orders.find(x=>x.id===id); if(!o || o.status==="entregado") return;
+  patchOrder(id, {notifiedStatus:o.status, notifiedAt:Date.now()}).then(renderNotices);
+}
+let lastNoticeCount = -1;
+function renderNotices(){
+  const pill = $("#nqPill"); if(!pill) return;
+  const list = me && !isOps() ? pendingNotices() : [];
+  if(lastNoticeCount>=0 && list.length>lastNoticeCount && !$("#nq")){ toast("📲 Nuevo aviso por enviar al cliente"); try{ navigator.vibrate && navigator.vibrate(150); }catch(e){} }
+  lastNoticeCount = me ? list.length : -1;
+  pill.hidden = !list.length;
+  document.body.classList.toggle("hasnq", !!list.length);
+  pill.innerHTML = `${svgWA} Avisos por enviar <b>${list.length}</b>`;
+  pill.setAttribute("aria-label", `${list.length} avisos de WhatsApp por enviar`);
+  pill.onclick = noticesSheet;
+  const box = $("#nq"); if(box) box.innerHTML = noticesHTML(list);
+}
+function noticesHTML(list){
+  if(!list.length) return `<div class="empty" style="padding:20px"><strong>¡Todo avisado!</strong>No hay mensajes pendientes.</div>`;
+  return list.map(o => `<div class="nqrow"><span class="nqi"><span class="num">N° ${esc(o.num)}</span> ${esc(o.name)}<br><span class="small muted">${ST[o.status].ic} ${ST[o.status].l} · hace ${fmtDur(Date.now()-stageAt(o))}</span></span>
+    <button class="btn ghost" data-nqskip="${o.id}" aria-label="Omitir aviso de ${esc(o.num)}">Omitir</button>
+    <a class="btn wa" href="${esc(waLink(o.phone,msgFor(o)))}" target="_blank" rel="noopener" data-nqsend="${o.id}">${svgWA} Enviar</a></div>`).join("");
+}
+function noticesSheet(){
+  openSheet(`<h2>Avisos por enviar</h2><p class="muted small" style="margin:0 0 6px">Pedidos que cambiaron de etapa. Toca <b>Enviar</b>: se abre WhatsApp con el mensaje listo; al volver, sigue con el siguiente.</p>
+    <div id="nq">${noticesHTML(pendingNotices())}</div>
+    <div class="stack"><button class="btn ghost block" data-close>Cerrar</button></div>`);
+  $("#nq").addEventListener("click", e => {
+    const t = e.target.closest("[data-nqsend],[data-nqskip]"); if(!t) return;
+    markNotified(t.dataset.nqsend || t.dataset.nqskip);
+  });
 }
 
 /* ---------- Persistencia ---------- */
@@ -667,7 +723,7 @@ function viewEntregas(){
   const inProc = orders.filter(o=>o.status==="recibido"||PROC.includes(o.status)).length;
   const porCobrar = list.reduce((t,o)=>t+saldo(o),0);
   if(q){ const s = q.toLowerCase(); list = list.filter(o => (o.name||"").toLowerCase().includes(s) || (o.num||"").toLowerCase().includes(s) || (o.phone||"").includes(s)); }
-  let h = consultBtn() + `<div class="dayline"><span><b>${list.length}</b> listo${list.length===1?"":"s"} para entregar</span><span><b>${money(porCobrar)}</b> por cobrar</span><span><b>${inProc}</b> en taller</span></div>
+  let h = consultBtn() + reportBtns(false) + `<div class="dayline"><span><b>${list.length}</b> listo${list.length===1?"":"s"} para entregar</span><span><b>${money(porCobrar)}</b> por cobrar</span><span><b>${inProc}</b> en taller</span></div>
   <div class="listhead"><h2>Entregar y cobrar</h2></div>
   <input class="search" id="q" type="search" placeholder="Buscar por nombre, teléfono o N°" value="${esc(q)}">`;
   if(!list.length) h += `<div class="empty"><strong>Nada por entregar</strong>Cuando operaciones marque un pedido como listo, aparecerá aquí.</div>`;
@@ -777,7 +833,7 @@ async function delUser(u){
 
 function render(){
   $("#bizName").textContent = settings.business;
-  if(!ready || !me){ renderGate(); return; }
+  if(!ready || !me){ renderNotices(); renderGate(); return; }
   gateShown = null;
   if(!allowed(view)) view = HOME[me.role];
   if(view==="nuevo" && !draft) newDraft();
@@ -791,7 +847,7 @@ function render(){
   else if(view==="entregas") v.innerHTML = viewEntregas();
   else if(view==="cola") v.innerHTML = viewCola();
   else if(view==="tablero") v.innerHTML = viewTablero();
-  bind();
+  bind(); renderNotices();
 }
 
 /* ---------- Vista: Pedidos ---------- */
@@ -1116,7 +1172,7 @@ function viewAnalytics(){
   const P = orders.filter(o=>o.createdAt>=start);
   const prevP = period ? orders.filter(o=>o.createdAt>=start-period*DAY && o.createdAt<start) : [];
   const per = `<div class="seg" role="group" style="margin-bottom:16px">${[[7,"7 días"],[30,"30 días"],[90,"90 días"],[0,"Todo"]].map(([v,l])=>`<button type="button" data-per="${v}" aria-pressed="${period===v}">${l}</button>`).join("")}</div>`;
-  if(!P.length) return per + `<div class="empty"><strong>Sin datos en este periodo</strong>El análisis aparece cuando registras pedidos.</div>`;
+  if(!P.length) return reportBtns(true) + per + `<div class="empty"><strong>Sin datos en este periodo</strong>El análisis aparece cuando registras pedidos.</div>`;
 
   const sales = P.reduce((s,o)=>s+(o.total||0),0);
   const prevSales = prevP.reduce((s,o)=>s+(o.total||0),0);
@@ -1173,7 +1229,7 @@ function viewAnalytics(){
   const maxH = Math.max(...hrKeys.map(h=>hr[h]),1);
   const maxWk = Math.max(...weeks.map(w=>w.s),1);
 
-  return per + `
+  return reportBtns(true) + per + `
   <div class="kpis">
     <div class="kpi"><span>Ventas</span><b>${money(sales)}</b>${delta(sales,prevSales)}</div>
     <div class="kpi"><span>Pedidos</span><b>${P.length}</b>${delta(P.length,prevP.length)}</div>
@@ -1226,6 +1282,8 @@ function viewSettings(){
     <div class="field"><label for="s_dd">Días para entrega</label><input class="input" id="s_dd" inputmode="numeric" value="${settings.deliveryDays}"></div></div>
     <div class="two"><div class="field"><label for="s_px">Prefijo del N°</label><input class="input" id="s_px" value="${esc(settings.prefix)}"></div>
     <div class="field"><label for="s_cc">Código de país</label><input class="input" id="s_cc" inputmode="numeric" value="${esc(settings.cc)}"></div></div>
+    <div class="field"><label for="s_na">Avisar al cliente por WhatsApp</label><select class="input" id="s_na"><option value="1" ${settings.notifyAll?"selected":""}>En cada etapa (lavado, secado, esterilización y listo)</option><option value="0" ${settings.notifyAll?"":"selected"}>Solo cuando está listo</option></select></div>
+    <div class="field"><label for="s_rp">WhatsApp para recibir reportes (dueño o gerente)</label><input class="input" id="s_rp" type="tel" inputmode="tel" placeholder="Ej. 099 123 4567 · vacío = elegir contacto" value="${esc(settings.reportPhone||"")}"></div>
   </div>
   <button class="btn block" id="saveSet" style="margin-bottom:12px">Guardar ajustes</button>
   ${usersPanel()}
@@ -1252,6 +1310,8 @@ async function saveSettingsForm(){
   settings.deliveryDays = Math.max(0, Math.round(n("#s_dd",3)));
   settings.prefix = $("#s_px").value.trim();
   settings.cc = digits($("#s_cc").value) || "593";
+  settings.notifyAll = $("#s_na").value==="1";
+  settings.reportPhone = $("#s_rp").value.trim();
   await saveSettings(); draft = null; render(); toast("Ajustes guardados");
 }
 async function saveFile(filename, data, mime){
@@ -1304,7 +1364,7 @@ function openSheet(html){
   s.addEventListener("click", e => { if(e.target===s) closeSheet(); });
   document.body.appendChild(s);
   s.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => setTimeout(closeSheet, 50)));
-  s.querySelectorAll("[data-notify]").forEach(b => b.addEventListener("click", () => { patchOrder(b.dataset.notify,{notifiedAt:Date.now()}); setTimeout(closeSheet,50); }));
+  s.querySelectorAll("[data-notify]").forEach(b => b.addEventListener("click", () => { markNotified(b.dataset.notify); setTimeout(closeSheet,50); }));
   s.querySelectorAll("[data-client]").forEach(b => b.addEventListener("click", () => clientSheet(b.dataset.client)));
   const f = s.querySelector("button, a"); if(f) f.focus({preventScroll:true});
 }
@@ -1317,10 +1377,11 @@ function bind(){
   v.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
   v.querySelectorAll("[data-filter]").forEach(b => b.onclick = () => { filter = b.dataset.filter; render(); });
   v.querySelectorAll("[data-adv]").forEach(b => b.onclick = () => advance(b.dataset.adv));
-  v.querySelectorAll("[data-wa]").forEach(a => a.addEventListener("click", () => { const o = orders.find(x=>x.id===a.dataset.wa); if(o && o.status==="listo") patchOrder(o.id,{notifiedAt:Date.now()}); }));
+  v.querySelectorAll("[data-wa]").forEach(a => a.addEventListener("click", () => { markNotified(a.dataset.wa); }));
   v.querySelectorAll("[data-open]").forEach(b => { b.onclick = () => orderSheet(b.dataset.open); b.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); orderSheet(b.dataset.open); } }; });
   const qi = $("#q"); if(qi) qi.oninput = e => { q = e.target.value; const pos = e.target.selectionStart; render(); const n = $("#q"); n.focus(); n.setSelectionRange(pos,pos); };
   v.querySelectorAll("[data-consult]").forEach(b => b.onclick = openConsult);
+  v.querySelectorAll("[data-report]").forEach(b => b.onclick = () => b.dataset.report==="exec" ? execSheet() : cierreSheet());
   v.querySelectorAll("[data-of]").forEach(b => b.onclick = () => { opsFilter = b.dataset.of; render(); });
   // clientes
   v.querySelectorAll("[data-cf]").forEach(b => b.onclick = () => { clientFilter = b.dataset.cf; render(); });
@@ -1359,6 +1420,7 @@ function bind(){
 /* ---------- Inicio ---------- */
 function setSync(t){ $("#sync").textContent = t; }
 function onData(){
+  renderNotices();
   if(view==="nuevo"){ if($("#totals")) refreshNew(); return; }
   if(view==="ajustes") return; // no borrar lo que se está escribiendo
   const a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;
@@ -1542,6 +1604,7 @@ function viewTablero(){
   const ot = P30.map(onTime).filter(x => x!=null); const otPct = ot.length ? ot.filter(Boolean).length/ot.length*100 : null;
   const slow = ss30.slice(0,4).filter(x => x.n).sort((a,b) => b.avg-a.avg)[0];
   return `<div class="listhead"><h2>Tablero</h2><span class="live"><i></i> En vivo · ${fmtHour(now)}</span></div>
+  ${reportBtns(true)}
   <div class="kpis">
     <div class="kpi hero"><span>Cobrado hoy (caja)</span><b>${money(cobr)}</b><small>Efectivo ${money(efe)} · Transferencia ${money(tra)}</small>
       ${cobr?`<div class="split" aria-hidden="true"><i style="width:${efe/cobr*100}%;background:#ffffff"></i><i style="width:${tra/cobr*100}%;background:color-mix(in srgb,#ffffff 45%,transparent)"></i></div>`:""}</div>
@@ -1569,6 +1632,283 @@ function viewTablero(){
     <p class="small muted" style="margin:10px 0 0">Del ingreso a listo: <b>${fmtDur(lead.length?lead.reduce((t,x)=>t+x,0)/lead.length:0)}</b> en promedio.${slow?` La etapa más lenta en el taller es <b>${slow.l}</b>.`:""}</p></div>
   <button class="btn ghost block" data-go="analisis" style="margin-top:6px">Ver análisis completo</button>`;
 }
+
+/* ---------- PDF (generador propio, funciona sin internet) ---------- */
+const HW = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+const pdfTxt = s => String(s==null?"":s).replace(/[–—]/g,"-").replace(/…/g,"...").replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/•/g,"\x95").replace(/[^\x20-\x7e\x95\xa0-\xff]/g,"").trim();
+function pdfW(s, size, bold){
+  let w = 0;
+  for(const ch of pdfTxt(s)){ let c = ch.charCodeAt(0); if(c>126) c = (ch.normalize("NFD").charCodeAt(0)||110); w += HW[c-32] || 556; }
+  return w * size / 1000 * (bold ? 1.06 : 1);
+}
+function pdfWrap(s, size, maxW, bold){
+  const out = []; let line = "";
+  for(const word of pdfTxt(s).split(/\s+/)){ const t = line ? line+" "+word : word; if(pdfW(t,size,bold) > maxW && line){ out.push(line); line = word; } else line = t; }
+  if(line) out.push(line); return out;
+}
+class MiniPDF {
+  constructor(){ this.pages = []; this.W = 595; this.H = 842; this.addPage(); }
+  addPage(){ this.cur = []; this.pages.push(this.cur); }
+  rgb(hex){ const n = parseInt(hex.replace("#",""),16); return [(n>>16)/255,((n>>8)&255)/255,(n&255)/255].map(x=>x.toFixed(3)).join(" "); }
+  text(x, y, s, o={}){
+    const size = o.size||10, t = pdfTxt(s); if(!t) return;
+    if(o.align==="right") x -= pdfW(t,size,o.bold); else if(o.align==="center") x -= pdfW(t,size,o.bold)/2;
+    const esc = t.replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)");
+    this.cur.push(`BT ${this.rgb(o.color||"#0c2f4b")} rg /${o.bold?"F2":"F1"} ${size} Tf ${x.toFixed(2)} ${(this.H-y).toFixed(2)} Td (${esc}) Tj ET`);
+  }
+  rect(x, y, w, h, fill){ this.cur.push(`${this.rgb(fill)} rg ${x.toFixed(2)} ${(this.H-y-h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f`); }
+  line(x1, y1, x2, y2, color, w){ this.cur.push(`${this.rgb(color||"#d5e3ee")} RG ${w||0.7} w ${x1.toFixed(2)} ${(this.H-y1).toFixed(2)} m ${x2.toFixed(2)} ${(this.H-y2).toFixed(2)} l S`); }
+  bytes(){
+    const objs = [];
+    const add = s => { objs.push(s); return objs.length; };
+    add("<< /Type /Catalog /Pages 2 0 R >>"); add("");
+    const f1 = add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    const f2 = add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+    const kids = this.pages.map(p => { const c = p.join("\n"); const cid = add(`<< /Length ${c.length} >>\nstream\n${c}\nendstream`);
+      return add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${this.W} ${this.H}] /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >> >> /Contents ${cid} 0 R >>`); });
+    objs[1] = `<< /Type /Pages /Kids [${kids.map(k=>k+" 0 R").join(" ")}] /Count ${kids.length} >>`;
+    let out = "%PDF-1.4\n"; const offs = [];
+    objs.forEach((o,i) => { offs.push(out.length); out += `${i+1} 0 obj\n${o}\nendobj\n`; });
+    const xref = out.length;
+    out += `xref\n0 ${objs.length+1}\n0000000000 65535 f \n` + offs.map(n => String(n).padStart(10,"0")+" 00000 n \n").join("");
+    out += `trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    const b = new Uint8Array(out.length); for(let i=0;i<out.length;i++) b[i] = out.charCodeAt(i) & 255; return b;
+  }
+}
+// Arma un informe con encabezado, secciones, tarjetas de indicadores y tablas
+function reportPDF(title, subtitle){
+  const pdf = new MiniPDF(), M = 40, CW = 595 - 2*M, BRAND = "#2580bf", MUT = "#5b7184";
+  let y = 0;
+  const header = () => {
+    pdf.rect(0, 0, 595, 70, BRAND);
+    pdf.text(M, 30, settings.business, {size:18, bold:true, color:"#ffffff"});
+    pdf.text(M, 50, title, {size:11, color:"#ffffff"});
+    pdf.text(595-M, 30, subtitle, {size:10, bold:true, color:"#ffffff", align:"right"});
+    pdf.text(595-M, 50, "Generado " + new Date().toLocaleString("es-EC",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}) + (me ? " · " + (me.name||me.u) : ""), {size:8, color:"#ffffff", align:"right"});
+    y = 92;
+  };
+  const need = h => { if(y + h > 800){ pdf.addPage(); header(); } };
+  header();
+  const R = {
+    pdf,
+    section(t){ need(40); y += 8; pdf.rect(M, y, 4, 14, BRAND); pdf.text(M+10, y+11, t, {size:12, bold:true}); y += 24; },
+    kpis(items){ // [{l, v, s}]
+      const per = 3, gap = 8, w = (CW - gap*(per-1))/per, h = 54;
+      for(let i=0;i<items.length;i+=per){
+        need(h+gap);
+        items.slice(i,i+per).forEach((k,j) => { const x = M + j*(w+gap);
+          pdf.rect(x, y, w, h, k.warn ? "#fff1e0" : "#eef5fb");
+          pdf.text(x+10, y+15, k.l, {size:8, color:MUT});
+          pdf.text(x+10, y+34, k.v, {size:15, bold:true, color: k.warn ? "#b35f00" : "#0c2f4b"});
+          if(k.s) pdf.text(x+10, y+47, k.s, {size:7.5, color:MUT}); });
+        y += h + gap;
+      }
+      y += 4;
+    },
+    table(cols, rows){ // cols: [{l, w (fracción), r}]
+      const xs = []; let acc = M; cols.forEach(c => { xs.push(acc); acc += c.w*CW; });
+      const head = () => { need(22); pdf.rect(M, y, CW, 18, "#eef5fb"); cols.forEach((c,i) => pdf.text(c.r ? xs[i]+c.w*CW-6 : xs[i]+6, y+12.5, c.l, {size:8, bold:true, color:MUT, align:c.r?"right":"left"})); y += 18; };
+      head();
+      if(!rows.length){ pdf.text(M+6, y+14, "Sin registros", {size:9, color:MUT}); y += 22; return; }
+      rows.forEach(r => {
+        if(y + 17 > 800){ pdf.addPage(); header(); head(); }
+        cols.forEach((c,i) => { let t = pdfTxt(r[i]); const max = c.w*CW-12; while(t.length>1 && pdfW(t,9,r.bold) > max) t = t.slice(0,-1); pdf.text(c.r ? xs[i]+c.w*CW-6 : xs[i]+6, y+12, t, {size:9, bold:!!r.bold, align:c.r?"right":"left"}); });
+        y += 17; pdf.line(M, y, M+CW, y);
+      });
+      y += 10;
+    },
+    para(t, o={}){ pdfWrap(t, o.size||9.5, CW - (o.indent||0), o.bold).forEach(l => { need(14); pdf.text(M + (o.indent||0), y+10, l, {size:o.size||9.5, bold:o.bold, color:o.color}); y += 13.5; }); y += 3; },
+    bullets(list){ list.forEach(t => { need(14); pdf.text(M+4, y+10, "•", {size:10, color:BRAND, bold:true}); const ls = pdfWrap(t, 9.5, CW-16); ls.forEach((l,i) => { if(i) need(14); pdf.text(M+16, y+10, l, {size:9.5}); y += 13.5; }); y += 2; }); y += 4; },
+    space(h){ y += h; },
+    signature(labels){ need(70); y += 40; const w = (CW-40)/labels.length; labels.forEach((l,i) => { const x = M + i*(w+40); pdf.line(x, y, x+w, y, "#0c2f4b", 0.8); pdf.text(x+w/2, y+13, l, {size:8.5, color:MUT, align:"center"}); }); y += 24; },
+    finish(){ const n = pdf.pages.length; pdf.pages.forEach((p,i) => { pdf.cur = p; pdf.text(595/2, 825, `${settings.business} · Página ${i+1} de ${n}`, {size:7.5, color:MUT, align:"center"}); }); return pdf.bytes(); }
+  };
+  return R;
+}
+
+/* ---------- Reportes: datos ---------- */
+const dayStart = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d).getTime(); };
+const pctTxt = (a,b) => !b ? "" : (a>=b?"+":"") + ((a-b)/b*100).toFixed(0) + "% vs periodo anterior";
+const fmtDay = ms => new Date(ms).toLocaleDateString("es-EC",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const REPORT_PERIODS = [["hoy","Hoy"],["7","7 días"],["30","30 días"],["mes","Este mes"],["mesant","Mes anterior"]];
+function periodRange(k){
+  const d0 = new Date(); d0.setHours(0,0,0,0); const T = d0.getTime(), end = T + DAY;
+  if(k==="hoy") return {a:T, b:end, l:"Hoy, " + fmtDate(T,{day:"numeric",month:"long",year:"numeric"})};
+  if(k==="7"||k==="30"){ const n = +k; return {a:end - n*DAY, b:end, l:`Últimos ${n} días (${fmtDate(end-n*DAY)} – ${fmtDate(T)})`}; }
+  const m0 = new Date(d0.getFullYear(), d0.getMonth() - (k==="mesant"?1:0), 1).getTime();
+  const m1 = new Date(d0.getFullYear(), d0.getMonth() + (k==="mesant"?0:1), 1).getTime();
+  const name = new Date(m0).toLocaleDateString("es-EC",{month:"long",year:"numeric"});
+  return {a:m0, b:k==="mesant"?m1:end, l:name.charAt(0).toUpperCase()+name.slice(1) + (k==="mes"?" (hasta hoy)":"")};
+}
+function execData(k){
+  const {a, b, l} = periodRange(k), len = b - a;
+  const inR = (t,x=a,y=b) => t && t>=x && t<y;
+  const P = orders.filter(o => inR(o.createdAt)), Q = orders.filter(o => inR(o.createdAt, a-len, a));
+  const sales = P.reduce((t,o)=>t+(o.total||0),0), prevSales = Q.reduce((t,o)=>t+(o.total||0),0);
+  const pays = payments().filter(p => inR(p.at)), cobr = sumAmt(pays), tra = sumAmt(pays.filter(p => p.method==="Transferencia"));
+  const active = orders.filter(o => o.status!=="entregado");
+  const porCobrar = active.reduce((t,o)=>t+saldo(o),0);
+  const firstSeen = {}; orders.forEach(o => { if(o.phoneKey && (!(o.phoneKey in firstSeen) || o.createdAt<firstSeen[o.phoneKey])) firstSeen[o.phoneKey] = o.createdAt; });
+  const keys = new Set(P.map(o=>o.phoneKey).filter(Boolean)), newC = [...keys].filter(x => firstSeen[x]>=a).length;
+  const deliv = orders.filter(o => inR(o.deliveredAt));
+  const ot = orders.filter(o => inR(o.readyAt)).map(onTime).filter(x => x!=null); const otPct = ot.length ? ot.filter(Boolean).length/ot.length*100 : null;
+  const readyP = orders.filter(o => inR(o.readyAt)); const lead = readyP.length ? readyP.reduce((t,o)=>t+(o.readyAt-o.createdAt),0)/readyP.length : 0;
+  const ss = stageStats(orders.filter(o => inR(o.createdAt) || inR(o.readyAt)));
+  const slow = ss.slice(0,4).filter(x => x.n).sort((x,y) => y.avg-x.avg)[0];
+  const prod = {}; P.forEach(o => (o.items||[]).forEach(i => { const p = prod[i.label] || (prod[i.label] = {qty:0, rev:0}); p.qty += i.qty; p.rev += i.qty*i.price; }));
+  const prodArr = Object.entries(prod).sort((x,y) => y[1].rev-x[1].rev);
+  const st = {}; const addS = (u,f) => { if(!u) return; (st[u] = st[u] || {u, recibidos:0, etapas:0, entregas:0})[f]++; };
+  orders.forEach(o => { if(inR(o.createdAt)) addS(o.createdBy,"recibidos"); ["lavado","secado","esterilizacion","listo"].forEach(s => { const t = s==="listo" ? o.readyAt : o[s+"At"]; if(inR(t)) addS(o[s+"By"],"etapas"); }); if(inR(o.deliveredAt)) addS(o.deliveredBy,"entregas"); });
+  const staff = Object.values(st).sort((x,y) => (y.recibidos+y.etapas+y.entregas)-(x.recibidos+x.etapas+x.entregas));
+  const late = active.filter(o => dueLevel(o)==="late").length, listos = active.filter(o => o.status==="listo");
+  const discounts = P.reduce((t,o)=>t+(o.discount||0),0);
+  const notes = [];
+  if(prevSales) notes.push(sales>=prevSales ? `Las ventas crecieron ${((sales-prevSales)/prevSales*100).toFixed(0)}% frente al periodo anterior.` : `Las ventas bajaron ${((prevSales-sales)/prevSales*100).toFixed(0)}% frente al periodo anterior: conviene activar a clientes inactivos desde Clientes.`);
+  if(porCobrar>0) notes.push(`Hay ${money(porCobrar)} por cobrar en pedidos activos${listos.length?`, de los cuales ${money(listos.reduce((t,o)=>t+saldo(o),0))} están en ${listos.length} pedido${listos.length===1?"":"s"} listo${listos.length===1?"":"s"} para retirar`:""}.`);
+  if(otPct!=null) notes.push(otPct>=90 ? `Cumplimiento de entrega de ${otPct.toFixed(0)}%: el taller cumple las fechas prometidas.` : `Cumplimiento de entrega de ${otPct.toFixed(0)}%, por debajo de la meta de 90%. Revisar la etapa más lenta${slow?` (${slow.l})`:""}.`);
+  if(late) notes.push(`${late} pedido${late===1?"":"s"} atrasado${late===1?"":"s"} a la fecha de este reporte.`);
+  if(keys.size) notes.push(`${keys.size - newC} de ${keys.size} clientes atendidos ya habían venido antes (${((keys.size-newC)/keys.size*100).toFixed(0)}% de recompra).`);
+  if(prodArr[0]) notes.push(`Servicio con más ingresos: ${prodArr[0][0]} (${money(prodArr[0][1].rev)}, ${prodArr[0][1].qty} unidades).`);
+  return {k, l, P, sales, prevSales, n:P.length, prevN:Q.length, avg: P.length ? sales/P.length : 0, cobr, tra, efe: cobr-tra, nPays:pays.length, porCobrar, clients:keys.size, newC, deliv:deliv.length, otPct, lead, ss, slow, prodArr, staff, late, listos:listos.length, taller:active.length-listos.length, discounts, notes};
+}
+function cierreData(day){
+  const a = dayStart(day), b = a + DAY, inR = t => t && t>=a && t<b;
+  const pays = payments().filter(p => inR(p.at)).sort((x,y) => x.at-y.at);
+  const cobr = sumAmt(pays), tra = sumAmt(pays.filter(p => p.method==="Transferencia"));
+  const rec = orders.filter(o => inR(o.createdAt)), del = orders.filter(o => inR(o.deliveredAt));
+  const listos = orders.filter(o => o.status==="listo"), active = orders.filter(o => o.status!=="entregado");
+  return {day, a, pays, cobr, tra, efe: cobr-tra, abonos: sumAmt(pays.filter(p=>p.kind==="abono")), saldos: sumAmt(pays.filter(p=>p.kind==="saldo")),
+    rec: rec.length, ventas: rec.reduce((t,o)=>t+(o.total||0),0), del: del.length, listos: listos.length, porCobrarListos: listos.reduce((t,o)=>t+saldo(o),0),
+    taller: active.length - listos.length, late: active.filter(o => dueLevel(o)==="late").length};
+}
+
+/* ---------- Reportes: PDF y WhatsApp ---------- */
+function execPDF(d){
+  const R = reportPDF("Resumen ejecutivo", d.l);
+  R.section("Ventas y caja");
+  R.kpis([
+    {l:"Ventas del periodo", v:money(d.sales), s:pctTxt(d.sales,d.prevSales) || `${d.n} pedidos`},
+    {l:"Pedidos", v:String(d.n), s:pctTxt(d.n,d.prevN) || "registrados"},
+    {l:"Ticket promedio", v:money(d.avg), s:"por pedido"},
+    {l:"Cobrado (caja)", v:money(d.cobr), s:`${d.nPays} cobros`},
+    {l:"Efectivo / Transferencia", v:`${money(d.efe)} / ${money(d.tra)}`, s:d.cobr?`${(d.efe/d.cobr*100).toFixed(0)}% en efectivo`:""},
+    {l:"Falta por cobrar", v:money(d.porCobrar), s:"pedidos activos", warn:d.porCobrar>0},
+  ]);
+  R.section("Clientes y operación");
+  R.kpis([
+    {l:"Clientes atendidos", v:String(d.clients), s:`${d.newC} nuevos · ${d.clients-d.newC} recurrentes`},
+    {l:"Entregados", v:String(d.deliv), s:"en el periodo"},
+    {l:"Cumplimiento de entrega", v:d.otPct==null?"-":d.otPct.toFixed(0)+"%", s:"listos antes de la fecha", warn:d.otPct!=null&&d.otPct<90},
+    {l:"Ingreso a listo", v:fmtDur(d.lead), s:"tiempo promedio"},
+    {l:"En taller / listos", v:`${d.taller} / ${d.listos}`, s:d.late?`${d.late} atrasados`:"ninguno atrasado", warn:d.late>0},
+    {l:"Descuentos fidelidad", v:money(d.discounts), s:"otorgados"},
+  ]);
+  R.section("Hallazgos");
+  R.bullets(d.notes.length ? d.notes : ["Sin datos suficientes en el periodo."]);
+  R.section("Servicios");
+  R.table([{l:"Servicio",w:.5},{l:"Unidades",w:.2,r:1},{l:"Ingresos",w:.3,r:1}], d.prodArr.map(([n,p]) => [n, p.qty, money(p.rev)]));
+  R.section("Tiempo por etapa");
+  R.table([{l:"Etapa",w:.4},{l:"Pedidos",w:.2,r:1},{l:"Promedio",w:.2,r:1},{l:"Máximo",w:.2,r:1}], d.ss.map(s => [s.l, s.n, fmtDur(s.avg), fmtDur(s.max)]));
+  R.section("Personal");
+  R.table([{l:"Persona",w:.4},{l:"Recibidos",w:.2,r:1},{l:"Etapas",w:.2,r:1},{l:"Entregas",w:.2,r:1}], d.staff.map(s => [userName(s.u), s.recibidos, s.etapas, s.entregas]));
+  return R.finish();
+}
+function execMsg(d){
+  return `📊 *Resumen ejecutivo · ${settings.business}*\n${d.l}\n\n💰 Ventas: *${money(d.sales)}* (${d.n} pedidos)${d.prevSales?` · ${pctTxt(d.sales,d.prevSales)}`:""}\n🧾 Ticket promedio: ${money(d.avg)}\n💵 Cobrado: *${money(d.cobr)}* (efectivo ${money(d.efe)} · transferencia ${money(d.tra)})\n📌 Por cobrar: ${money(d.porCobrar)}\n\n👥 Clientes: ${d.clients} (${d.newC} nuevos)\n✅ Entregados: ${d.deliv} · a tiempo: ${d.otPct==null?"—":d.otPct.toFixed(0)+"%"}\n⏱️ Ingreso a listo: ${fmtDur(d.lead)}\n🏭 En taller: ${d.taller} · listos: ${d.listos}${d.late?` · ⚠️ ${d.late} atrasados`:""}\n\n${d.notes.slice(0,4).map(n=>"• "+n).join("\n")}`;
+}
+function cierrePDF(d, x){
+  const R = reportPDF("Cierre de caja y resumen de operación", fmtDate(d.a,{day:"numeric",month:"long",year:"numeric"}));
+  R.para(fmtDay(d.a).replace(/^./, c => c.toUpperCase()) + " · Responsable: " + (me ? (me.name||me.u) : "-"), {color:"#5b7184"});
+  R.section("Caja");
+  const diff = x.contado==null ? null : r2(x.contado - d.efe);
+  R.kpis([
+    {l:"Total cobrado", v:money(d.cobr), s:`${d.pays.length} cobros`},
+    {l:"Efectivo (sistema)", v:money(d.efe), s:"debe haber en caja"},
+    {l:"Transferencias", v:money(d.tra), s:"verificar en el banco"},
+    {l:"Abonos al recibir", v:money(d.abonos), s:"pedidos nuevos"},
+    {l:"Saldos al entregar", v:money(d.saldos), s:"pedidos entregados"},
+    {l:"Efectivo contado", v:x.contado==null?"-":money(x.contado), s:diff==null?"no registrado":diff===0?"cuadra":(diff>0?"sobrante ":"faltante ")+money(Math.abs(diff)), warn:diff!=null&&diff!==0},
+  ]);
+  R.section("Operación del día");
+  R.kpis([
+    {l:"Pedidos recibidos", v:String(d.rec), s:`ventas ${money(d.ventas)}`},
+    {l:"Pedidos entregados", v:String(d.del), s:"retirados por clientes"},
+    {l:"Listos sin retirar", v:String(d.listos), s:`${money(d.porCobrarListos)} por cobrar`, warn:d.porCobrarListos>0},
+    {l:"En taller", v:String(d.taller), s:d.late?`${d.late} atrasados`:"ninguno atrasado", warn:d.late>0},
+  ]);
+  R.section("Detalle de cobros");
+  R.table([{l:"Hora",w:.11},{l:"N°",w:.13},{l:"Cliente",w:.32},{l:"Concepto",w:.16},{l:"Medio",w:.14},{l:"Monto",w:.14,r:1}],
+    d.pays.map(p => [new Date(p.at).toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit",hour12:false}), p.o.num, p.o.name, p.kind==="abono"?"Abono":"Saldo", p.method, money(p.amt)]).concat(d.pays.length ? [Object.assign(["","","","","TOTAL",money(d.cobr)],{bold:true})] : []));
+  if(x.obs){ R.section("Observaciones"); R.para(x.obs); }
+  R.signature(["Entrega: " + (me ? (me.name||me.u) : ""), "Recibe / revisa"]);
+  return R.finish();
+}
+function cierreMsg(d, x){
+  const diff = x.contado==null ? null : r2(x.contado - d.efe);
+  return `🧾 *Cierre de caja · ${settings.business}*\n${fmtDay(d.a)}\nResponsable: ${me?(me.name||me.u):""}\n\n💵 Total cobrado: *${money(d.cobr)}* (${d.pays.length} cobros)\n• Efectivo: ${money(d.efe)}\n• Transferencia: ${money(d.tra)}\n• Abonos: ${money(d.abonos)} · Saldos: ${money(d.saldos)}${x.contado!=null?`\n🔢 Efectivo contado: ${money(x.contado)} → ${diff===0?"✅ cuadra":(diff>0?"sobrante ":"⚠️ faltante ")+money(Math.abs(diff))}`:""}\n\n📥 Recibidos: ${d.rec} (ventas ${money(d.ventas)})\n🤝 Entregados: ${d.del}\n✅ Listos sin retirar: ${d.listos} (${money(d.porCobrarListos)} por cobrar)\n🏭 En taller: ${d.taller}${d.late?` · ⚠️ ${d.late} atrasados`:""}${x.obs?`\n\n📝 ${x.obs}`:""}`;
+}
+const reportWa = msg => "https://wa.me/" + (digits(settings.reportPhone) ? waNumber(settings.reportPhone) : "") + "?text=" + encodeURIComponent(msg);
+async function sharePDF(bytes, filename, text){
+  const file = new File([bytes], filename, {type:"application/pdf"});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:filename, text}); return; }
+  }catch(e){ if(e && e.name==="AbortError") return; }
+  await saveFile(filename, bytes, "application/pdf");
+  toast("PDF descargado. Adjúntalo en WhatsApp desde Descargas.");
+}
+
+/* ---------- Reportes: hojas ---------- */
+let execPeriod = "hoy";
+function execSheet(){
+  const d = execData(execPeriod);
+  openSheet(`<h2>Resumen ejecutivo</h2>
+    <div class="chips" role="group" aria-label="Periodo" style="margin:10px 0 12px">${REPORT_PERIODS.map(([k,l]) => `<button class="chip" data-rp="${k}" aria-pressed="${execPeriod===k}">${l}</button>`).join("")}</div>
+    <p class="small muted" style="margin:0 0 10px">${esc(d.l)}</p>
+    <div class="kpis"><div class="kpi"><span>Ventas</span><b>${money(d.sales)}</b><small>${d.n} pedidos${d.prevSales?" · "+pctTxt(d.sales,d.prevSales):""}</small></div>
+      <div class="kpi"><span>Cobrado</span><b>${money(d.cobr)}</b><small>Efectivo ${money(d.efe)} · Transf. ${money(d.tra)}</small></div>
+      <div class="kpi"><span>A tiempo</span><b>${d.otPct==null?"—":d.otPct.toFixed(0)+"%"}</b><small>${d.deliv} entregados</small></div></div>
+    <div class="stack">
+      <button class="btn wa block" id="rpShare">${svgWA} Compartir PDF por WhatsApp</button>
+      <a class="btn ghost block" id="rpText" href="${esc(reportWa(execMsg(d)))}" target="_blank" rel="noopener">Enviar resumen en texto</a>
+      <button class="btn ghost block" id="rpDown">Descargar PDF</button>
+      <button class="btn ghost block" data-close>Cerrar</button></div>`);
+  $("#scrim").querySelectorAll("[data-rp]").forEach(b => b.onclick = () => { execPeriod = b.dataset.rp; execSheet(); });
+  const fn = `resumen-ejecutivo-${execPeriod}-${todayStr()}.pdf`;
+  $("#rpShare").onclick = () => sharePDF(execPDF(d), fn, `Resumen ejecutivo · ${settings.business} · ${d.l}`);
+  $("#rpDown").onclick = () => saveFile(fn, execPDF(d), "application/pdf");
+}
+const cierreX = {day:null, contado:null, obs:""};
+function cierreSheet(){
+  if(!cierreX.day) cierreX.day = todayStr();
+  const d = cierreData(cierreX.day);
+  openSheet(`<h2>Cierre de caja</h2>
+    <div class="field" style="margin-top:10px"><label for="cj_d">Día</label><input class="input" type="date" id="cj_d" value="${cierreX.day}" max="${todayStr()}"></div>
+    <div class="kpis"><div class="kpi hero"><span>Total cobrado</span><b>${money(d.cobr)}</b><small>${d.pays.length} cobros</small></div>
+      <div class="kpi"><span>Efectivo</span><b>${money(d.efe)}</b><small>debe haber en caja</small></div>
+      <div class="kpi"><span>Transferencia</span><b>${money(d.tra)}</b><small>verificar en el banco</small></div></div>
+    <p class="small muted" style="margin:-4px 0 12px">Recibidos ${d.rec} · Entregados ${d.del} · Listos sin retirar ${d.listos} · En taller ${d.taller}</p>
+    <div class="field"><label for="cj_c">Efectivo contado en caja (opcional)</label><input class="input" id="cj_c" inputmode="decimal" placeholder="Ej. ${fmt2(d.efe)}" value="${cierreX.contado==null?"":fmt2(cierreX.contado)}"><small class="small" id="cj_diff"></small></div>
+    <div class="field"><label for="cj_o">Observaciones (opcional)</label><textarea class="input" id="cj_o" rows="2" placeholder="Ej. se pagó $5 de insumos con efectivo">${esc(cierreX.obs)}</textarea></div>
+    <div class="stack">
+      <button class="btn wa block" id="cjShare">${svgWA} Compartir PDF por WhatsApp</button>
+      <a class="btn ghost block" id="cjText" target="_blank" rel="noopener">Enviar resumen en texto</a>
+      <button class="btn ghost block" id="cjDown">Descargar PDF</button>
+      <button class="btn ghost block" data-close>Cerrar</button></div>`);
+  const sync = () => {
+    const raw = $("#cj_c").value.trim(); cierreX.contado = raw==="" ? null : r2(parseNum(raw)); cierreX.obs = $("#cj_o").value.trim();
+    const diff = cierreX.contado==null ? null : r2(cierreX.contado - d.efe), el = $("#cj_diff");
+    el.textContent = diff==null ? "" : diff===0 ? "✅ Cuadra con el sistema" : (diff>0 ? "Sobrante " : "⚠️ Faltante ") + money(Math.abs(diff));
+    el.style.color = diff ? "var(--danger)" : "";
+    $("#cjText").href = reportWa(cierreMsg(d, cierreX));
+  };
+  $("#cj_c").oninput = sync; $("#cj_o").oninput = sync; sync();
+  $("#cj_d").onchange = e => { if(e.target.value){ cierreX.day = e.target.value; cierreX.contado = null; cierreSheet(); } };
+  const fn = () => `cierre-caja-${cierreX.day}.pdf`;
+  $("#cjShare").onclick = () => { sync(); sharePDF(cierrePDF(d, cierreX), fn(), `Cierre de caja · ${settings.business} · ${cierreX.day}`); };
+  $("#cjDown").onclick = () => { sync(); saveFile(fn(), cierrePDF(d, cierreX), "application/pdf"); };
+}
+const reportBtns = (exec) => exec ? `<div class="two" style="margin:0 0 14px"><button class="btn ghost block" data-report="exec">📊 Resumen ejecutivo</button><button class="btn ghost block" data-report="cierre">🧾 Cierre de caja</button></div>`
+  : `<button class="btn ghost block" data-report="cierre" style="margin-bottom:14px">🧾 Cierre de caja del día</button>`;
 
 /* ---------- Análisis extra ---------- */
 function extraAnalytics(P, start){

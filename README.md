@@ -18,6 +18,7 @@ App web para la lavandería de zapatos y accesorios **Shoe Cleaning**: pedidos, 
 | `firebase-config.js` | Conexión a la nube (se llena en el paso 4) |
 | `firestore.rules` | Reglas de seguridad para Firebase (paso 3) |
 | `manifest.json`, `sw.js`, `icon.svg` | Instalar como app y abrir sin internet |
+| `desktop/` | App para instalar en Windows (ver `desktop/README.md`) |
 
 ---
 

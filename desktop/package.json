@@ -1,0 +1,59 @@
+{
+  "name": "shoe-cleaning",
+  "productName": "Shoe Cleaning",
+  "version": "1.0.0",
+  "description": "Pedidos, clientes, caja y fidelización para Shoe Cleaning",
+  "author": "Shoe Cleaning",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.4.11",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.shoecleaning.app",
+    "productName": "Shoe Cleaning",
+    "files": [
+      "main.js",
+      "offline.html",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Shoe-Cleaning-Setup-${version}.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Shoe Cleaning",
+      "installerLanguages": [
+        "es_ES"
+      ],
+      "language": "3082"
+    },
+    "publish": null
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omogollon2222/Shoecleaning.git"
+  }
+}

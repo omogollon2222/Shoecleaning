@@ -1,0 +1,28 @@
+# Compila el instalador de Windows (Shoe-Cleaning-Setup-x.y.z.exe).
+# Se descarga desde la pestaña Actions → la ejecución → Artifacts.
+name: Instalador Windows
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "desktop/**"
+      - ".github/workflows/windows.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npx electron-builder --win nsis --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Shoe-Cleaning-Windows
+          path: desktop/dist/*.exe

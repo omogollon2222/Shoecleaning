@@ -1,5 +1,5 @@
 rules_version = '2';
-// Reglas de seguridad de Shoe Cleaning.
+// Reglas de seguridad de Shoe Cleaning (versión reforzada, nov 2026).
 // Copia TODO este texto en Firebase → Firestore Database → Reglas → Publicar.
 service cloud.firestore {
   match /databases/{db}/documents {
@@ -7,16 +7,34 @@ service cloud.firestore {
     function profile()      { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data; }
     function active()       { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)); }
     function isAdmin()      { return active() && profile().role == 'admin'; }
+    function isOps()        { return active() && profile().role == 'operaciones'; }
     function bootstrapped() { return exists(/databases/$(db)/documents/config/bootstrap); }
+    function validRole(r)   { return r in ['admin', 'recepcion', 'operaciones']; }
+    function strMax(d, k, n){ return !(k in d) || (d[k] is string && d[k].size() <= n); }
+    function numOk(d, k)    { return !(k in d) || (d[k] is number && d[k] >= 0 && d[k] < 1000000); }
+
+    // Campos de dinero y del cliente: Operaciones no puede tocarlos.
+    function moneyKeys() {
+      return ['total', 'subtotal', 'discount', 'discountPct', 'abono', 'paidFull', 'method',
+              'items', 'loyaltyRedeemed', 'name', 'phone', 'phoneKey', 'num', 'createdAt', 'createdBy'];
+    }
+    function validOrder(id) {
+      let d = request.resource.data;
+      return d.id == id && d.size() <= 120
+        && d.status in ['recibido', 'lavado', 'secado', 'esterilizacion', 'listo', 'entregado', 'produccion']
+        && strMax(d, 'name', 120) && strMax(d, 'phone', 30) && strMax(d, 'notes', 2000) && strMax(d, 'num', 30)
+        && numOk(d, 'total') && numOk(d, 'subtotal') && numOk(d, 'abono') && numOk(d, 'discount');
+    }
 
     // Usuarios y roles: solo el administrador los crea, cambia o desactiva.
     // Excepción: el primer administrador se crea una sola vez.
     match /users/{uid} {
       allow read: if active();
       allow get: if signedIn() && request.auth.uid == uid;
-      allow create: if isAdmin()
+      allow create: if (isAdmin() && validRole(request.resource.data.role) && strMax(request.resource.data, 'name', 80))
         || (signedIn() && request.auth.uid == uid && !bootstrapped() && request.resource.data.role == 'admin');
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() && validRole(request.resource.data.role);
+      allow delete: if isAdmin();
     }
 
     // Marca de que ya existe el primer administrador.
@@ -37,29 +55,44 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Pedidos: todos los usuarios activos los ven y actualizan. Solo el administrador borra.
+    // Pedidos: todos los usuarios activos los ven.
+    // Crear: administrador y recepción. Operaciones solo avanza etapas (no toca dinero ni datos del cliente).
+    // Solo el administrador borra.
     match /orders/{id} {
-      allow read, create, update: if active();
+      allow read: if active();
+      allow create: if active() && !isOps() && validOrder(id);
+      allow update: if active() && validOrder(id) && request.resource.data.id == resource.data.id
+        && (isAdmin()
+            || (!isOps() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt', 'createdBy']) == false)
+            || (isOps() && !request.resource.data.diff(resource.data).affectedKeys().hasAny(moneyKeys())));
       allow delete: if isAdmin();
     }
 
     // Fotos de recepción y entrega (comprimidas, ~60 KB). Solo el administrador borra.
     match /photos/{id} {
       allow read: if active();
-      allow create: if active() && request.resource.data.data is string && request.resource.data.data.size() < 200000;
+      allow create: if active()
+        && request.resource.data.id == id
+        && request.resource.data.orderId is string && request.resource.data.orderId.size() <= 40
+        && request.resource.data.stage in ['recepcion', 'entrega']
+        && request.resource.data.data is string && request.resource.data.data.size() < 200000;
       allow delete: if isAdmin();
     }
 
     // Quién está conectado: cada persona actualiza solo su propio estado.
     match /presence/{uid} {
       allow read: if active();
-      allow write: if active() && request.auth.uid == uid;
+      allow write: if active() && request.auth.uid == uid && request.resource.data.size() <= 20;
     }
 
     // Registro de ingresos del personal: cada uno registra el suyo; solo el administrador lo ve.
     match /logins/{id} {
       allow read: if isAdmin();
-      allow create: if active() && request.resource.data.uid == request.auth.uid;
+      allow create: if active() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == profile().role && request.resource.data.size() <= 12;
     }
+
+    // Todo lo demás queda cerrado.
+    match /{document=**} { allow read, write: if false; }
   }
 }

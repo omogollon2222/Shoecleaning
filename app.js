@@ -16,7 +16,7 @@ const DEFAULT_SERVICES = [
 const DEFAULTS = {
   business:"Shoe Cleaning", phone:"0980035702", hours:"Lunes a Sábado, 9am – 18h",
   cc:"593", prefix:"B", nextNumber:574,
-  loyaltyVisits:10, loyaltyMonths:6, loyaltyPct:30, inactiveDays:45, deliveryDays:3, notifyAll:true, reportPhone:"",
+  loyaltyVisits:10, loyaltyMonths:6, loyaltyPct:30, inactiveDays:45, deliveryDays:3, notifyAll:true, reportPhone:"", photoDays:60,
   services:DEFAULT_SERVICES
 };
 const ST = {
@@ -29,7 +29,50 @@ const ST = {
 };
 const FLOW = ["recibido","lavado","secado","esterilizacion","listo","entregado"];
 const PROC = ["lavado","secado","esterilizacion"];
-const norm = o => { const c = JSON.parse(JSON.stringify(o)); c.id = String(c.id||"").replace(/[^A-Za-z0-9_-]/g,""); c.num = String(c.num||"").slice(0,30); if(c.status==="produccion") c.status="lavado"; if(!ST[c.status]) c.status="recibido"; return c; };
+// Todo pedido que llega (nube, respaldo o este dispositivo) pasa por aquí: cada campo
+// queda con su tipo correcto. Así un dato alterado no puede inyectar HTML ni romper la app.
+const ORDER_KEYS = new Set(["id","num","name","phone","phoneKey","items","subtotal","discount","discountPct","total","abono","paidFull","method","notes","status","createdAt","dueDate","loyaltyRedeemed","createdBy","photos","avisoOk","promoOk","erasedAt","readyAt","deliveredAt","deliveredBy","cobradoEntrega","methodFinal","notifiedStatus","notifiedAt",...FLOW.slice(0,5).flatMap(s => [s+"At", s+"By"])]);
+const NUM = (v, max=1e6) => { const n = Number(v); return isFinite(n) && n >= 0 ? Math.min(n, max) : 0; };
+const STR = (v, max=200) => typeof v === "string" ? v.slice(0, max) : (v == null ? "" : String(v).slice(0, max));
+const TS = v => { const n = Number(v); return isFinite(n) && n > 0 ? n : 0; };
+const DATE = v => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "";
+const norm = o => {
+  const c = (o && typeof o === "object") ? JSON.parse(JSON.stringify(o)) : {};
+  c.id = STR(c.id, 40).replace(/[^A-Za-z0-9_-]/g,"");
+  c.num = STR(c.num, 30);
+  if(c.status==="produccion") c.status="lavado"; if(!ST[c.status]) c.status="recibido";
+  for(const k of ["name","phone","phoneKey","notes","method","methodFinal","createdBy","deliveredBy","notifiedStatus"]) if(k in c) c[k] = STR(c[k], k==="notes"?2000:120);
+  for(const k of ["subtotal","discount","total","abono","cobradoEntrega"]) if(k in c){ if(c[k] == null) delete c[k]; else c[k] = NUM(c[k]); }
+  c.discountPct = NUM(c.discountPct, 100);
+  for(const k of ["createdAt","readyAt","deliveredAt","notifiedAt","erasedAt",...FLOW.map(s=>s+"At")]) if(k in c && c[k] != null) c[k] = TS(c[k]);
+  for(const s of FLOW) if((s+"By") in c) c[s+"By"] = STR(c[s+"By"], 60);
+  c.createdAt = TS(c.createdAt);
+  c.dueDate = DATE(c.dueDate);
+  c.items = Array.isArray(c.items) ? c.items.slice(0, 50).filter(i => i && typeof i === "object").map(i => ({key:STR(i.key,40), label:STR(i.label,80), qty:Math.round(NUM(i.qty, 999)), price:NUM(i.price, 10000)})) : [];
+  const ph = (c.photos && typeof c.photos === "object") ? c.photos : {};
+  c.photos = {recepcion:Math.round(NUM(ph.recepcion, 99)), entrega:Math.round(NUM(ph.entrega, 99))};
+  c.paidFull = c.paidFull === true; c.loyaltyRedeemed = c.loyaltyRedeemed === true;
+  c.promoOk = c.promoOk === true; c.avisoOk = c.avisoOk === true;
+  for(const k of Object.keys(c)) if(!ORDER_KEYS.has(k)) delete c[k]; // campos desconocidos fuera (las reglas tampoco los aceptan)
+  return c;
+};
+// Igual para los ajustes: números como números y claves de servicio solo con letras.
+const INT = (v, min, max, def) => { const n = Math.round(Number(v)); return isFinite(n) ? Math.min(max, Math.max(min, n)) : def; };
+function normSettings(s){
+  const d = JSON.parse(JSON.stringify(DEFAULTS)), x = Object.assign({}, d, (s && typeof s === "object") ? s : {});
+  const out = Object.assign(d, {
+    business: STR(x.business, 80) || d.business, phone: STR(x.phone, 30), hours: STR(x.hours, 120), cc: digits(x.cc).slice(0,4) || "593",
+    prefix: STR(x.prefix, 6).replace(/[^A-Za-z0-9-]/g,""), nextNumber: INT(x.nextNumber, 1, 1e8, d.nextNumber),
+    loyaltyVisits: INT(x.loyaltyVisits, 1, 100, d.loyaltyVisits), loyaltyMonths: INT(x.loyaltyMonths, 1, 60, d.loyaltyMonths),
+    loyaltyPct: Math.min(100, NUM(x.loyaltyPct ?? d.loyaltyPct)), inactiveDays: INT(x.inactiveDays, 1, 3650, d.inactiveDays),
+    deliveryDays: INT(x.deliveryDays, 0, 60, d.deliveryDays), notifyAll: x.notifyAll !== false, reportPhone: STR(x.reportPhone, 30),
+    photoDays: INT(x.photoDays, 7, 365, d.photoDays)
+  });
+  const sv = Array.isArray(x.services) ? x.services.slice(0, 30).map(v => ({key:STR(v && v.key, 30).replace(/[^A-Za-z0-9_]/g,""), label:STR(v && v.label, 60), price:NUM(v && v.price, 10000)})).filter(v => v.key && v.label) : [];
+  out.services = sv.length ? sv : d.services;
+  if(Array.isArray(x.users)) out.users = x.users; // solo modo local (sin nube)
+  return out;
+}
 const WD = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const WD_ORDER = [1,2,3,4,5,6,0];
 
@@ -132,9 +175,9 @@ function clients(){
   for(const o of orders){
     if(!o.phoneKey) continue;
     let c = map.get(o.phoneKey);
-    if(!c){ c = {key:o.phoneKey, phone:o.phone, name:o.name, visits:0, spent:0, first:o.createdAt, last:o.createdAt, orders:[]}; map.set(o.phoneKey,c); }
+    if(!c){ c = {key:o.phoneKey, phone:o.phone, name:o.name, visits:0, spent:0, first:o.createdAt, last:o.createdAt, orders:[], promoOk:!!o.promoOk}; map.set(o.phoneKey,c); }
     c.visits++; c.spent += o.total||0; c.orders.push(o);
-    if(o.createdAt >= c.last){ c.last = o.createdAt; c.name = o.name || c.name; c.phone = o.phone || c.phone; }
+    if(o.createdAt >= c.last){ c.last = o.createdAt; c.name = o.name || c.name; c.phone = o.phone || c.phone; c.promoOk = !!o.promoOk; }
     if(o.createdAt < c.first) c.first = o.createdAt;
   }
   return [...map.values()];
@@ -205,8 +248,8 @@ function renderNotices(){
 function noticesHTML(list){
   if(!list.length) return `<div class="empty" style="padding:20px"><strong>¡Todo avisado!</strong>No hay mensajes pendientes.</div>`;
   return list.map(o => `<div class="nqrow"><span class="nqi"><span class="num">N° ${esc(o.num)}</span> ${esc(o.name)}<br><span class="small muted">${ST[o.status].ic} ${ST[o.status].l} · hace ${fmtDur(Date.now()-stageAt(o))}</span></span>
-    <button class="btn ghost" data-nqskip="${o.id}" aria-label="Omitir aviso de ${esc(o.num)}">Omitir</button>
-    <a class="btn wa" href="${esc(waLink(o.phone,msgFor(o)))}" target="_blank" rel="noopener" data-nqsend="${o.id}">${svgWA} Enviar</a></div>`).join("");
+    <button class="btn ghost" data-nqskip="${esc(o.id)}" aria-label="Omitir aviso de ${esc(o.num)}">Omitir</button>
+    <a class="btn wa" href="${esc(waLink(o.phone,msgFor(o)))}" target="_blank" rel="noopener" data-nqsend="${esc(o.id)}">${svgWA} Enviar</a></div>`).join("");
 }
 function noticesSheet(){
   openSheet(`<h2>Avisos por enviar</h2><p class="muted small" style="margin:0 0 6px">Pedidos que cambiaron de etapa. Toca <b>Enviar</b>: se abre WhatsApp con el mensaje listo; al volver, sigue con el siguiente.</p>
@@ -222,7 +265,7 @@ function noticesSheet(){
 function saveLocal(){ try{ localStorage.setItem("sc_orders", JSON.stringify(orders)); localStorage.setItem("sc_settings", JSON.stringify(settings)); }catch(e){} }
 function loadLocal(){
   try{ const o = JSON.parse(localStorage.getItem("sc_orders")||"null"); if(Array.isArray(o)) orders = o.map(norm); }catch(e){}
-  try{ const s = JSON.parse(localStorage.getItem("sc_settings")||"null"); if(s) settings = Object.assign({}, DEFAULTS, s); }catch(e){}
+  try{ const s = JSON.parse(localStorage.getItem("sc_settings")||"null"); if(s) settings = normSettings(s); }catch(e){}
 }
 async function putOrder(o){
   const i = orders.findIndex(x=>x.id===o.id);
@@ -238,6 +281,7 @@ async function patchOrder(id, patch){
 }
 async function removeOrder(id){
   orders = orders.filter(x=>x.id!==id);
+  try{ await deletePhotos(id); }catch(e){}
   if(mode==="db"){ try{ await ordersCol.doc(id).delete(); }catch(e){ toast("No se pudo eliminar."); } }
   else saveLocal();
 }
@@ -273,7 +317,13 @@ function refreshMe(){
   if(!f){ logout(true); return; }
   me = {u:f.u, name:f.name, role:f.role};
 }
-function logout(silent){ clearInterval(hbTimer); if(cloud && fbAuth){ closeSheet(); const pid = me && (me.uid||me.u); const fin = () => fbAuth.signOut().catch(()=>{}); if(pid && fb && me){ fb.doc("presence/"+pid).set({uid:pid,u:me.u,name:me.name,role:me.role,lastSeen:Date.now(),since:sessionSince,offline:true}).then(fin,fin); } else fin(); if(!silent) toast("Sesión cerrada"); return; } me = null; setSession(null); closeSheet(); draft = null; gateShown = null; render(); if(!silent) toast("Sesión cerrada"); }
+function logout(silent){ clearInterval(hbTimer); if(cloud && fbAuth){ closeSheet(); const pid = me && (me.uid||me.u); const fin = () => fbAuth.signOut().catch(()=>{}).then(wipeLocalCache); if(pid && fb && me){ fb.doc("presence/"+pid).set({uid:pid,u:me.u,name:me.name,role:me.role,lastSeen:Date.now(),since:sessionSince,offline:true}).then(fin,fin); } else fin(); if(!silent) toast("Sesión cerrada"); return; } me = null; setSession(null); closeSheet(); draft = null; gateShown = null; render(); if(!silent) toast("Sesión cerrada"); }
+// Al cerrar sesión se borra la copia local de pedidos y clientes (tablets compartidas).
+async function wipeLocalCache(){
+  try{ if(fb){ await fb.terminate(); await fb.clearPersistence(); } }catch(e){}
+  try{ ["sc_orders","sc_settings"].forEach(k => localStorage.removeItem(k)); }catch(e){}
+  location.reload();
+}
 function renderNav(){
   const nav = document.querySelector("nav.tabs");
   if(!me){ nav.hidden = true; return; }
@@ -333,7 +383,8 @@ function renderGate(){
       <div class="field"><label for="l_u">Usuario</label><input class="input" id="l_u" required autocapitalize="none" autocomplete="username"></div>
       <div class="field"><label for="l_p">Contraseña</label><input class="input" id="l_p" type="password" required autocomplete="current-password"></div>
       <button class="btn block" type="submit" style="min-height:52px">Entrar</button>
-      <p class="small muted" style="margin:14px 0 0">¿Olvidaste tu contraseña? Pide al administrador que te asigne una nueva.</p></form></div>`;
+      <p class="small muted" style="margin:14px 0 0">¿Olvidaste tu contraseña? Pide al administrador que te asigne una nueva.</p>
+      <p class="small muted" style="margin:8px 0 0"><a href="privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a></p></form></div>`;
     $("#gateForm").onsubmit = async e => {
       e.preventDefault();
       const u = $("#l_u").value.trim().toLowerCase(), p = $("#l_p").value;
@@ -379,7 +430,7 @@ function openConsult(){
       .sort((a,b)=>b.createdAt-a.createdAt).slice(0,25);
     box.innerHTML = res.length ? res.map(o => {
       const st = ST[o.status], idx = FLOW.indexOf(o.status), sal = saldo(o);
-      return `<button class="ticket crow s-${o.status} ${dueCls(o)}" data-open="${o.id}"><div class="body">
+      return `<button class="ticket crow s-${o.status} ${dueCls(o)}" data-open="${esc(o.id)}"><div class="body">
         <div class="head"><span class="headl"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</span><span class="status">${st.ic} ${st.l}</span></div>
         <div class="name">${esc(o.name)}</div><div class="items">${esc(itemsText(o))}</div>
         <div class="meta"><span>${o.status==="entregado"?"Entregado "+fmtDate(o.deliveredAt||o.createdAt):"Entrega: "+fmtDue(o.dueDate)}</span>${isOps()?"":sal>0?`<span>Saldo <b>${money(sal)}</b></span>`:`<span class="muted">Pagado</span>`}</div>
@@ -419,7 +470,7 @@ function viewCola(){
   list.forEach(o => {
     const st = ST[o.status];
     h += `<article class="ticket s-${o.status} ${dueCls(o)}">
-      <div class="body" data-open="${o.id}" role="button" tabindex="0" aria-label="Ver pedido ${esc(o.num)}">
+      <div class="body" data-open="${esc(o.id)}" role="button" tabindex="0" aria-label="Ver pedido ${esc(o.num)}">
         <div class="head"><span class="headl"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</span><span class="status">${st.ic} ${st.l}</span></div>
         <div class="name">${esc(o.name)}</div>
         <div class="ops-items">${esc(itemsText(o))}</div>
@@ -427,7 +478,7 @@ function viewCola(){
         <div class="meta"><span>Entrega: <b class="${dueLevel(o)==="late"?"late":""}">${fmtDue(o.dueDate)}</b></span><span class="muted">Recibido ${fmtDate(o.createdAt)}</span></div>
         ${progressHTML(o)}
       </div>
-      <div class="actions"><button class="btn ${o.status==="esterilizacion"?"ok":""}" data-adv="${o.id}">${st.btn}</button></div>
+      <div class="actions"><button class="btn ${o.status==="esterilizacion"?"ok":""}" data-adv="${esc(o.id)}">${st.btn}</button></div>
     </article>`;
   });
   return h;
@@ -435,7 +486,7 @@ function viewCola(){
 function opsSheet(o){
   openSheet(`<div class="row" style="justify-content:space-between"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</div>
     <h2 style="margin-top:10px">${esc(o.name)}</h2>
-    <div class="panel pad" style="margin-top:12px"><div class="totals">${(o.items||[]).map(i=>`<div><span>${esc(i.label)}</span><b>${i.qty}</b></div>`).join("")}</div></div>
+    <div class="panel pad" style="margin-top:12px"><div class="totals">${(o.items||[]).map(i=>`<div><span>${esc(i.label)}</span><b>${esc(i.qty)}</b></div>`).join("")}</div></div>
     ${o.notes?`<p><b>Notas:</b> ${esc(o.notes)}</p>`:""}
     <p class="small">Entrega: <b>${fmtDue(o.dueDate)}</b> · Recibido ${fmtDate(o.createdAt,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</p>
     <span class="lbl" style="margin-top:12px">Etapa</span>
@@ -465,7 +516,7 @@ function userSheet(){
   openSheet(`<h2>Nuevo usuario</h2>
     <div class="field" style="margin-top:12px"><label for="u_n">Nombre</label><input class="input" id="u_n" placeholder="Ej. María"></div>
     <div class="field"><label for="u_u">Usuario</label><input class="input" id="u_u" autocapitalize="none" placeholder="Ej. maria"></div>
-    <div class="field"><label for="u_p">Contraseña</label><input class="input" id="u_p" type="text" autocomplete="off" placeholder="Mínimo ${cloud?6:4} caracteres"></div>
+    <div class="field"><label for="u_p">Contraseña</label><input class="input" id="u_p" type="text" autocomplete="off" placeholder="Mínimo ${cloud?8:4} caracteres"></div>
     <span class="lbl">Rol</span><div class="rolepick" id="u_r">${Object.keys(ROLE).map(k=>`<button type="button" data-r="${k}" aria-pressed="${k===role}"><b>${ROLE[k]}</b><small>${ROLE_DESC[k]}</small></button>`).join("")}</div>
     <div class="stack"><button class="btn block" id="u_save">Crear usuario</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
   $("#u_r").querySelectorAll("[data-r]").forEach(b => b.onclick = () => { role = b.dataset.r; $("#u_r").querySelectorAll("[data-r]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
@@ -474,7 +525,7 @@ function userSheet(){
     if(!n || !u){ toast("Completa nombre y usuario"); return; }
     if(users().some(x=>x.u===u)){ toast("Ese usuario ya existe"); return; }
     if(role==="operaciones" && users().filter(x=>x.role==="operaciones").length>=MAX_OPS){ toast(`Máximo ${MAX_OPS} operadores. Desactiva uno para crear otro.`); return; }
-    if(p.length<(cloud?6:4)){ toast(`La contraseña debe tener al menos ${cloud?6:4} caracteres`); return; }
+    if(p.length<(cloud?8:4)){ toast(`La contraseña debe tener al menos ${cloud?8:4} caracteres`); return; }
     if(cloud){ const sb = $("#u_save"); sb.disabled = true; sb.textContent = "Creando…"; if(await cloudCreateUser(u,n,role,p)){ closeSheet(); toast(`Usuario ${u} creado (${ROLE[role]})`); } else { sb.disabled = false; sb.textContent = "Crear usuario"; } return; }
     const salt = newSalt();
     settings.users = users().concat([{u, name:n, role, salt, h: await hashPw(salt,p)}]);
@@ -561,20 +612,20 @@ function ticketHTML(o){
   const late = isLate(o);
   const s = saldo(o);
   return `<article class="ticket s-${o.status} ${dueCls(o)}">
-    <div class="body" data-open="${o.id}" role="button" tabindex="0" aria-label="Ver pedido ${esc(o.num)}">
+    <div class="body" data-open="${esc(o.id)}" role="button" tabindex="0" aria-label="Ver pedido ${esc(o.num)}">
       <div class="head"><span class="headl"><span class="num">N° ${esc(o.num)}</span>${flagHTML(o)}</span><span class="status">${st.ic} ${st.l}</span></div>
-      <div class="name">${esc(o.name)}${o.loyaltyRedeemed?'<span class="loyal-tag">Fidelidad -'+(o.discountPct||0)+'%</span>':""}</div>
+      <div class="name">${esc(o.name)}${o.loyaltyRedeemed?'<span class="loyal-tag">Fidelidad -'+esc(o.discountPct||0)+'%</span>':""}</div>
       <div class="items">${esc(itemsText(o))}</div>
       <div class="meta">
         <span>${o.status==="entregado"?"Entregado "+fmtDate(o.deliveredAt||o.createdAt):'Entrega: <span class="'+(late?"late":"")+'">'+fmtDue(o.dueDate)+(late?" · atrasado":"")+"</span>"}</span>
-        <span>Total <b>${money(o.total)}</b></span>${photoCount(o)?`<span class="muted">📷 ${photoCount(o)}</span>`:""}
+        <span>Total <b>${money(o.total)}</b></span>${photoCount(o)?`<span class="muted">📷 ${esc(photoCount(o))}</span>`:""}
         ${s>0?`<span>Saldo <b>${money(s)}</b></span>`:`<span class="muted">Pagado</span>`}
       </div>
       ${progressHTML(o)}
     </div>
     ${o.status!=="entregado"?`<div class="actions">
-      <button class="btn ${o.status==="listo"?"ok":""}" data-adv="${o.id}">${st.btn}</button>
-      <a class="btn wa icon" href="${esc(waLink(o.phone, msgFor(o)))}" target="_blank" rel="noopener" data-wa="${o.id}" aria-label="WhatsApp a ${esc(o.name)}">${svgWA}</a>
+      <button class="btn ${o.status==="listo"?"ok":""}" data-adv="${esc(o.id)}">${st.btn}</button>
+      <a class="btn wa icon" href="${esc(waLink(o.phone, msgFor(o)))}" target="_blank" rel="noopener" data-wa="${esc(o.id)}" aria-label="WhatsApp a ${esc(o.name)}">${svgWA}</a>
     </div>`:""}
   </article>`;
 }
@@ -588,7 +639,7 @@ function progressHTML(o){
 /* ---------- Vista: Nuevo pedido ---------- */
 function newDraft(){
   pendingPhotos.recepcion = [];
-  draft = {name:"", phone:"", qty:{}, price:{}, due: todayStr(settings.deliveryDays), abonoMode:"total", abono:"", method:"Efectivo", notes:"", useReward:true};
+  draft = {name:"", phone:"", qty:{}, price:{}, due: todayStr(settings.deliveryDays), abonoMode:"total", abono:"", method:"Efectivo", notes:"", useReward:true, avisoOk:false, promoOk:false};
   settings.services.forEach(s => { draft.qty[s.key]=0; draft.price[s.key]=fmt2(s.price); });
 }
 function calc(){
@@ -629,6 +680,10 @@ function viewNew(){
   ${draft.abonoMode==="abono"?`<div class="field"><label for="f_abono">Monto del abono</label><input class="input" id="f_abono" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0,00" value="${esc(draft.abono)}"></div>`:""}
   ${pickerHTML("recepcion","Fotos de recepción (opcional)")}
   <div class="field"><label for="f_notes">Notas (opcional)</label><input class="input" id="f_notes" placeholder="Ej. mancha en la punta, cordones aparte" value="${esc(draft.notes)}"></div>
+  <div class="panel pad consent">
+    <label class="ck"><input type="checkbox" id="f_aviso" ${draft.avisoOk?"checked":""}> <span><b>Informé al cliente</b> que sus datos (nombre, celular y fotos) se usan solo para este servicio. <a href="privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a></span></label>
+    <label class="ck"><input type="checkbox" id="f_promo" ${draft.promoOk?"checked":""}> <span>El cliente <b>acepta recibir promociones</b> por WhatsApp (opcional)</span></label>
+  </div>
   <div class="panel pad" id="totals">${totalsHTML(c)}</div>
   <button class="btn block" id="save" style="min-height:54px;font-size:1.05rem">Registrar pedido</button>`;
 }
@@ -674,11 +729,12 @@ async function submitNew(){
   if(digits(draft.phone).length<7){ toast("Escribe un teléfono válido"); $("#f_phone").focus(); return; }
   if(!c.items.length){ toast("Agrega al menos un artículo"); return; }
   if(c.total<=0){ toast("Revisa los precios: el total es $0.00"); return; }
+  if(!draft.avisoOk){ toast("Marca que informaste al cliente sobre el uso de sus datos"); $("#f_aviso").focus(); return; }
   if(draft.abonoMode==="abono" && parseNum(draft.abono) > c.total){ toast("El abono no puede ser mayor que el total"); $("#f_abono").focus(); return; }
   const o = {id:uid(), num:"", name:draft.name.trim(), phone:draft.phone.trim(), phoneKey:phoneKey(draft.phone),
     items:c.items, subtotal:c.subtotal, discount:c.discount, discountPct:c.apply?settings.loyaltyPct:0, total:c.total,
     abono:c.abono, paidFull:c.saldo<=0, method:draft.method, notes:draft.notes.trim(),
-    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply, createdBy:me?me.u:"", photos:{recepcion:pendingPhotos.recepcion.length, entrega:0}};
+    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply, createdBy:me?me.u:"", photos:{recepcion:pendingPhotos.recepcion.length, entrega:0}, avisoOk:true, promoOk:!!draft.promoOk};
   const phs = pendingPhotos.recepcion.slice();
   saving = true; const sb = $("#save"); if(sb){ sb.disabled = true; sb.textContent = "Guardando…"; }
   try{ o.num = await takeNumber(); await putOrder(o); if(!cloud) await saveSettings(); }
@@ -715,7 +771,7 @@ async function advanceNow(id){
     await patchOrder(id,{status:"listo",readyAt:Date.now(),listoBy:me?me.u:""}); render();
     if(isOps()){ toast(`${o.num} listo. Recepción avisará al cliente.`); return; }
     openSheet(`<h2>¡Listo para entregar!</h2><p>Avisa a <b>${esc(o.name)}</b> que puede retirar su pedido <span class="num">N° ${esc(o.num)}</span>.</p>
-      <div class="stack"><a class="btn wa block" href="${esc(waLink(o.phone,msgReady(o)))}" target="_blank" rel="noopener" data-notify="${o.id}">${svgWA} Avisar por WhatsApp</a>
+      <div class="stack"><a class="btn wa block" href="${esc(waLink(o.phone,msgReady(o)))}" target="_blank" rel="noopener" data-notify="${esc(o.id)}">${svgWA} Avisar por WhatsApp</a>
       <button class="btn ghost block" data-close>Más tarde</button></div>`);
   }
   else if(o.status==="listo" && !isOps()) deliverSheet(o);
@@ -750,7 +806,7 @@ function orderSheet(id){
   const o = orders.find(x=>x.id===id); if(!o) return;
   if(isOps()){ opsSheet(o); return; }
   const l = loyalty(o.phone);
-  const lines = (o.items||[]).map(i=>`<div><span>${i.qty} × ${esc(i.label)}</span><span>${money(i.qty*i.price)}</span></div>`).join("");
+  const lines = (o.items||[]).map(i=>`<div><span>${esc(i.qty)} × ${esc(i.label)}</span><span>${money(i.qty*i.price)}</span></div>`).join("");
   openSheet(`<div class="row" style="justify-content:space-between"><span class="num">N° ${esc(o.num)}</span><span class="small muted">${fmtDate(o.createdAt,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</span></div>
     <h2 style="margin-top:10px">${esc(o.name)}</h2><p class="muted" style="margin:0">${esc(o.phone)}</p>
     <div class="panel pad" style="margin-top:14px"><div class="totals">${lines}
@@ -762,27 +818,28 @@ function orderSheet(id){
     <div class="small"><b>Fidelidad:</b> ${l.visits}/${settings.loyaltyVisits} visitas</div>${punchHTML(l.visits)}
     <span class="lbl" style="margin-top:16px">Fotos</span>
     <div id="phbox" class="small muted">${photoCount(o)?"Cargando fotos…":"Sin fotos."}</div>
-    <label class="btn ghost" style="cursor:pointer;margin-top:8px;min-height:40px">📷 Agregar foto de ${o.status==="entregado"?"entrega":"recepción"}<input type="file" accept="image/*" hidden id="phAdd"></label>
+    ${((o.photos||{})[o.status==="entregado"?"entrega":"recepcion"]||0) < PHOTO_MAX ? `<label class="btn ghost" style="cursor:pointer;margin-top:8px;min-height:40px">📷 Agregar foto de ${o.status==="entregado"?"entrega":"recepción"}<input type="file" accept="image/*" hidden id="phAdd"></label>` : `<p class="small muted">Máximo ${PHOTO_MAX} fotos por etapa.</p>`}
     <span class="lbl" style="margin-top:16px">Estado</span>
-    <div class="stwrap" role="group" id="stSeg">${FLOW.map(k=>`<button type="button" data-st="${k}" aria-pressed="${o.status===k}">${ST[k].ic} ${ST[k].l.replace(" para entregar","")}</button>`).join("")}</div>
+    ${o.status==="entregado" && !isAdmin() ? `<p class="small muted" style="margin:0">Entregado. Solo el administrador puede deshacer una entrega.</p>` : `<div class="stwrap" role="group" id="stSeg">${FLOW.map(k=>`<button type="button" data-st="${k}" aria-pressed="${o.status===k}">${ST[k].ic} ${ST[k].l.replace(" para entregar","")}</button>`).join("")}</div>`}
     <div class="stack">
       <a class="btn wa block" href="${esc(waLink(o.phone,msgFor(o)))}" target="_blank" rel="noopener">${svgWA} ${o.status==="listo"?"Avisar que está listo":PROC.includes(o.status)?"Enviar estado al cliente":"Enviar comprobante"}</a>
       ${isAdmin()?`<button class="btn danger block" id="del">Eliminar pedido</button>`:""}
       <button class="btn ghost block" data-close>Cerrar</button>
     </div>`);
   showPhotos(o);
-  $("#phAdd").onchange = async e => {
+  if($("#phAdd")) $("#phAdd").onchange = async e => {
     const f = e.target.files && e.target.files[0]; if(!f) return;
     const stage = o.status==="entregado" ? "entrega" : "recepcion";
+    if(((o.photos||{})[stage]||0) >= PHOTO_MAX){ toast(`Máximo ${PHOTO_MAX} fotos por etapa`); e.target.value = ""; return; }
     try{
       const data = await compressImage(f);
       await savePhoto({orderId:o.id, num:o.num, stage, data, at:Date.now(), by:me?me.u:""});
       const ph = Object.assign({recepcion:0, entrega:0}, o.photos||{}); ph[stage]++;
-      await patchOrder(o.id, {photos:ph}); o.photos = ph; showPhotos(o); toast("Foto guardada");
-    }catch(err){ toast("No se pudo guardar la foto"); }
+      await patchOrder(o.id, {photos:ph}); o.photos = ph; toast("Foto guardada"); orderSheet(o.id);
+    }catch(err){ toast(err && err.message==="tipo" ? "Ese archivo no es una foto" : err && err.message==="grande" ? "La foto es demasiado grande" : "No se pudo guardar la foto"); }
     e.target.value = "";
   };
-  $("#stSeg").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => {
+  if($("#stSeg")) $("#stSeg").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => {
     if(busy.has(o.id)) return; busy.add(o.id); setTimeout(()=>busy.delete(o.id), 350);
     const k = b.dataset.st; const patch = {status:k};
     if(PROC.includes(k)){ patch[k+"At"] = Date.now(); patch[k+"By"] = me?me.u:""; }
@@ -818,7 +875,7 @@ function viewClients(){
   list.forEach(c => {
     h += `<div class="client"><div class="row"><div data-client="${esc(c.key)}" role="button" tabindex="0" style="flex:1"><b>${esc(c.name)}</b>${c.l.eligible?'<span class="loyal-tag">Premio listo</span>':""}
       <div class="small muted">${esc(c.phone)} · ${c.visits} visita${c.visits===1?"":"s"} · ${money(c.spent)} · última hace ${c.days} día${c.days===1?"":"s"}</div>${punchHTML(c.l.visits)}</div>
-      <a class="btn wa" style="padding:0;width:46px" href="${esc(waLink(c.phone,msgMiss(c)))}" target="_blank" rel="noopener" aria-label="WhatsApp a ${esc(c.name)}">${svgWA}</a></div></div>`;
+      ${c.promoOk?`<a class="btn wa" style="padding:0;width:46px" href="${esc(waLink(c.phone,msgMiss(c)))}" target="_blank" rel="noopener" aria-label="WhatsApp a ${esc(c.name)}">${svgWA}</a>`:`<span class="small muted" style="max-width:84px;text-align:right">Sin permiso de promociones</span>`}</div></div>`;
   });
   return h;
 }
@@ -830,10 +887,23 @@ function clientSheet(key){
     <div class="kpis" style="margin-top:14px"><div class="kpi"><span>Visitas</span><b>${c.visits}</b></div><div class="kpi"><span>Gastado</span><b>${money(c.spent)}</b></div><div class="kpi"><span>Ticket prom.</span><b>${money(c.spent/c.visits)}</b></div></div>
     <div class="panel pad"><b>Tarjeta de fidelidad</b><div class="small muted">${l.visits}/${settings.loyaltyVisits} visitas en ${settings.loyaltyMonths} meses${l.eligible?" — ¡próxima visita con "+settings.loyaltyPct+"% de descuento!":""}</div>${punchHTML(l.visits)}</div>
     <div class="stack" style="margin-top:0"><button class="btn block" id="cNew">Nuevo pedido para ${esc(c.name.split(" ")[0])}</button>
-    <a class="btn wa block" href="${esc(waLink(c.phone,msgMiss(c)))}" target="_blank" rel="noopener">${svgWA} Escribir por WhatsApp</a></div>
+    ${c.promoOk?`<a class="btn wa block" href="${esc(waLink(c.phone,msgMiss(c)))}" target="_blank" rel="noopener">${svgWA} Escribir por WhatsApp</a>`:`<p class="small muted" style="margin:0">Este cliente no aceptó promociones. Solo se le escribe por sus pedidos.</p>`}</div>
     <h3 class="sec">Historial</h3>${hist}
-    <div class="stack"><button class="btn ghost block" data-close>Cerrar</button></div>`);
+    <div class="stack">${isAdmin()?`<button class="btn danger block" id="cErase">Borrar datos personales del cliente</button>`:""}<button class="btn ghost block" data-close>Cerrar</button></div>`);
   $("#cNew").onclick = () => { closeSheet(); newDraft(); draft.phone=c.phone; draft.name=c.name; view="nuevo"; render(); };
+  if($("#cErase")) $("#cErase").onclick = () => eraseClient(c);
+}
+
+// Derecho de eliminación (LOPDP): se borran nombre, celular, notas y fotos del cliente.
+// Los montos quedan (sin datos personales) para la contabilidad del negocio.
+async function eraseClient(c){
+  if(!isAdmin()) return;
+  if(!confirm(`¿Borrar los datos personales de ${c.name}? Se quitan nombre, celular, notas y fotos de sus ${c.orders.length} pedidos. Los montos se conservan sin datos personales. No se puede deshacer.`)) return;
+  let n = 0;
+  for(const o of c.orders){
+    try{ await deletePhotos(o.id); await patchOrder(o.id, {name:"Cliente eliminado", phone:"", phoneKey:"", notes:"", promoOk:false, photos:{recepcion:0, entrega:0}, erasedAt:Date.now()}); n++; }catch(e){}
+  }
+  closeSheet(); render(); toast(`Datos borrados de ${n} pedido${n===1?"":"s"}`);
 }
 
 /* ---------- Vista: Análisis ---------- */
@@ -889,7 +959,7 @@ function viewAnalytics(){
   const ins = [];
   ins.push(`Tu mejor día es <b>${WD[bestDay]}</b> (${money(wd[bestDay].s)}). ${worstDay!==bestDay && wd[worstDay].n>=0?`El ${WD[worstDay].toLowerCase()} es el más flojo: prueba una promo solo para ese día.`:""}`);
   if(hr[bestHour]) ins.push(`La hora con más clientes es <b>${hFmt(bestHour)}–${hFmt(bestHour+1)}</b>. Ten personal y espacio listos a esa hora.`);
-  if(star) ins.push(`Tu producto estrella es <b>${esc(star[0])}</b> (${star[1].qty} unidades). Úsalo en tus publicaciones de antes/después.`);
+  if(star) ins.push(`Tu producto estrella es <b>${esc(star[0])}</b> (${esc(star[1].qty)} unidades). Úsalo en tus publicaciones de antes/después.`);
   if(avg && prodArr.length) ins.push(`Ticket promedio de ${money(avg)}. Ofrece un combo (ej. zapatos + gorra o mochila) para subirlo.`);
   if(inactive.length) ins.push(`<b>${inactive.length}</b> cliente${inactive.length===1?"":"s"} no vuelve${inactive.length===1?"":"n"} hace ${settings.inactiveDays}+ días. Escríbeles desde Clientes → Inactivos.`);
   if(close.length) ins.push(`<b>${close.length}</b> cliente${close.length===1?" está":"s están"} a 1–2 visitas del premio. Recuérdaselo por WhatsApp.`);
@@ -909,7 +979,7 @@ function viewAnalytics(){
     <div class="kpi"><span>Tasa de retorno</span><b>${retRate.toFixed(0)}%</b><small>clientes que repiten</small></div>
     <div class="kpi"><span>Saldo por cobrar</span><b>${money(pending)}</b>${avgHours?`<small>listo en ${avgHours<48?avgHours.toFixed(0)+" h":(avgHours/24).toFixed(1)+" días"} en promedio</small>`:""}</div>
   </div>
-  ${star?`<div class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg><div><span>Producto estrella</span><h3>${esc(star[0])}</h3><span>${star[1].qty} unidades · ${money(star[1].rev)}</span></div></div>`:""}
+  ${star?`<div class="star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg><div><span>Producto estrella</span><h3>${esc(star[0])}</h3><span>${esc(star[1].qty)} unidades · ${money(star[1].rev)}</span></div></div>`:""}
   <div class="insights"><h3>Qué hacer para vender más</h3><ul>${ins.map(i=>"<li>"+i+"</li>").join("")}</ul></div>
   ${extraAnalytics(P, start)}
 
@@ -923,7 +993,7 @@ function viewAnalytics(){
   <div class="panel pad"><div class="cols">${hrKeys.map(h=>`<div class="c ${h===bestHour&&hr[h]>0?"top":""}" title="${hr[h]} pedidos"><span>${hr[h]||""}</span><i style="height:${hr[h]/maxH*100}%"></i><span>${h%12||12}</span></div>`).join("")}</div><p class="small muted" style="margin:8px 0 0">Pedidos recibidos por hora del día.</p></div>
 
   <h3 class="sec">Productos</h3>
-  <div class="panel pad"><div class="bars">${prodArr.map(([k,v],i)=>`<div class="bar ${i===0?"top":""}" style="grid-template-columns:120px 1fr 64px"><span>${esc(k)} <span class="muted">(${v.qty})</span></span><div class="track"><div class="fill" style="width:${v.rev/maxP*100}%"></div></div><span class="v">${money(v.rev)}</span></div>`).join("")}</div></div>
+  <div class="panel pad"><div class="bars">${prodArr.map(([k,v],i)=>`<div class="bar ${i===0?"top":""}" style="grid-template-columns:120px 1fr 64px"><span>${esc(k)} <span class="muted">(${esc(v.qty)})</span></span><div class="track"><div class="fill" style="width:${v.rev/maxP*100}%"></div></div><span class="v">${money(v.rev)}</span></div>`).join("")}</div></div>
 
   <h3 class="sec">Clientes frecuentes</h3>
   <div class="panel pad scroll"><table class="t"><thead><tr><th>Cliente</th><th class="r">Visitas</th><th class="r">Gastado</th></tr></thead><tbody>
@@ -1008,7 +1078,7 @@ function restoreJSON(file){
       const ids = new Set(orders.map(o=>o.id)); let added = 0;
       for(const raw of data.orders){ if(!raw || !raw.id || ids.has(raw.id)) continue; await putOrder(norm(raw)); added++; }
       if(data.settings && confirm("¿Usar también los precios y ajustes del respaldo?")){
-        const keepUsers = settings.users; settings = Object.assign({}, JSON.parse(JSON.stringify(DEFAULTS)), data.settings); if(keepUsers && keepUsers.length) settings.users = keepUsers;
+        const keepUsers = settings.users; const rs = Object.assign({}, data.settings); delete rs.users; settings = normSettings(rs); if(keepUsers && keepUsers.length) settings.users = keepUsers;
         const maxN = Math.max(0, ...orders.map(o=>parseInt(String(o.num||"").replace(/\D/g,""))||0));
         settings.nextNumber = Math.max(settings.nextNumber, maxN+1);
         await saveSettings();
@@ -1067,6 +1137,8 @@ function bind(){
     $("#f_due").onchange = e => draft.due = e.target.value;
     $("#f_method").onchange = e => draft.method = e.target.value;
     $("#f_notes").oninput = e => draft.notes = e.target.value;
+    $("#f_aviso").onchange = e => draft.avisoOk = e.target.checked;
+    $("#f_promo").onchange = e => draft.promoOk = e.target.checked;
     const ab = $("#f_abono"); if(ab){ ab.oninput = e => { draft.abono = e.target.value; refreshNew(); }; ab.onblur = e => { if(e.target.value.trim()!==""){ draft.abono = fmt2(parseNum(e.target.value)); e.target.value = draft.abono; refreshNew(); } }; }
     v.querySelectorAll("[data-ab]").forEach(b => b.onclick = () => { draft.abonoMode = b.dataset.ab; render(); if(draft.abonoMode==="abono") $("#f_abono").focus(); });
     const step = (k,d) => { draft.qty[k] = Math.max(0,(draft.qty[k]||0)+d); $("#q_"+k).textContent = draft.qty[k]; $("#q_"+k).closest(".svc").classList.toggle("on", draft.qty[k]>0); refreshNew(); };
@@ -1090,7 +1162,9 @@ function bind(){
 
 /* ---------- Inicio ---------- */
 function setSync(t){ $("#sync").textContent = t; }
+let purgeDone = false;
 function onData(){
+  if(isAdmin() && !purgeDone){ purgeDone = true; setTimeout(() => purgeOldPhotos().catch(()=>{}), 8000); }
   renderNotices();
   if(view==="nuevo"){ if($("#totals")) refreshNew(); return; }
   if(view==="ajustes") return; // no borrar lo que se está escribiendo
@@ -1101,7 +1175,10 @@ function onData(){
 
 /* ---------- Fotos ---------- */
 const photoCount = o => o && o.photos ? (o.photos.recepcion||0) + (o.photos.entrega||0) : 0;
+const PHOTO_IN_MAX = 30 * 1024 * 1024; // archivos más grandes pueden colgar celulares con poca memoria
 async function compressImage(file){
+  if(!file || !/^image\//.test(file.type || "")) throw new Error("tipo");
+  if(file.size > PHOTO_IN_MAX) throw new Error("grande");
   const img = await new Promise((res, rej) => { const u = URL.createObjectURL(file); const i = new Image(); i.onload = () => { URL.revokeObjectURL(u); res(i); }; i.onerror = () => { URL.revokeObjectURL(u); rej(new Error("img")); }; i.src = u; });
   const MAXPX = 720; const k = Math.min(1, MAXPX / Math.max(img.naturalWidth, img.naturalHeight));
   const w = Math.max(1, Math.round(img.naturalWidth*k)), h = Math.max(1, Math.round(img.naturalHeight*k));
@@ -1109,6 +1186,8 @@ async function compressImage(file){
   const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0,0,w,h); cx.drawImage(img, 0, 0, w, h);
   let q = 0.62, url = cv.toDataURL("image/jpeg", q);
   while(url.length > 80000 && q > 0.3){ q -= 0.08; url = cv.toDataURL("image/jpeg", q); }
+  cv.width = cv.height = 0; // libera la memoria del lienzo enseguida (Safari en iPhone la retiene)
+  if(url.length > 150000) throw new Error("grande");
   return url;
 }
 let idbP = null;
@@ -1127,6 +1206,25 @@ async function loadPhotos(orderId){
   if(cloud && fb){ const sn = await fb.collection("photos").where("orderId","==",orderId).get(); return sn.docs.map(x => x.data()).sort((a,b) => a.at-b.at); }
   const d = await idb();
   return await new Promise((res, rej) => { const r = d.transaction("photos").objectStore("photos").index("orderId").getAll(orderId); r.onsuccess = () => res((r.result||[]).sort((a,b) => a.at-b.at)); r.onerror = () => rej(r.error); });
+}
+async function deletePhotos(orderId){
+  if(cloud && fb){ const sn = await fb.collection("photos").where("orderId","==",orderId).get(); await Promise.all(sn.docs.map(d => d.ref.delete())); return sn.size; }
+  const d = await idb();
+  return await new Promise((res, rej) => { const t = d.transaction("photos","readwrite"); const st = t.objectStore("photos"); const r = st.index("orderId").getAllKeys(orderId); r.onsuccess = () => { (r.result||[]).forEach(k => st.delete(k)); }; t.oncomplete = () => res((r.result||[]).length); t.onerror = () => rej(t.error); });
+}
+// Retención (LOPDP: no guardar más de lo necesario) y cuidado del espacio gratuito:
+// las fotos de pedidos entregados hace más de settings.photoDays días se borran solas.
+// Lo hace la sesión del administrador, una vez al día.
+async function purgeOldPhotos(){
+  if(!isAdmin()) return;
+  const key = "sc_purge_" + (me.uid||me.u);
+  try{ if(localStorage.getItem(key)===todayStr()) return; }catch(e){}
+  const cutoff = Date.now() - settings.photoDays*DAY;
+  const old = orders.filter(o => o.status==="entregado" && o.deliveredAt && o.deliveredAt < cutoff && photoCount(o));
+  let n = 0;
+  for(const o of old.slice(0, 100)){ try{ n += await deletePhotos(o.id); await patchOrder(o.id, {photos:{recepcion:0, entrega:0}}); }catch(e){} }
+  try{ localStorage.setItem(key, todayStr()); }catch(e){}
+  if(n) toast(`Se borraron ${n} fotos de pedidos entregados hace más de ${settings.photoDays} días`);
 }
 const safeImg = u => /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u||"") ? u : "";
 function viewPhoto(u){ const d = document.createElement("div"); d.className = "lightbox"; d.setAttribute("role","dialog"); d.innerHTML = `<img src="${esc(u)}" alt="Foto ampliada">`; d.onclick = () => d.remove(); document.body.appendChild(d); }
@@ -1153,8 +1251,11 @@ function bindPicker(stage, label){
   const redo = () => { const r = $("#pp_"+stage); if(r){ r.outerHTML = pickerHTML(stage, label); bindPicker(stage, label); } };
   const inp = root.querySelector("[data-photo]");
   if(inp) inp.onchange = async e => {
-    const files = [...e.target.files].slice(0, PHOTO_MAX - pendingPhotos[stage].length);
-    for(const f of files){ try{ pendingPhotos[stage].push(await compressImage(f)); }catch(err){ toast("No se pudo leer una foto"); } }
+    const all = [...e.target.files], imgs = all.filter(f => /^image\//.test(f.type || ""));
+    if(imgs.length < all.length) toast("Se ignoró un archivo que no es foto");
+    if(imgs.length > PHOTO_MAX - pendingPhotos[stage].length) setTimeout(() => toast(`Máximo ${PHOTO_MAX} fotos`), 1200);
+    const files = imgs.slice(0, PHOTO_MAX - pendingPhotos[stage].length);
+    for(const f of files){ try{ pendingPhotos[stage].push(await compressImage(f)); }catch(err){ toast(err && err.message==="tipo" ? "Ese archivo no es una foto" : err && err.message==="grande" ? "La foto es demasiado grande" : "No se pudo leer una foto"); } }
     redo();
   };
   root.querySelectorAll("[data-rmph]").forEach(b => b.onclick = () => { pendingPhotos[stage].splice(+b.dataset.rmph, 1); redo(); });
@@ -1290,7 +1391,7 @@ function viewTablero(){
   <div class="stagebar">${live.map(x => `<div style="--c:var(${x.c})" title="${x.n} pedidos · promedio ${fmtDur(x.avg)} en esta etapa"><span>${x.l}</span><b>${x.n}</b><small>${x.n?"prom. "+fmtDur(x.avg):"vacío"}</small></div>`).join("")}</div>
   ${worst?`<div class="bneck">⏳ <b>Cuello de botella ahora:</b> ${worst.l.replace(/^\S+\s/,"")} — ${worst.n} pedido${worst.n===1?"":"s"}, el más antiguo lleva ${fmtDur(worst.max)}.</div>`:""}
   <div class="panel pad"><b class="small">Requieren atención</b>
-    ${attn.length ? attn.map(o => `<button class="attn" data-open="${o.id}"><span><span class="num">${esc(o.num)}</span> ${esc(o.name)}<br><span class="small muted">${ST[o.status].ic} ${ST[o.status].l} · hace ${fmtDur(now-stageStart(o))} en esta etapa</span></span>${flagHTML(o)}</button>`).join("") : `<p class="small muted" style="margin:6px 0 0">Nada urgente. Ningún pedido vence hoy ni mañana.</p>`}
+    ${attn.length ? attn.map(o => `<button class="attn" data-open="${esc(o.id)}"><span><span class="num">${esc(o.num)}</span> ${esc(o.name)}<br><span class="small muted">${ST[o.status].ic} ${ST[o.status].l} · hace ${fmtDur(now-stageStart(o))} en esta etapa</span></span>${flagHTML(o)}</button>`).join("") : `<p class="small muted" style="margin:6px 0 0">Nada urgente. Ningún pedido vence hoy ni mañana.</p>`}
   </div>
 
   <h3 class="sec">Personal hoy</h3>
@@ -1632,7 +1733,7 @@ const cloneJ = o => JSON.parse(JSON.stringify(o));
 function fbErr(err){
   const c = (err && err.code) || "";
   if(c.includes("email-already-in-use")) return "Ese usuario ya existe";
-  if(c.includes("weak-password")) return "La contraseña debe tener al menos 6 caracteres";
+  if(c.includes("weak-password")) return "La contraseña debe tener al menos 8 caracteres";
   if(c.includes("network")||c.includes("unavailable")) return "Sin conexión a internet";
   if(c.includes("permission-denied")) return "Permiso denegado. Revisa las reglas de Firestore.";
   if(c.includes("wrong-password")||c.includes("invalid-credential")||c.includes("invalid-login")) return "Contraseña incorrecta";
@@ -1672,7 +1773,7 @@ async function startSession(u){
   }, () => setSync("Sin conexión")));
   unsub.push(settingsDoc.onSnapshot(sn => {
     const sd = sn.exists ? sn.data() : null;
-    if(sd){ settings = Object.assign({}, cloneJ(DEFAULTS), cloneJ(sd)); delete settings.users; if(!Array.isArray(settings.services) || !settings.services.length) settings.services = cloneJ(DEFAULT_SERVICES); }
+    if(sd){ settings = normSettings(sd); delete settings.users; }
     else if(isAdmin()) saveSettings();
     if(view==="nuevo" && pristineDraft()){ draft = null; render(); }
     else if(view!=="ajustes" && view!=="nuevo") render();
@@ -1690,7 +1791,7 @@ async function startSession(u){
   }
 }
 async function cloudSetup(u, n, p){
-  if(p.length<6){ toast("La contraseña debe tener al menos 6 caracteres"); return; }
+  if(p.length<8){ toast("La contraseña debe tener al menos 8 caracteres"); return; }
   bootstrapping = true;
   try{
     let cred;
@@ -1725,11 +1826,11 @@ async function cloudCreateUser(u, n, role, p){
 function myPwSheet(){
   openSheet(`<h2>Cambiar mi contraseña</h2>
     <div class="field" style="margin-top:12px"><label for="mp0">Contraseña actual</label><input class="input" id="mp0" type="password" autocomplete="current-password"></div>
-    <div class="field"><label for="mp1">Nueva contraseña</label><input class="input" id="mp1" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label for="mp1">Nueva contraseña</label><input class="input" id="mp1" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></div>
     <div class="stack"><button class="btn block" id="mpSave">Guardar</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
   $("#mpSave").onclick = async () => {
     const cur = $("#mp0").value, nw = $("#mp1").value;
-    if(nw.length<6){ toast("Mínimo 6 caracteres"); return; }
+    if(nw.length<8){ toast("Mínimo 8 caracteres"); return; }
     try{
       const user = fbAuth.currentUser;
       await user.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(user.email, cur));

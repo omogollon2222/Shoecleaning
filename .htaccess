@@ -13,6 +13,8 @@ Options -Indexes
 <Files "manifest.json">
   Require all granted
 </Files>
+# Carpetas internas (pruebas, git) nunca se sirven
+RedirectMatch 404 /(\.git|pruebas|node_modules)(/|$)
 
 # 3) Cabeceras de seguridad
 <IfModule mod_headers.c>

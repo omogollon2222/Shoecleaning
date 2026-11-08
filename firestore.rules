@@ -1,6 +1,7 @@
 rules_version = '2';
-// Reglas de seguridad de Shoe Cleaning (versión reforzada, nov 2026).
+// Reglas de seguridad de Shoe Cleaning (revisión 8 nov 2026).
 // Copia TODO este texto en Firebase → Firestore Database → Reglas → Publicar.
+// Antes de publicar, pruébalas con el emulador: ver pruebas/README.md.
 service cloud.firestore {
   match /databases/{db}/documents {
     function signedIn()     { return request.auth != null; }
@@ -8,88 +9,180 @@ service cloud.firestore {
     function active()       { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)); }
     function isAdmin()      { return active() && profile().role == 'admin'; }
     function isOps()        { return active() && profile().role == 'operaciones'; }
+    function isRecep()      { return active() && profile().role == 'recepcion'; }
     function bootstrapped() { return exists(/databases/$(db)/documents/config/bootstrap); }
     function validRole(r)   { return r in ['admin', 'recepcion', 'operaciones']; }
-    function strMax(d, k, n){ return !(k in d) || (d[k] is string && d[k].size() <= n); }
-    function numOk(d, k)    { return !(k in d) || (d[k] is number && d[k] >= 0 && d[k] < 1000000); }
+    function str(v, n)      { return v is string && v.size() <= n; }
+    function money(v)       { return v is number && v >= 0 && v < 1000000; }
+    function ts(v)          { return v is number && v >= 0 && v < 4102444800000; }
+    function tsOrNull(v)    { return v == null || ts(v); }
 
-    // Campos de dinero y del cliente: Operaciones no puede tocarlos.
-    function moneyKeys() {
-      return ['total', 'subtotal', 'discount', 'discountPct', 'abono', 'paidFull', 'method',
-              'items', 'loyaltyRedeemed', 'name', 'phone', 'phoneKey', 'num', 'createdAt', 'createdBy'];
+    // ---------- Pedidos ----------
+    function stageKeys() {
+      return ['status', 'recibidoAt', 'recibidoBy', 'lavadoAt', 'lavadoBy', 'secadoAt', 'secadoBy',
+              'esterilizacionAt', 'esterilizacionBy', 'listoAt', 'listoBy', 'readyAt',
+              'photos', 'notifiedStatus', 'notifiedAt'];
     }
-    function validOrder(id) {
-      let d = request.resource.data;
-      return d.id == id && d.size() <= 120
-        && d.status in ['recibido', 'lavado', 'secado', 'esterilizacion', 'listo', 'entregado', 'produccion']
-        && strMax(d, 'name', 120) && strMax(d, 'phone', 30) && strMax(d, 'notes', 2000) && strMax(d, 'num', 30)
-        && numOk(d, 'total') && numOk(d, 'subtotal') && numOk(d, 'abono') && numOk(d, 'discount');
+    function deliveryKeys() { return ['deliveredAt', 'deliveredBy', 'paidFull', 'cobradoEntrega', 'methodFinal']; }
+    function orderKeys() {
+      return stageKeys().concat(deliveryKeys()).concat(['id', 'num', 'name', 'phone', 'phoneKey', 'items',
+        'subtotal', 'discount', 'discountPct', 'total', 'abono', 'method', 'notes', 'createdAt', 'dueDate',
+        'loyaltyRedeemed', 'createdBy', 'avisoOk', 'promoOk', 'erasedAt']);
     }
+    // Revisa el tipo y tamaño de cada campo que se escribe (ks = campos nuevos o cambiados).
+    function orderTypesOk(d, ks) {
+      return (!ks.hasAny(['num'])       || str(d.num, 30))
+        && (!ks.hasAny(['name'])        || str(d.name, 120))
+        && (!ks.hasAny(['phone'])       || str(d.phone, 30))
+        && (!ks.hasAny(['phoneKey'])    || str(d.phoneKey, 20))
+        && (!ks.hasAny(['notes'])       || str(d.notes, 2000))
+        && (!ks.hasAny(['method'])      || d.method in ['Efectivo', 'Transferencia'])
+        && (!ks.hasAny(['methodFinal']) || d.methodFinal in ['Efectivo', 'Transferencia'])
+        && (!ks.hasAny(['items'])       || (d.items is list && d.items.size() <= 50))
+        && (!ks.hasAny(['subtotal'])    || money(d.subtotal))
+        && (!ks.hasAny(['discount'])    || money(d.discount))
+        && (!ks.hasAny(['total'])       || money(d.total))
+        && (!ks.hasAny(['abono'])       || money(d.abono))
+        && (!ks.hasAny(['cobradoEntrega']) || money(d.cobradoEntrega))
+        && (!ks.hasAny(['discountPct']) || (d.discountPct is number && d.discountPct >= 0 && d.discountPct <= 100))
+        && (!ks.hasAny(['paidFull'])    || d.paidFull is bool)
+        && (!ks.hasAny(['loyaltyRedeemed']) || d.loyaltyRedeemed is bool)
+        && (!ks.hasAny(['avisoOk'])     || d.avisoOk is bool)
+        && (!ks.hasAny(['promoOk'])     || d.promoOk is bool)
+        && (!ks.hasAny(['dueDate'])     || (d.dueDate is string && d.dueDate.matches('^([0-9]{4}-[0-9]{2}-[0-9]{2})?$')))
+        && (!ks.hasAny(['createdAt'])   || (ts(d.createdAt) && d.createdAt <= request.time.toMillis() + 600000))
+        && (!ks.hasAny(['readyAt'])     || tsOrNull(d.readyAt))
+        && (!ks.hasAny(['deliveredAt']) || tsOrNull(d.deliveredAt))
+        && (!ks.hasAny(['notifiedAt'])  || tsOrNull(d.notifiedAt))
+        && (!ks.hasAny(['erasedAt'])    || tsOrNull(d.erasedAt))
+        && (!ks.hasAny(['recibidoAt'])  || tsOrNull(d.recibidoAt))
+        && (!ks.hasAny(['lavadoAt'])    || tsOrNull(d.lavadoAt))
+        && (!ks.hasAny(['secadoAt'])    || tsOrNull(d.secadoAt))
+        && (!ks.hasAny(['esterilizacionAt']) || tsOrNull(d.esterilizacionAt))
+        && (!ks.hasAny(['listoAt'])     || tsOrNull(d.listoAt))
+        && (!ks.hasAny(['createdBy'])   || str(d.createdBy, 60))
+        && (!ks.hasAny(['deliveredBy']) || str(d.deliveredBy, 60))
+        && (!ks.hasAny(['recibidoBy'])  || str(d.recibidoBy, 60))
+        && (!ks.hasAny(['lavadoBy'])    || str(d.lavadoBy, 60))
+        && (!ks.hasAny(['secadoBy'])    || str(d.secadoBy, 60))
+        && (!ks.hasAny(['esterilizacionBy']) || str(d.esterilizacionBy, 60))
+        && (!ks.hasAny(['listoBy'])     || str(d.listoBy, 60))
+        && (!ks.hasAny(['notifiedStatus']) || str(d.notifiedStatus, 20))
+        && (!ks.hasAny(['photos'])      || (d.photos is map && d.photos.keys().hasOnly(['recepcion', 'entrega'])
+                                            && (!('recepcion' in d.photos) || (d.photos.recepcion is int && d.photos.recepcion >= 0 && d.photos.recepcion <= 3))
+                                            && (!('entrega' in d.photos)   || (d.photos.entrega is int && d.photos.entrega >= 0 && d.photos.entrega <= 3))));
+    }
+    function statusOk(s) { return s in ['recibido', 'lavado', 'secado', 'esterilizacion', 'listo', 'entregado']; }
 
-    // Usuarios y roles: solo el administrador los crea, cambia o desactiva.
-    // Excepción: el primer administrador se crea una sola vez.
-    match /users/{uid} {
+    match /orders/{id} {
       allow read: if active();
-      allow get: if signedIn() && request.auth.uid == uid;
-      allow create: if (isAdmin() && validRole(request.resource.data.role) && strMax(request.resource.data, 'name', 80))
-        || (signedIn() && request.auth.uid == uid && !bootstrapped() && request.resource.data.role == 'admin');
-      allow update: if isAdmin() && validRole(request.resource.data.role);
+
+      // Crear: administrador y recepción. Siempre empieza en "recibido" y queda firmado por quien lo crea.
+      allow create: if active() && !isOps()
+        && request.resource.data.keys().hasOnly(orderKeys())
+        && request.resource.data.keys().hasAll(['id', 'num', 'name', 'phone', 'items', 'total', 'status', 'createdAt', 'createdBy'])
+        && request.resource.data.id == id
+        && statusOk(request.resource.data.status)
+        // Solo el administrador (al restaurar un respaldo) crea pedidos en otra etapa o a nombre de otra persona.
+        && (isAdmin() || (request.resource.data.status == 'recibido' && request.resource.data.createdBy == profile().username))
+        && orderTypesOk(request.resource.data, request.resource.data.keys().toSet());
+
+      // Cambiar: cada rol solo toca sus campos.
+      allow update: if active()
+        && request.resource.data.id == resource.data.id
+        && statusOk(request.resource.data.status)
+        && request.resource.data.keys().hasOnly(orderKeys().concat(resource.data.keys()))
+        && orderTypesOk(request.resource.data, request.resource.data.diff(resource.data).affectedKeys())
+        && (
+          isAdmin()
+          // Operaciones: solo avanza etapas del taller (no entrega, no cobra, no ve dinero cambiar).
+          || (isOps()
+              && resource.data.status != 'entregado'
+              && request.resource.data.status in ['recibido', 'lavado', 'secado', 'esterilizacion', 'listo']
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(stageKeys()))
+          // Recepción: etapas y entrega. Un pedido ya entregado solo admite fotos y avisos;
+          // deshacer una entrega o cambiar montos lo hace el administrador.
+          || (isRecep()
+              && resource.data.status != 'entregado'
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(stageKeys().concat(deliveryKeys()))
+              && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['paidFull']) || request.resource.data.paidFull == true))
+          || (isRecep()
+              && resource.data.status == 'entregado'
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photos', 'notifiedStatus', 'notifiedAt']))
+        );
+
       allow delete: if isAdmin();
     }
 
-    // Marca de que ya existe el primer administrador.
+    // ---------- Fotos (comprimidas en el celular, ~60 KB) ----------
+    match /photos/{id} {
+      allow read: if active();
+      allow create: if active()
+        && request.resource.data.keys().hasOnly(['id', 'orderId', 'num', 'stage', 'data', 'at', 'by'])
+        && request.resource.data.id == id
+        && str(request.resource.data.orderId, 40)
+        && exists(/databases/$(db)/documents/orders/$(request.resource.data.orderId))
+        && request.resource.data.stage in ['recepcion', 'entrega']
+        && request.resource.data.data is string && request.resource.data.data.size() < 160000
+        && request.resource.data.data.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
+        && (!('num' in request.resource.data) || str(request.resource.data.num, 30))
+        && (!('at' in request.resource.data) || ts(request.resource.data.at))
+        && (!('by' in request.resource.data) || str(request.resource.data.by, 60));
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Usuarios y roles: solo el administrador. El primer administrador se crea una sola vez. ----------
+    function userOk(d) {
+      return d.keys().hasOnly(['username', 'name', 'role', 'createdAt', 'createdBy'])
+        && validRole(d.role) && str(d.username, 40) && str(d.name, 80);
+    }
+    match /users/{uid} {
+      allow read: if active();
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow create: if (isAdmin() && userOk(request.resource.data))
+        || (signedIn() && request.auth.uid == uid && !bootstrapped() && request.resource.data.role == 'admin' && userOk(request.resource.data));
+      allow update: if isAdmin() && userOk(request.resource.data) && request.resource.data.username == resource.data.username;
+      allow delete: if isAdmin() && request.auth.uid != uid;
+    }
+
     match /config/bootstrap {
       allow read: if true;
       allow create: if signedIn() && !bootstrapped()
         && getAfter(/databases/$(db)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Precios y ajustes: los cambia el administrador.
-    // Recepción solo puede avanzar el número de recibo.
+    // Precios y ajustes: el administrador. Recepción y administrador avanzan el N° de recibo de uno en uno.
     match /config/settings {
       allow read: if active();
       allow create: if isAdmin();
-      allow update: if isAdmin()
-        || (active() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nextNumber'])
+      allow update: if (isAdmin() && request.resource.data.size() <= 40)
+        || (active() && !isOps()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nextNumber'])
             && request.resource.data.nextNumber == resource.data.nextNumber + 1);
       allow delete: if false;
-    }
-
-    // Pedidos: todos los usuarios activos los ven.
-    // Crear: administrador y recepción. Operaciones solo avanza etapas (no toca dinero ni datos del cliente).
-    // Solo el administrador borra.
-    match /orders/{id} {
-      allow read: if active();
-      allow create: if active() && !isOps() && validOrder(id);
-      allow update: if active() && validOrder(id) && request.resource.data.id == resource.data.id
-        && (isAdmin()
-            || (!isOps() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt', 'createdBy']) == false)
-            || (isOps() && !request.resource.data.diff(resource.data).affectedKeys().hasAny(moneyKeys())));
-      allow delete: if isAdmin();
-    }
-
-    // Fotos de recepción y entrega (comprimidas, ~60 KB). Solo el administrador borra.
-    match /photos/{id} {
-      allow read: if active();
-      allow create: if active()
-        && request.resource.data.id == id
-        && request.resource.data.orderId is string && request.resource.data.orderId.size() <= 40
-        && request.resource.data.stage in ['recepcion', 'entrega']
-        && request.resource.data.data is string && request.resource.data.data.size() < 200000;
-      allow delete: if isAdmin();
     }
 
     // Quién está conectado: cada persona actualiza solo su propio estado.
     match /presence/{uid} {
       allow read: if active();
-      allow write: if active() && request.auth.uid == uid && request.resource.data.size() <= 20;
+      allow write: if active() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'u', 'name', 'role', 'lastSeen', 'since', 'offline'])
+        && request.resource.data.uid == uid && request.resource.data.role == profile().role
+        && str(request.resource.data.name, 80) && str(request.resource.data.u, 40)
+        && ts(request.resource.data.lastSeen) && request.resource.data.offline is bool;
     }
 
     // Registro de ingresos del personal: cada uno registra el suyo; solo el administrador lo ve.
     match /logins/{id} {
       allow read: if isAdmin();
-      allow create: if active() && request.resource.data.uid == request.auth.uid
-        && request.resource.data.role == profile().role && request.resource.data.size() <= 12;
+      allow create: if active()
+        && request.resource.data.keys().hasOnly(['uid', 'u', 'name', 'role', 'at', 'day', 'type', 'dev'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == profile().role
+        && str(request.resource.data.name, 80) && str(request.resource.data.u, 40)
+        && ts(request.resource.data.at) && str(request.resource.data.day, 10)
+        && request.resource.data.type in ['login', 'apertura'] && str(request.resource.data.dev, 20);
     }
 
     // Todo lo demás queda cerrado.

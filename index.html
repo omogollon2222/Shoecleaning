@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#0c2f4b; --brand:#2580bf; --brand-deep:#17598c; --foam:#e6f2fa;
@@ -309,8 +309,18 @@ table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
 .sup .btn{min-height:38px;padding:6px 10px}
 button.kpi{border:0;font:inherit;color:inherit;width:100%;cursor:pointer}
 /* Firma */
-.credit{text-align:center;margin:28px 0 8px;color:var(--muted);font-size:.78rem;letter-spacing:.02em}
-.credit b{display:block;font-family:"Great Vibes",cursive;font-weight:400;font-size:1.7rem;line-height:1.1;color:var(--brand);letter-spacing:0;margin-top:2px}
+.credit{display:flex;flex-direction:column;align-items:center;gap:6px;margin:34px auto 10px;text-align:center}
+.credit small{font-size:.62rem;font-weight:700;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.credit small::before,.credit small::after{content:"";width:28px;height:1px;background:linear-gradient(90deg,transparent,#22d3ee)}
+.credit small::after{background:linear-gradient(90deg,#a855f7,transparent)}
+.credit b{position:relative;font-family:"Orbitron",system-ui,sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:.24em;padding:7px 14px 7px 18px;border-radius:10px;
+  background:linear-gradient(90deg,#06b6d4,#3b82f6,#8b5cf6,#06b6d4);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:credit-flow 6s linear infinite}
+.credit b::before{content:"";position:absolute;inset:0;border-radius:10px;padding:1px;background:linear-gradient(90deg,rgba(6,182,212,.6),rgba(139,92,246,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.credit b::after{content:"";position:absolute;inset:-6px;border-radius:14px;background:radial-gradient(60% 80% at 50% 50%,rgba(59,130,246,.18),transparent 70%);z-index:-1;pointer-events:none}
+@keyframes credit-flow{to{background-position:300% 0}}
+@media (prefers-reduced-motion:reduce){.credit b{animation:none}}
 /* Tablero */
 .live{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--ready)}
 .live i{width:8px;height:8px;border-radius:50%;background:var(--ready);animation:pulse 1.6s infinite}
@@ -349,7 +359,7 @@ button.kpi{border:0;font:inherit;color:inherit;width:100%;cursor:pointer}
     <div class="hdr-r"><button class="userchip" id="userBtn" hidden></button><div class="sync" id="sync">Cargando…</div></div>
   </header>
   <main id="view"></main>
-  <footer class="credit">Engineered with pride by<b>Consultecapps</b></footer>
+  <footer class="credit" aria-label="Engineered with pride by Consultecapps"><small>Engineered with pride by</small><b>CONSULTECAPPS</b></footer>
 </div>
 
 <button class="nqpill" id="nqPill" hidden></button>

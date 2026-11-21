@@ -378,14 +378,15 @@ function renderGate(){
     v.innerHTML = `<div class="gate" id="gate"><form class="card" id="gateForm" autocomplete="off">
       <h2>Bienvenido 👋</h2><p class="muted small" style="margin:0 0 16px">Crea el usuario <b>administrador</b>. Con él podrás crear los usuarios de recepción y operaciones.</p>
       <div class="field"><label for="g_n">Tu nombre</label><input class="input" id="g_n" required placeholder="Ej. Osiris"></div>
-      <div class="field"><label for="g_u">Usuario</label><input class="input" id="g_u" required autocapitalize="none" placeholder="Ej. admin"></div>
+      <div class="field"><label for="g_u">${cloud?"Tu correo":"Usuario"}</label><input class="input" id="g_u" required autocapitalize="none" ${cloud?'type="email" autocomplete="email" placeholder="Ej. dueno@gmail.com"':'placeholder="Ej. admin"'}></div>
       <div class="field"><label for="g_p">Contraseña</label><input class="input" id="g_p" type="password" required minlength="4" autocomplete="new-password"></div>
       <div class="field"><label for="g_p2">Repite la contraseña</label><input class="input" id="g_p2" type="password" required minlength="4" autocomplete="new-password"></div>
       <button class="btn block" type="submit">Crear administrador y entrar</button></form></div>`;
     $("#gateForm").onsubmit = async e => {
       e.preventDefault();
       const u = $("#g_u").value.trim().toLowerCase(), n = $("#g_n").value.trim(), p1 = $("#g_p").value, p2 = $("#g_p2").value;
-      if(!u || !n){ toast("Completa nombre y usuario"); return; }
+      if(!u || !n){ toast(cloud?"Completa nombre y correo":"Completa nombre y usuario"); return; }
+      if(cloud && !isEmail(u)){ toast("Revisa el correo"); return; }
       if(p1.length<4){ toast("La contraseña debe tener al menos 4 caracteres"); return; }
       if(p1!==p2){ toast("Las contraseñas no coinciden"); return; }
       if(cloud){ await cloudSetup(u, n, p1); return; }
@@ -397,12 +398,18 @@ function renderGate(){
     };
   } else {
     v.innerHTML = `<div class="gate" id="gate"><form class="card" id="gateForm">
-      <h2>Iniciar sesión</h2><p class="muted small" style="margin:0 0 16px">Ingresa con tu usuario y contraseña.</p>
-      <div class="field"><label for="l_u">Usuario</label><input class="input" id="l_u" required autocapitalize="none" autocomplete="username"></div>
+      <h2>Iniciar sesión</h2><p class="muted small" style="margin:0 0 16px">Ingresa con tu usuario${cloud?" o correo":""} y contraseña.</p>
+      <div class="field"><label for="l_u">${cloud?"Usuario o correo":"Usuario"}</label><input class="input" id="l_u" required autocapitalize="none" autocomplete="username"></div>
       <div class="field"><label for="l_p">Contraseña</label><input class="input" id="l_p" type="password" required autocomplete="current-password"></div>
       <button class="btn block" type="submit" style="min-height:52px">Entrar</button>
-      <p class="small muted" style="margin:14px 0 0">¿Olvidaste tu contraseña? Pide al administrador que te asigne una nueva.</p>
+      ${cloud?`<button type="button" class="btn ghost block" id="forgot" style="margin-top:10px">¿Olvidaste tu contraseña?</button>`:`<p class="small muted" style="margin:14px 0 0">¿Olvidaste tu contraseña? Pide al administrador que te asigne una nueva.</p>`}
       <p class="small muted" style="margin:8px 0 0"><a href="privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a></p></form></div>`;
+    const fg = $("#forgot");
+    if(fg) fg.onclick = () => {
+      const v = $("#l_u").value.trim().toLowerCase();
+      if(isEmail(v)) sendReset(v);
+      else toast(v ? "Si entras con usuario (no correo), pide al administrador que te cree uno nuevo." : "Escribe tu correo arriba y vuelve a tocar «¿Olvidaste tu contraseña?»", 6000);
+    };
     $("#gateForm").onsubmit = async e => {
       e.preventDefault();
       const u = $("#l_u").value.trim().toLowerCase(), p = $("#l_p").value;
@@ -524,21 +531,34 @@ function usersPanel(){
   const nOps = users().filter(x=>x.role==="operaciones").length;
   return `<div class="lbl">Usuarios y roles</div><div class="panel pad">
     <p class="small muted" style="margin:0 0 6px">Operadores: <b>${nOps}/${MAX_OPS}</b></p>
-    ${users().map(u=>`<div class="hist" style="align-items:center"><span><b>${esc(u.name)}</b> <span class="muted small">@${esc(u.u)}</span><br><span class="rolepill r-${u.role}">${ROLE[u.role]}</span></span>
+    ${users().map(u=>`<div class="hist" style="align-items:center"><span><b>${esc(u.name)}</b> <span class="muted small">${u.email?esc(u.email):"@"+esc(u.u)}</span><br><span class="rolepill r-${u.role}">${ROLE[u.role]}</span></span>
       <span class="row" style="gap:6px">${cloud?"":`<button class="btn ghost" style="min-height:38px;padding:6px 10px" data-upw="${esc(u.u)}">Cambiar clave</button>`}${u.u!==me.u?`<button class="btn danger" style="min-height:38px;padding:6px 10px" data-udel="${esc(u.u)}">${cloud?"Desactivar":"Quitar"}</button>`:""}</span></div>`).join("")}
     <button class="btn block" id="uAdd" style="margin-top:10px">Agregar usuario</button>
-    ${cloud?`<p class="small muted" style="margin:10px 0 0">Cada usuario cambia su propia contraseña tocando su nombre arriba a la derecha. Si alguien la olvida, desactívalo y créale un usuario nuevo (por ejemplo maria2).</p>`:""}</div>`;
+    ${cloud?`<p class="small muted" style="margin:10px 0 0">Cada usuario cambia su propia contraseña tocando su nombre arriba a la derecha. Los administradores entran con su correo y, si la olvidan, usan «¿Olvidaste tu contraseña?» al iniciar sesión. Si alguien de recepción u operaciones la olvida, desactívalo y créale un usuario nuevo (por ejemplo maria2).</p>`:""}</div>`;
 }
 function userSheet(){
   let role = "recepcion";
   openSheet(`<h2>Nuevo usuario</h2>
     <div class="field" style="margin-top:12px"><label for="u_n">Nombre</label><input class="input" id="u_n" placeholder="Ej. María"></div>
-    <div class="field"><label for="u_u">Usuario</label><input class="input" id="u_u" autocapitalize="none" placeholder="Ej. maria"></div>
-    <div class="field"><label for="u_p">Contraseña</label><input class="input" id="u_p" type="text" autocomplete="off" placeholder="Mínimo ${cloud?8:4} caracteres"></div>
+    <div class="field" id="u_ef" hidden><label for="u_e">Correo del administrador</label><input class="input" id="u_e" type="email" autocapitalize="none" autocomplete="off" placeholder="Ej. dueno@gmail.com"><p class="small muted" style="margin:6px 0 0">Le llegará un correo para que cree su propia contraseña. Después entra con ese correo.</p></div>
+    <div class="field" id="u_uf"><label for="u_u">Usuario</label><input class="input" id="u_u" autocapitalize="none" placeholder="Ej. maria"></div>
+    <div class="field" id="u_pf"><label for="u_p">Contraseña</label><input class="input" id="u_p" type="text" autocomplete="off" placeholder="Mínimo ${cloud?8:4} caracteres"></div>
     <span class="lbl">Rol</span><div class="rolepick" id="u_r">${Object.keys(ROLE).map(k=>`<button type="button" data-r="${k}" aria-pressed="${k===role}"><b>${ROLE[k]}</b><small>${ROLE_DESC[k]}</small></button>`).join("")}</div>
     <div class="stack"><button class="btn block" id="u_save">Crear usuario</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
-  $("#u_r").querySelectorAll("[data-r]").forEach(b => b.onclick = () => { role = b.dataset.r; $("#u_r").querySelectorAll("[data-r]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  const byEmail = () => cloud && role==="admin";
+  $("#u_r").querySelectorAll("[data-r]").forEach(b => b.onclick = () => { role = b.dataset.r; $("#u_r").querySelectorAll("[data-r]").forEach(x=>x.setAttribute("aria-pressed", x===b));
+    $("#u_ef").hidden = !byEmail(); $("#u_uf").hidden = byEmail(); $("#u_pf").hidden = byEmail(); });
   $("#u_save").onclick = async () => {
+    if(byEmail()){
+      const n = $("#u_n").value.trim(), em = $("#u_e").value.trim().toLowerCase();
+      if(!n){ toast("Escribe el nombre"); return; }
+      if(!isEmail(em) || em.length>120){ toast("Revisa el correo"); $("#u_e").focus(); return; }
+      if(users().some(x=>x.email===em)){ toast("Ese correo ya tiene usuario"); return; }
+      const sb = $("#u_save"); sb.disabled = true; sb.textContent = "Creando…";
+      if(await cloudInviteAdmin(em, n)){ closeSheet(); toast(`Listo. Enviamos a ${em} el enlace para crear su contraseña.`, 6000); }
+      else { sb.disabled = false; sb.textContent = "Crear usuario"; }
+      return;
+    }
     const n = $("#u_n").value.trim(), u = $("#u_u").value.trim().toLowerCase().replace(/\s+/g,""), p = $("#u_p").value;
     if(!n || !u){ toast("Completa nombre y usuario"); return; }
     if(users().some(x=>x.u===u)){ toast("Ese usuario ya existe"); return; }
@@ -1761,11 +1781,21 @@ function extraAnalytics(P, start){
 
 /* ---------- Nube (Firebase) ---------- */
 const FB_V = "10.12.2", FB_DOMAIN = "shoecleaning.app";
-const toEmail = u => String(u).trim().toLowerCase().replace(/[^a-z0-9._-]/g,"") + "@" + FB_DOMAIN;
+const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v||"").trim());
+// Con correo real se entra con ese correo; con usuario se usa el correo interno usuario@shoecleaning.app
+const toEmail = u => { const v = String(u).trim().toLowerCase(); return v.includes("@") ? v : v.replace(/[^a-z0-9._-]/g,"") + "@" + FB_DOMAIN; };
+// Usuario interno (para firmar pedidos) a partir del correo: parte antes de la @, sin repetir
+function handleFromEmail(email){
+  const base = (String(email).split("@")[0].toLowerCase().replace(/[^a-z0-9._-]/g,"") || "admin").slice(0, 30);
+  let h = base, i = 2; while(users().some(x => x.u===h)) h = base + (i++);
+  return h;
+}
+const randomPw = () => Array.from(crypto.getRandomValues(new Uint8Array(24)), b => b.toString(16).padStart(2,"0")).join("");
 const cloneJ = o => JSON.parse(JSON.stringify(o));
 function fbErr(err){
   const c = (err && err.code) || "";
-  if(c.includes("email-already-in-use")) return "Ese usuario ya existe";
+  if(c.includes("email-already-in-use")) return "Ese usuario o correo ya existe";
+  if(c.includes("invalid-email")) return "Revisa el correo";
   if(c.includes("weak-password")) return "La contraseña debe tener al menos 8 caracteres";
   if(c.includes("network")||c.includes("unavailable")) return "Sin conexión a internet";
   if(c.includes("permission-denied")) return "Permiso denegado. Revisa las reglas de Firestore.";
@@ -1812,7 +1842,7 @@ async function startSession(u){
     else if(view!=="ajustes" && view!=="nuevo") render();
   }, () => {}));
   unsub.push(fb.collection("users").onSnapshot(snap => {
-    cloudUsers = snap.docs.map(x => { const ud2 = x.data(); return {uid:x.id, u:ud2.username, name:ud2.name, role:ud2.role}; });
+    cloudUsers = snap.docs.map(x => { const ud2 = x.data(); return {uid:x.id, u:ud2.username, name:ud2.name, role:ud2.role, email:ud2.email||""}; });
     const mine = cloudUsers.find(x => x.uid===me.uid);
     if(!mine){ toast("Tu usuario fue desactivado"); fbAuth.signOut().catch(()=>{}); return; }
     if(mine.role!==me.role || mine.name!==me.name){ me = Object.assign({}, me, {role:mine.role, name:mine.name}); render(); }
@@ -1838,8 +1868,9 @@ async function cloudSetup(u, n, p){
     try{ cred = await fbAuth.createUserWithEmailAndPassword(toEmail(u), p); }
     catch(err){ if((err.code||"").includes("email-already-in-use")) cred = await fbAuth.signInWithEmailAndPassword(toEmail(u), p); else throw err; }
     const batch = fb.batch();
-    batch.set(fb.doc("users/" + cred.user.uid), {username:u, name:n, role:"admin", createdAt:Date.now()});
-    batch.set(fb.doc("config/bootstrap"), {at:Date.now(), by:u});
+    const handle = u.includes("@") ? handleFromEmail(u) : u;
+    batch.set(fb.doc("users/" + cred.user.uid), Object.assign({username:handle, name:n, role:"admin", createdAt:Date.now()}, u.includes("@") ? {email:u} : {}));
+    batch.set(fb.doc("config/bootstrap"), {at:Date.now(), by:handle});
     await batch.commit();
     const st = cloneJ(settings); delete st.users;
     await fb.doc("config/settings").set(st);
@@ -1862,6 +1893,27 @@ async function cloudCreateUser(u, n, role, p){
     await sa.signOut();
     return true;
   }catch(err){ toast(fbErr(err)); return false; }
+}
+// Administrador por correo: se crea la cuenta con una clave al azar que nadie conoce
+// y Firebase le envía el enlace para que ponga la suya.
+async function cloudInviteAdmin(email, n){
+  try{
+    const sec = firebase.apps.find(a => a.name==="sec") || firebase.initializeApp(window.FIREBASE_CONFIG, "sec");
+    const sa = sec.auth();
+    try{ await sa.setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(e){}
+    try{ sa.languageCode = "es"; }catch(e){}
+    const cred = await sa.createUserWithEmailAndPassword(email, randomPw());
+    await fb.doc("users/" + cred.user.uid).set({username:handleFromEmail(email), name:n, role:"admin", email, createdAt:Date.now(), createdBy:me.u});
+    await sa.signOut();
+    await sa.sendPasswordResetEmail(email);
+    return true;
+  }catch(err){ toast(fbErr(err)); return false; }
+}
+async function sendReset(email){
+  try{ fbAuth.languageCode = "es"; }catch(e){}
+  try{ await fbAuth.sendPasswordResetEmail(email); }catch(e){ if(/network/.test(e.code||"")){ toast("Sin conexión a internet"); return; } }
+  // Mismo mensaje exista o no la cuenta, para no revelar qué correos están registrados
+  toast("Si ese correo tiene cuenta, te llegará un enlace para crear una nueva contraseña. Revisa también el spam.", 7000);
 }
 function myPwSheet(){
   openSheet(`<h2>Cambiar mi contraseña</h2>

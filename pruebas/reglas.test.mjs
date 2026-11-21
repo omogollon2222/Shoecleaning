@@ -126,3 +126,11 @@ test("nadie borra el aviso", async () => {
   await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("config/privacy").set(PRIV); });
   await assertFails(db("a1").doc("config/privacy").delete());
 });
+
+// ---------- Administrador con correo ----------
+test("administrador crea otro administrador con correo", () =>
+  assertSucceeds(db("a1").doc("users/nuevo").set({ username: "dueno", name: "Dueño", role: "admin", email: "dueno@gmail.com", createdAt: now(), createdBy: "admin" })));
+test("correo inválido en el perfil se rechaza", () =>
+  assertFails(db("a1").doc("users/nuevo").set({ username: "dueno", name: "Dueño", role: "admin", email: "<script>", createdAt: now(), createdBy: "admin" })));
+test("recepción NO crea administradores con correo", () =>
+  assertFails(db("r1").doc("users/nuevo").set({ username: "dueno", name: "Dueño", role: "admin", email: "dueno@gmail.com", createdAt: now() })));

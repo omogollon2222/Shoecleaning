@@ -30,6 +30,11 @@ Flujo de despliegue: commit/push a `seguro` → en Hostinger, GIT → *Implement
 
 Si se agrega un script o dominio externo, actualizar la CSP de `.htaccess` o el navegador lo bloqueará. Al cambiar archivos cacheados, subir la versión de caché en `sw.js`.
 
+## Cuentas
+- **Administradores:** entran con su **correo real**. El primer administrador se registra con correo y crea su contraseña. Los siguientes se invitan en Ajustes → Agregar usuario → Administrador: se crea la cuenta con una clave al azar y Firebase envía el enlace para que creen la suya (`cloudInviteAdmin`). «¿Olvidaste tu contraseña?» en el inicio de sesión envía el enlace de recuperación (mismo mensaje exista o no el correo).
+- **Recepción y operaciones:** usuario + contraseña (correo interno `usuario@shoecleaning.app`, sin recuperación por correo).
+- El perfil (`users/{uid}`) guarda `username` (para firmar pedidos; en administradores con correo es la parte antes de la @) y `email` opcional, validado en las reglas.
+
 ## Roles
 - **Administrador:** Tablero en vivo (caja, por cobrar, etapas, cuello de botella, personal en línea, tiempos por etapa), pedidos, clientes, análisis (incl. asistencia y productividad), precios, usuarios (máx. 5 operadores), respaldo/restauración.
 - **Recepción:** registrar pedidos y cobrar, fotos de recepción y entrega, entregas, buscar por N°, celular o nombre.

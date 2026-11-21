@@ -134,8 +134,9 @@ service cloud.firestore {
 
     // ---------- Usuarios y roles: solo el administrador. El primer administrador se crea una sola vez. ----------
     function userOk(d) {
-      return d.keys().hasOnly(['username', 'name', 'role', 'createdAt', 'createdBy'])
-        && validRole(d.role) && str(d.username, 40) && str(d.name, 80);
+      return d.keys().hasOnly(['username', 'name', 'role', 'createdAt', 'createdBy', 'email'])
+        && validRole(d.role) && str(d.username, 40) && str(d.name, 80)
+        && (!('email' in d) || (str(d.email, 120) && d.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')));
     }
     match /users/{uid} {
       allow read: if active();

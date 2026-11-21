@@ -58,7 +58,7 @@ Colecciones: `users`, `config`, `orders`, `photos`, `presence`, `logins`.
 
 ## Datos personales (LOPDP)
 - Al registrar: casilla obligatoria "Informé al cliente" (`avisoOk`) y opcional de promociones (`promoOk`). Solo se escribe "Te extrañamos" a quien aceptó.
-- `privacidad.html`: aviso de privacidad (faltan datos del titular: [POR COMPLETAR]).
+- `privacidad.html` + `privacidad.js`: aviso de privacidad. Los datos del titular (razón social, RUC, dirección, correo, WhatsApp, vigencia, años de conservación) se editan en **Ajustes → Aviso de privacidad** y se guardan en `config/privacy` (lectura pública, escritura solo admin, campos validados). La página los lee por la API REST de Firestore y los pinta con `textContent`. Conservación recomendada: 2 años desde la última visita.
 - Admin → Cliente → "Borrar datos personales": quita nombre, celular, notas y fotos; deja montos.
 - Fotos: máx. 3 por etapa, se borran solas a los 60 días de entregado (`photoDays`), y al eliminar el pedido.
 - Al cerrar sesión se borra la copia local (tablets compartidas).

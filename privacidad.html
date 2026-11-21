@@ -24,10 +24,10 @@ a{color:var(--brand)}
 <body>
 <main><div class="card">
 <h1>Aviso de privacidad</h1>
-<p class="muted">Shoe Cleaning · Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP) · Vigente desde [POR COMPLETAR: fecha]</p>
+<p class="muted">Shoe Cleaning · Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP) · Vigente desde <span data-p="vigencia">—</span></p>
 
 <h2>1. Quién es responsable de tus datos</h2>
-<p>[POR COMPLETAR: razón social o nombre del titular], RUC [POR COMPLETAR], con domicilio en [POR COMPLETAR: dirección], Ecuador. Contacto para temas de datos personales: [POR COMPLETAR: correo] o WhatsApp 0980035702.</p>
+<p><span data-p="titular">Shoe Cleaning</span><span data-show="ruc">, RUC <span data-p="ruc"></span></span><span data-show="direccion">, con domicilio en <span data-p="direccion"></span></span>, Ecuador. Contacto para temas de datos personales: <span data-show="correo"><span data-p="correo"></span> o </span>WhatsApp <span data-p="whatsapp">0980035702</span>.</p>
 
 <h2>2. Qué datos tratamos</h2>
 <ul>
@@ -54,8 +54,8 @@ a{color:var(--brand)}
 
 <h2>5. Cuánto tiempo los guardamos</h2>
 <ul>
-<li>Fotos de los artículos: se borran automáticamente a los 60 días de entregado el pedido.</li>
-<li>Datos del pedido: mientras seas cliente y hasta [POR COMPLETAR: plazo, por ejemplo 3 años] desde tu última visita; después se borran tu nombre y celular y solo quedan los montos para la contabilidad.</li>
+<li>Fotos de los artículos: se borran automáticamente a los <span data-p="fotosDias">60</span> días de entregado el pedido.</li>
+<li>Datos del pedido: mientras seas cliente y hasta <span data-p="anios">2 años</span> desde tu última visita; después se borran tu nombre y celular y solo quedan los montos para la contabilidad.</li>
 </ul>
 
 <h2>6. Tus derechos</h2>
@@ -64,5 +64,7 @@ a{color:var(--brand)}
 <h2>7. Cómo los protegemos</h2>
 <p>Acceso solo con usuario y contraseña personal, permisos por rol (recepción, operaciones, administración), conexión cifrada (HTTPS) y reglas de seguridad en la base de datos. Si ocurriera una vulneración de seguridad, se notificará a la autoridad y a las personas afectadas en los plazos de la ley.</p>
 </div></main>
+<script src="firebase-config.js"></script>
+<script src="privacidad.js"></script>
 </body>
 </html>

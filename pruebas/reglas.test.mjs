@@ -95,3 +95,34 @@ test("administrador no se borra a sí mismo", () => assertFails(db("a1").doc("us
 test("solo el administrador ve los ingresos del personal", () => assertFails(db("r1").collection("logins").get()));
 test("nadie registra un ingreso con rol falso", () => assertFails(db("o1").collection("logins").add({ uid: "o1", u: "pedro", name: "p", role: "admin", at: now(), day: "2026-11-08", type: "login", dev: "Android" })));
 test("presencia con rol falso se rechaza", () => assertFails(db("o1").doc("presence/o1").set({ uid: "o1", u: "pedro", name: "p", role: "admin", lastSeen: now(), since: now(), offline: false })));
+
+// ---------- Aviso de privacidad (config/privacy) ----------
+const PRIV = { titular: "Shoe Cleaning S.A.", ruc: "1790012345001", direccion: "Av. Siempre Viva 123, Quito", correo: "datos@ejemplo.com", whatsapp: "0980035702", vigencia: "2026-11-21", anios: 2, fotosDias: 60 };
+test("cualquiera lee el aviso de privacidad (sin sesión)", async () => {
+  await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("config/privacy").set(PRIV); });
+  await assertSucceeds(db(null).doc("config/privacy").get());
+});
+test("sin sesión NO se lee el resto de config", async () => {
+  await assertFails(db(null).doc("config/settings").get());
+});
+test("administrador guarda el aviso de privacidad", async () => {
+  await assertSucceeds(db("a1").doc("config/privacy").set(PRIV));
+});
+test("recepción y operaciones NO cambian el aviso", async () => {
+  await assertFails(db("r1").doc("config/privacy").set(PRIV));
+  await assertFails(db("o1").doc("config/privacy").set(PRIV));
+  await assertFails(db(null).doc("config/privacy").set(PRIV));
+});
+test("aviso con campo extra se rechaza", async () => {
+  await assertFails(db("a1").doc("config/privacy").set({ ...PRIV, script: "<script>" }));
+});
+test("aviso con años fuera de rango o RUC con letras se rechaza", async () => {
+  await assertFails(db("a1").doc("config/privacy").set({ ...PRIV, anios: 50 }));
+  await assertFails(db("a1").doc("config/privacy").set({ ...PRIV, anios: "2" }));
+  await assertFails(db("a1").doc("config/privacy").set({ ...PRIV, ruc: "17900ABC" }));
+  await assertFails(db("a1").doc("config/privacy").set({ ...PRIV, titular: "x".repeat(121) }));
+});
+test("nadie borra el aviso", async () => {
+  await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("config/privacy").set(PRIV); });
+  await assertFails(db("a1").doc("config/privacy").delete());
+});

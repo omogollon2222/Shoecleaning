@@ -56,6 +56,18 @@ const norm = o => {
   for(const k of Object.keys(c)) if(!ORDER_KEYS.has(k)) delete c[k]; // campos desconocidos fuera (las reglas tampoco los aceptan)
   return c;
 };
+// Datos del titular para el aviso de privacidad (privacidad.html los lee de config/privacy, que es público).
+const PRIV_DEFAULT = {titular:"", ruc:"", direccion:"", correo:"", whatsapp:"0980035702", vigencia:"", anios:2};
+function normPrivacy(p){
+  const x = (p && typeof p === "object") ? p : {};
+  return {
+    titular: STR(x.titular, 120), ruc: digits(x.ruc).slice(0,13), direccion: STR(x.direccion, 200),
+    correo: STR(x.correo, 120), whatsapp: STR(x.whatsapp ?? PRIV_DEFAULT.whatsapp, 30),
+    vigencia: /^\d{4}-\d{2}-\d{2}$/.test(String(x.vigencia||"")) ? String(x.vigencia) : "",
+    anios: INT(x.anios, 1, 10, PRIV_DEFAULT.anios)
+  };
+}
+let privacy = null; // se carga al arrancar (loadPrivacy), cuando ya existen las utilidades
 // Igual para los ajustes: números como números y claves de servicio solo con letras.
 const INT = (v, min, max, def) => { const n = Math.round(Number(v)); return isFinite(n) ? Math.min(max, Math.max(min, n)) : def; };
 function normSettings(s){
@@ -125,6 +137,8 @@ function parseNum(v){
 const fmt2 = n => r2(n).toFixed(2);
 const money = n => "$" + fmt2(n);
 const digits = s => String(s||"").replace(/\D/g,"");
+function loadPrivacy(){ try{ privacy = normPrivacy(JSON.parse(localStorage.getItem("sc_privacy")||"null") || PRIV_DEFAULT); }catch(e){ privacy = normPrivacy(PRIV_DEFAULT); } }
+loadPrivacy();
 const phoneKey = p => { let d = digits(p); if(d.startsWith(settings.cc) && d.length>10) d = "0"+d.slice(settings.cc.length); return d; };
 const waNumber = p => { let d = digits(p); if(d.startsWith("0")) d = settings.cc + d.slice(1); else if(d.length<=9) d = settings.cc + d; return d; };
 const waLink = (p,msg) => "https://wa.me/" + waNumber(p) + "?text=" + encodeURIComponent(msg);
@@ -284,6 +298,10 @@ async function removeOrder(id){
   try{ await deletePhotos(id); }catch(e){}
   if(mode==="db"){ try{ await ordersCol.doc(id).delete(); }catch(e){ toast("No se pudo eliminar."); } }
   else saveLocal();
+}
+async function savePrivacy(){
+  try{ localStorage.setItem("sc_privacy", JSON.stringify(privacy)); }catch(e){}
+  if(mode==="db" && fb){ try{ await fb.doc("config/privacy").set(Object.assign({}, privacy, {fotosDias: settings.photoDays})); }catch(e){ toast("No se pudo guardar el aviso de privacidad."); } }
 }
 async function saveSettings(){
   if(mode==="db"){ try{ const st = clean(settings); if(cloud) delete st.users; await settingsDoc.set(st); }catch(e){ toast("No se pudieron guardar los ajustes."); } }
@@ -1026,6 +1044,17 @@ function viewSettings(){
     <div class="field"><label for="s_na">Avisar al cliente por WhatsApp</label><select class="input" id="s_na"><option value="1" ${settings.notifyAll?"selected":""}>En cada etapa (lavado, secado, esterilización y listo)</option><option value="0" ${settings.notifyAll?"":"selected"}>Solo cuando está listo</option></select></div>
     <div class="field"><label for="s_rp">WhatsApp para recibir reportes (dueño o gerente)</label><input class="input" id="s_rp" type="tel" inputmode="tel" placeholder="Ej. 099 123 4567 · vacío = elegir contacto" value="${esc(settings.reportPhone||"")}"></div>
   </div>
+  <div class="lbl">Aviso de privacidad (LOPDP)</div>
+  <div class="panel pad">
+    <p class="small muted" style="margin:0 0 10px">Estos datos aparecen en el <a href="privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a> que ven tus clientes.</p>
+    <div class="field"><label for="p_ti">Responsable (razón social o nombre)</label><input class="input" id="p_ti" maxlength="120" value="${esc(privacy.titular)}"></div>
+    <div class="two"><div class="field"><label for="p_ruc">RUC</label><input class="input" id="p_ruc" inputmode="numeric" maxlength="13" value="${esc(privacy.ruc)}"></div>
+    <div class="field"><label for="p_vg">Vigente desde</label><input class="input" id="p_vg" type="date" value="${esc(privacy.vigencia)}"></div></div>
+    <div class="field"><label for="p_dir">Dirección</label><input class="input" id="p_dir" maxlength="200" value="${esc(privacy.direccion)}"></div>
+    <div class="two"><div class="field"><label for="p_co">Correo para temas de datos</label><input class="input" id="p_co" type="email" maxlength="120" value="${esc(privacy.correo)}"></div>
+    <div class="field"><label for="p_wa">WhatsApp de contacto</label><input class="input" id="p_wa" type="tel" inputmode="tel" maxlength="30" value="${esc(privacy.whatsapp)}"></div></div>
+    <div class="field"><label for="p_an">Guardar nombre y celular del cliente después de su última visita</label><select class="input" id="p_an">${[1,2,3,4,5].map(n=>`<option value="${n}" ${privacy.anios===n?"selected":""}>${n} ${n===1?"año":"años"}${n===2?" (recomendado)":""}</option>`).join("")}</select></div>
+  </div>
   <button class="btn block" id="saveSet" style="margin-bottom:12px">Guardar ajustes</button>
   ${usersPanel()}
   <div class="lbl">Datos</div>
@@ -1053,7 +1082,11 @@ async function saveSettingsForm(){
   settings.cc = digits($("#s_cc").value) || "593";
   settings.notifyAll = $("#s_na").value==="1";
   settings.reportPhone = $("#s_rp").value.trim();
-  await saveSettings(); draft = null; render(); toast("Ajustes guardados");
+  const correo = $("#p_co").value.trim();
+  if(correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){ toast("Revisa el correo del aviso de privacidad"); $("#p_co").focus(); return; }
+  privacy = normPrivacy({titular:$("#p_ti").value.trim(), ruc:$("#p_ruc").value, direccion:$("#p_dir").value.trim(), correo,
+    whatsapp:$("#p_wa").value.trim(), vigencia:$("#p_vg").value, anios:$("#p_an").value});
+  await saveSettings(); await savePrivacy(); draft = null; render(); toast("Ajustes guardados");
 }
 async function saveFile(filename, data, mime){
   if(downloads){
@@ -1786,6 +1819,13 @@ async function startSession(u){
     else if(view==="ajustes") render();
   }, () => {}));
   if(isAdmin()){
+    let privFirst = true;
+    unsub.push(fb.doc("config/privacy").onSnapshot(sn => {
+      if(sn.exists) privacy = normPrivacy(sn.data());
+      try{ localStorage.setItem("sc_privacy", JSON.stringify(privacy)); }catch(e){}
+      if(privFirst && view==="ajustes") render(); // solo la primera vez, para no borrar lo que se está escribiendo
+      privFirst = false;
+    }, () => {}));
     unsub.push(fb.collection("presence").onSnapshot(sn => { presence = {}; sn.docs.forEach(x => presence[x.id] = x.data()); if(view==="tablero") softRender(); }, () => {}));
     unsub.push(fb.collection("logins").where("at",">=",Date.now()-8*DAY).onSnapshot(sn => { loginsData = sn.docs.map(x => x.data()); if(view==="tablero"||view==="analisis") softRender(); }, () => {}));
   }

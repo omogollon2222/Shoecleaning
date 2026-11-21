@@ -40,6 +40,15 @@ Si se agrega un script o dominio externo, actualizar la CSP de `.htaccess` o el 
 - **Recepción:** registrar pedidos y cobrar, fotos de recepción y entrega, entregas, buscar por N°, celular o nombre.
 - **Operaciones:** cola de trabajo por lavar → lavado → secado → esterilización → listo. 🚩 un día antes de la fecha de entrega. Solo puede avanzar etapas y subir fotos.
 
+## Fotos, gastos e inventario (revisión final 21 nov 2026)
+- **Fotos:** una por cada par o artículo (unidades = cantidad de cada servicio, máx. 30 por etapa), en recepción y en entrega. Se pide cada foto y se avisa si falta, pero se puede seguir. Se guardan en dos tamaños: `photos/{id}` (máx. 720 px, ~30-70 KB) y `thumbs/{id}` (160 px, ~5 KB), en **WebP** (JPEG si el navegador no lo permite, p. ej. Safari). Las listas cargan solo miniaturas; la foto grande se baja al tocarla y se libera al cerrar. Campos `slot` ("clasicos:1") y `label` ("Zapatos clásicos 1"). Operaciones ve las miniaturas de recepción en la ficha del pedido.
+- **Gastos** (`expenses`): tipos insumos, obligaciones, almuerzos, transporte, mantenimiento y otros. Admin y recepción registran; recepción solo del momento y ve las últimas 48 h; solo admin corrige/borra y ve el mes (gráfico por tipo, resultado = ventas − gastos, CSV). Operaciones no ve gastos.
+- **Inventario** (`supplies` + `supplyMoves`): compra (suma, ligada a un gasto de insumos), uso (operaciones/recepción) y conteo (admin). El stock solo cambia junto con su movimiento (las reglas lo exigen) y nunca queda negativo. Aviso de insumos por acabarse en Gastos y en el Tablero.
+- **Cierre de caja:** efectivo que debe haber = cobros en efectivo − gastos en efectivo; tabla de gastos en el PDF.
+- **Resumen ejecutivo:** también en Entregas (recepción) sin datos del personal ni gastos; el del admin incluye gastos y resultado.
+- **Seguridad añadida:** SRI en los scripts de Firebase (`FB_SRI`; si se cambia `FB_V` hay que recalcular los hashes), CSV sin fórmulas (inyección en Excel), `/docs` bloqueado en `.htaccess`.
+- Firma en pantalla: "Engineered with pride by Consultecapps" (letra Great Vibes).
+
 ## Firestore
 Colecciones: `users`, `config`, `orders`, `photos`, `presence`, `logins`.
 - Fotos comprimidas en el cliente (~60 KB, ≤200 KB por regla, máx. 3 por etapa), guardadas en Firestore.

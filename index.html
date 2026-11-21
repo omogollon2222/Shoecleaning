@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#0c2f4b; --brand:#2580bf; --brand-deep:#17598c; --foam:#e6f2fa;
@@ -283,6 +283,34 @@ table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
 .lightbox img{max-width:100%;max-height:100%;border-radius:8px}
 .phgroup{margin-top:6px}
 .phgroup b{font-size:.82rem}
+/* Fotos por par: espacios para tomar y miniaturas */
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px;margin:8px 0 6px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
+.slot small{font-size:.72rem;color:var(--muted);line-height:1.2;overflow-wrap:anywhere}
+.slot .cam{width:72px;height:72px;border:2px dashed var(--line);border-radius:12px;display:grid;place-items:center;font-size:1.5rem;cursor:pointer;background:var(--foam)}
+.slot .cam:focus-within{outline:2px solid var(--brand)}
+.refwrap{position:relative;display:inline-block}
+.slot img.ref{width:32px;height:32px;object-fit:cover;border-radius:8px;border:2px solid var(--surface);position:absolute;left:-10px;bottom:-6px;box-shadow:var(--shadow)}
+.thgrid{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}
+.thb{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;width:80px;cursor:zoom-in;color:var(--ink)}
+.thb img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:var(--foam);display:block}
+.thb span{font-size:.72rem;color:var(--muted);line-height:1.2;overflow-wrap:anywhere}
+.lightbox .cap{position:absolute;left:0;right:0;bottom:calc(18px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;font-size:.9rem;padding:0 16px}
+/* Gastos e inventario */
+.catpick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.exline{display:grid;grid-template-columns:1fr 78px 44px;gap:6px;margin-top:8px}
+.exline .btn{min-height:44px;padding:0}
+.sup{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.sup:last-child{border-bottom:0}
+.supn{border:0;background:none;text-align:left;padding:0;color:var(--ink);cursor:pointer;min-width:0}
+.supq{white-space:nowrap;text-align:right}
+.supq b{font-family:"Bricolage Grotesque",sans-serif;font-size:1.15rem}
+.sup.low .supq b{color:var(--danger)}
+.sup .btn{min-height:38px;padding:6px 10px}
+button.kpi{border:0;font:inherit;color:inherit;width:100%;cursor:pointer}
+/* Firma */
+.credit{text-align:center;margin:28px 0 8px;color:var(--muted);font-size:.78rem;letter-spacing:.02em}
+.credit b{display:block;font-family:"Great Vibes",cursive;font-weight:400;font-size:1.7rem;line-height:1.1;color:var(--brand);letter-spacing:0;margin-top:2px}
 /* Tablero */
 .live{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--ready)}
 .live i{width:8px;height:8px;border-radius:50%;background:var(--ready);animation:pulse 1.6s infinite}
@@ -321,6 +349,7 @@ table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
     <div class="hdr-r"><button class="userchip" id="userBtn" hidden></button><div class="sync" id="sync">Cargando…</div></div>
   </header>
   <main id="view"></main>
+  <footer class="credit">Engineered with pride by<b>Consultecapps</b></footer>
 </div>
 
 <button class="nqpill" id="nqPill" hidden></button>

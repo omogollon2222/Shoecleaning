@@ -69,8 +69,8 @@ service cloud.firestore {
         && (!ks.hasAny(['listoBy'])     || str(d.listoBy, 60))
         && (!ks.hasAny(['notifiedStatus']) || str(d.notifiedStatus, 20))
         && (!ks.hasAny(['photos'])      || (d.photos is map && d.photos.keys().hasOnly(['recepcion', 'entrega'])
-                                            && (!('recepcion' in d.photos) || (d.photos.recepcion is int && d.photos.recepcion >= 0 && d.photos.recepcion <= 3))
-                                            && (!('entrega' in d.photos)   || (d.photos.entrega is int && d.photos.entrega >= 0 && d.photos.entrega <= 3))));
+                                            && (!('recepcion' in d.photos) || (d.photos.recepcion is int && d.photos.recepcion >= 0 && d.photos.recepcion <= 30))
+                                            && (!('entrega' in d.photos)   || (d.photos.entrega is int && d.photos.entrega >= 0 && d.photos.entrega <= 30))));
     }
     function statusOk(s) { return s in ['recibido', 'lavado', 'secado', 'esterilizacion', 'listo', 'entregado']; }
 
@@ -118,7 +118,7 @@ service cloud.firestore {
     match /photos/{id} {
       allow read: if active();
       allow create: if active()
-        && request.resource.data.keys().hasOnly(['id', 'orderId', 'num', 'stage', 'data', 'at', 'by'])
+        && request.resource.data.keys().hasOnly(['id', 'orderId', 'num', 'stage', 'data', 'at', 'by', 'slot', 'label'])
         && request.resource.data.id == id
         && str(request.resource.data.orderId, 40)
         && exists(/databases/$(db)/documents/orders/$(request.resource.data.orderId))
@@ -127,9 +127,104 @@ service cloud.firestore {
         && request.resource.data.data.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
         && (!('num' in request.resource.data) || str(request.resource.data.num, 30))
         && (!('at' in request.resource.data) || ts(request.resource.data.at))
-        && (!('by' in request.resource.data) || str(request.resource.data.by, 60));
+        && (!('by' in request.resource.data) || str(request.resource.data.by, 60))
+        && (!('slot' in request.resource.data) || (str(request.resource.data.slot, 50) && request.resource.data.slot.matches('^([A-Za-z0-9_]+:[0-9]+)?$')))
+        && (!('label' in request.resource.data) || str(request.resource.data.label, 100));
       allow update: if false;
       allow delete: if isAdmin();
+    }
+
+    // ---------- Miniaturas de las fotos (~5 KB): las listas cargan solo estas ----------
+    match /thumbs/{id} {
+      allow read: if active();
+      allow create: if active()
+        && request.resource.data.keys().hasOnly(['id', 'orderId', 'stage', 'slot', 'label', 'data', 'at'])
+        && request.resource.data.id == id
+        && existsAfter(/databases/$(db)/documents/photos/$(id))
+        && getAfter(/databases/$(db)/documents/photos/$(id)).data.orderId == request.resource.data.orderId
+        && request.resource.data.stage in ['recepcion', 'entrega']
+        && request.resource.data.data is string && request.resource.data.data.size() < 20000
+        && request.resource.data.data.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
+        && str(request.resource.data.slot, 50) && request.resource.data.slot.matches('^([A-Za-z0-9_]+:[0-9]+)?$')
+        && str(request.resource.data.label, 100) && ts(request.resource.data.at);
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Gastos (insumos, obligaciones, almuerzos...) ----------
+    // Administrador: todo. Recepción: registra gastos del momento y ve los de las últimas 48 horas
+    // (para el cierre de caja). Operaciones: no ve gastos.
+    function expenseOk(d) {
+      return d.keys().hasOnly(['id', 'day', 'at', 'cat', 'desc', 'provider', 'amount', 'method', 'by', 'lines'])
+        && d.keys().hasAll(['id', 'day', 'at', 'cat', 'desc', 'amount', 'method', 'by'])
+        && d.cat in ['insumos', 'obligaciones', 'almuerzos', 'transporte', 'mantenimiento', 'otros']
+        && str(d.desc, 200) && d.desc.size() > 0
+        && (!('provider' in d) || str(d.provider, 100))
+        && d.amount is number && d.amount > 0 && d.amount < 100000
+        && d.method in ['Efectivo', 'Transferencia']
+        && d.day is string && d.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && ts(d.at) && str(d.by, 60)
+        && (!('lines' in d) || (d.lines is list && d.lines.size() <= 10));
+    }
+    match /expenses/{id} {
+      allow read: if isAdmin() || (isRecep() && resource.data.at > request.time.toMillis() - 172800000);
+      allow create: if active() && !isOps()
+        && expenseOk(request.resource.data)
+        && request.resource.data.id == id
+        && request.resource.data.by == profile().username
+        && (isAdmin() || (request.resource.data.at > request.time.toMillis() - 600000
+                          && request.resource.data.at < request.time.toMillis() + 600000));
+      allow update: if isAdmin() && expenseOk(request.resource.data) && request.resource.data.id == resource.data.id;
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Inventario de insumos ----------
+    // El stock solo cambia junto con un movimiento (compra, uso o conteo) creado en la misma operación.
+    function moveFor(sid) { return getAfter(/databases/$(db)/documents/supplyMoves/$(request.resource.data.lastMove)).data; }
+    match /supplies/{id} {
+      allow read: if active();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['id', 'name', 'unit', 'stock', 'min', 'createdAt', 'updatedAt'])
+        && request.resource.data.id == id
+        && str(request.resource.data.name, 80) && request.resource.data.name.size() > 0
+        && str(request.resource.data.unit, 20)
+        && request.resource.data.stock is number && request.resource.data.stock >= 0 && request.resource.data.stock < 1000000
+        && request.resource.data.min is number && request.resource.data.min >= 0 && request.resource.data.min < 1000000;
+      allow update: if active() && request.resource.data.id == resource.data.id && (
+          // Datos del insumo (solo administrador), sin tocar el stock
+          (isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'unit', 'min', 'updatedAt'])
+            && str(request.resource.data.name, 80) && request.resource.data.name.size() > 0
+            && str(request.resource.data.unit, 20)
+            && request.resource.data.min is number && request.resource.data.min >= 0 && request.resource.data.min < 1000000)
+          // Cambio de stock: debe venir con su movimiento nuevo
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'updatedAt', 'lastMove'])
+            && request.resource.data.lastMove is string
+            && !exists(/databases/$(db)/documents/supplyMoves/$(request.resource.data.lastMove))
+            && existsAfter(/databases/$(db)/documents/supplyMoves/$(request.resource.data.lastMove))
+            && moveFor(id).sid == id
+            && request.resource.data.stock == resource.data.stock + moveFor(id).qty
+            && request.resource.data.stock is number && request.resource.data.stock >= 0 && request.resource.data.stock < 1000000)
+        );
+      allow delete: if isAdmin();
+    }
+    match /supplyMoves/{id} {
+      allow read: if active();
+      allow create: if active()
+        && request.resource.data.keys().hasOnly(['id', 'sid', 'type', 'qty', 'at', 'by', 'note', 'expenseId'])
+        && request.resource.data.id == id
+        && request.resource.data.by == profile().username
+        && request.resource.data.qty is number && request.resource.data.qty > -1000000 && request.resource.data.qty < 1000000
+        && ts(request.resource.data.at)
+        && (!('note' in request.resource.data) || str(request.resource.data.note, 200))
+        && (!('expenseId' in request.resource.data) || str(request.resource.data.expenseId, 40))
+        && getAfter(/databases/$(db)/documents/supplies/$(request.resource.data.sid)).data.lastMove == id
+        && (
+          (request.resource.data.type == 'uso' && request.resource.data.qty < 0)
+          || (request.resource.data.type == 'compra' && request.resource.data.qty > 0 && !isOps())
+          || (request.resource.data.type == 'ajuste' && isAdmin())
+        );
+      allow update, delete: if false;
     }
 
     // ---------- Usuarios y roles: solo el administrador. El primer administrador se crea una sola vez. ----------

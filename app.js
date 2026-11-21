@@ -108,15 +108,17 @@ const ROLE = {admin:"Administrador", recepcion:"Recepción", operaciones:"Operac
 const ROLE_DESC = {admin:"Ve y configura todo", recepcion:"Recibe pedidos, cobra y entrega", operaciones:"Cola de trabajo: lavado a listo"};
 const ICON = {"pedidos": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2\"/><path d=\"M9 8h6M9 12h6M9 16h4\"/></svg>", "clientes": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8\" r=\"3.5\"/><path d=\"M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5\"/><path d=\"M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2\"/></svg>", "nuevo": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>", "analisis": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20V10M10 20V4M16 20v-7M22 20H2\"/></svg>", "ajustes": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z\"/></svg>", "entregas": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7l9-4 9 4v10l-9 4-9-4z\"/><path d=\"M3 7l9 4 9-4M12 11v10\"/><path d=\"M8.5 15.5l2 2 4-4\"/></svg>", "consultar": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.5-3.5\"/></svg>", "cola": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 6h13M8 12h13M8 18h13\"/><circle cx=\"3.5\" cy=\"6\" r=\"1\"/><circle cx=\"3.5\" cy=\"12\" r=\"1\"/><circle cx=\"3.5\" cy=\"18\" r=\"1\"/></svg>"};
 const TABS = {
-  admin:[["tablero","Tablero"],["pedidos","Pedidos"],["nuevo","Nuevo"],["clientes","Clientes"],["analisis","Análisis"],["ajustes","Ajustes"]],
-  recepcion:[["nuevo","Nuevo"],["entregas","Entregas"],["consultar","Consultar"],["clientes","Clientes"]],
-  operaciones:[["cola","Cola"],["consultar","Buscar"]]
+  admin:[["tablero","Tablero"],["pedidos","Pedidos"],["nuevo","Nuevo"],["clientes","Clientes"],["gastos","Gastos"],["analisis","Análisis"],["ajustes","Ajustes"]],
+  recepcion:[["nuevo","Nuevo"],["entregas","Entregas"],["consultar","Consultar"],["clientes","Clientes"],["gastos","Gastos"]],
+  operaciones:[["cola","Cola"],["consultar","Buscar"],["insumos","Insumos"]]
 };
 const HOME = {admin:"tablero", recepcion:"nuevo", operaciones:"cola"};
+ICON.gastos = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M16.5 15h2"/><path d="M6 6l9-3 1.2 3"/></svg>';
+ICON.insumos = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v4l-4 5v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-8l-4-5V3"/><path d="M6 14h12"/></svg>';
 ICON.tablero = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>';
-const MAX_OPS = 5, PHOTO_MAX = 3;
+const MAX_OPS = 5, PHOTO_MAX = 30; // fotos por etapa: una por par o artículo
 let presence = {}, loginsData = [], hbTimer = null, sessionSince = 0, pendingLoginType = null;
-let pendingPhotos = {recepcion:[], entrega:[]};
+let pendingPhotos = {recepcion:{}, entrega:{}}; // fotos por tomar, por unidad ("clasicos:1" → {data, thumb})
 
 /* ---------- Utilidades ---------- */
 const $ = s => document.querySelector(s);
@@ -135,7 +137,7 @@ function parseNum(v){
   return isFinite(n) ? n : 0;
 }
 const fmt2 = n => r2(n).toFixed(2);
-const money = n => "$" + fmt2(n);
+const money = n => (r2(n) < 0 ? "-$" : "$") + fmt2(Math.abs(r2(n)));
 const digits = s => String(s||"").replace(/\D/g,"");
 function loadPrivacy(){ try{ privacy = normPrivacy(JSON.parse(localStorage.getItem("sc_privacy")||"null") || PRIV_DEFAULT); }catch(e){ privacy = normPrivacy(PRIV_DEFAULT); } }
 loadPrivacy();
@@ -250,7 +252,7 @@ let lastNoticeCount = -1;
 function renderNotices(){
   const pill = $("#nqPill"); if(!pill) return;
   const list = me && !isOps() ? pendingNotices() : [];
-  if(lastNoticeCount>=0 && list.length>lastNoticeCount && !$("#nq")){ toast("📲 Nuevo aviso por enviar al cliente"); try{ navigator.vibrate && navigator.vibrate(150); }catch(e){} }
+  if(lastNoticeCount>=0 && list.length>lastNoticeCount && !$("#nq")){ toast("📲 Nuevo aviso por enviar al cliente"); try{ if(navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(150); }catch(e){} }
   lastNoticeCount = me ? list.length : -1;
   pill.hidden = !list.length;
   document.body.classList.toggle("hasnq", !!list.length);
@@ -339,7 +341,7 @@ function logout(silent){ clearInterval(hbTimer); if(cloud && fbAuth){ closeSheet
 // Al cerrar sesión se borra la copia local de pedidos y clientes (tablets compartidas).
 async function wipeLocalCache(){
   try{ if(fb){ await fb.terminate(); await fb.clearPersistence(); } }catch(e){}
-  try{ ["sc_orders","sc_settings"].forEach(k => localStorage.removeItem(k)); }catch(e){}
+  try{ ["sc_orders","sc_settings","sc_expenses","sc_supplies","sc_moves"].forEach(k => localStorage.removeItem(k)); }catch(e){}
   location.reload();
 }
 function renderNav(){
@@ -470,7 +472,7 @@ function viewEntregas(){
   const inProc = orders.filter(o=>o.status==="recibido"||PROC.includes(o.status)).length;
   const porCobrar = list.reduce((t,o)=>t+saldo(o),0);
   if(q){ const s = q.toLowerCase(); list = list.filter(o => (o.name||"").toLowerCase().includes(s) || (o.num||"").toLowerCase().includes(s) || (o.phone||"").includes(s)); }
-  let h = consultBtn() + reportBtns(false) + `<div class="dayline"><span><b>${list.length}</b> listo${list.length===1?"":"s"} para entregar</span><span><b>${money(porCobrar)}</b> por cobrar</span><span><b>${inProc}</b> en taller</span></div>
+  let h = consultBtn() + reportBtns(true) + `<div class="dayline"><span><b>${list.length}</b> listo${list.length===1?"":"s"} para entregar</span><span><b>${money(porCobrar)}</b> por cobrar</span><span><b>${inProc}</b> en taller</span></div>
   <div class="listhead"><h2>Entregar y cobrar</h2></div>
   <input class="search" id="q" type="search" placeholder="Buscar por nombre, teléfono o N°" value="${esc(q)}">`;
   if(!list.length) h += `<div class="empty"><strong>Nada por entregar</strong>Cuando operaciones marque un pedido como listo, aparecerá aquí.</div>`;
@@ -514,9 +516,12 @@ function opsSheet(o){
     <div class="panel pad" style="margin-top:12px"><div class="totals">${(o.items||[]).map(i=>`<div><span>${esc(i.label)}</span><b>${esc(i.qty)}</b></div>`).join("")}</div></div>
     ${o.notes?`<p><b>Notas:</b> ${esc(o.notes)}</p>`:""}
     <p class="small">Entrega: <b>${fmtDue(o.dueDate)}</b> · Recibido ${fmtDate(o.createdAt,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</p>
+    <span class="lbl" style="margin-top:12px">Fotos de cómo llegó · toca para ampliar</span>
+    <div id="phbox" class="small muted">${photoCount(o)?"Cargando fotos…":"Sin fotos de recepción."}</div>
     <span class="lbl" style="margin-top:12px">Etapa</span>
     <div class="stwrap" role="group" id="stSeg">${FLOW.slice(0,5).map(k=>`<button type="button" data-st="${k}" aria-pressed="${o.status===k}">${ST[k].ic} ${ST[k].l.replace(" para entregar","")}</button>`).join("")}</div>
     <div class="stack"><button class="btn ghost block" data-close>Cerrar</button></div>`);
+  if(photoCount(o)) renderPhotoPanel(o, {readOnly:true, stages:["recepcion"]});
   $("#stSeg").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => {
     if(busy.has(o.id)) return; busy.add(o.id); setTimeout(()=>busy.delete(o.id), 350);
     const k = b.dataset.st; const patch = {status:k, [k+"At"]:Date.now(), [k+"By"]:me.u};
@@ -631,6 +636,8 @@ function render(){
   else if(view==="entregas") v.innerHTML = viewEntregas();
   else if(view==="cola") v.innerHTML = viewCola();
   else if(view==="tablero") v.innerHTML = viewTablero();
+  else if(view==="gastos") v.innerHTML = viewGastos();
+  else if(view==="insumos") v.innerHTML = viewInsumos();
   bind(); renderNotices();
 }
 
@@ -700,7 +707,7 @@ function progressHTML(o){
 
 /* ---------- Vista: Nuevo pedido ---------- */
 function newDraft(){
-  pendingPhotos.recepcion = [];
+  pendingPhotos.recepcion = {};
   draft = {name:"", phone:"", qty:{}, price:{}, due: todayStr(settings.deliveryDays), abonoMode:"total", abono:"", method:"Efectivo", notes:"", useReward:true, avisoOk:false, promoOk:false};
   settings.services.forEach(s => { draft.qty[s.key]=0; draft.price[s.key]=fmt2(s.price); });
 }
@@ -740,7 +747,7 @@ function viewNew(){
     <div class="seg" role="group"><button type="button" data-ab="total" aria-pressed="${draft.abonoMode==="total"}">Pagado</button><button type="button" data-ab="abono" aria-pressed="${draft.abonoMode==="abono"}">Abono</button><button type="button" data-ab="nada" aria-pressed="${draft.abonoMode==="nada"}">Paga al retirar</button></div>
   </div>
   ${draft.abonoMode==="abono"?`<div class="field"><label for="f_abono">Monto del abono</label><input class="input" id="f_abono" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0,00" value="${esc(draft.abono)}"></div>`:""}
-  ${pickerHTML("recepcion","Fotos de recepción (opcional)")}
+  ${pickerHTML("recepcion", photoUnits(c.items))}
   <div class="field"><label for="f_notes">Notas (opcional)</label><input class="input" id="f_notes" placeholder="Ej. mancha en la punta, cordones aparte" value="${esc(draft.notes)}"></div>
   <div class="panel pad consent">
     <label class="ck"><input type="checkbox" id="f_aviso" ${draft.avisoOk?"checked":""}> <span><b>Informé al cliente</b> que sus datos (nombre, celular y fotos) se usan solo para este servicio. <a href="privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a></span></label>
@@ -770,6 +777,12 @@ function refreshNew(){
   $("#totals").innerHTML = totalsHTML(c);
   $("#reward").innerHTML = rewardHTML(c);
   const r = $("#f_reward"); if(r) r.onchange = e => { draft.useReward = e.target.checked; refreshNew(); };
+  // Si cambian los artículos, cambian los espacios para fotos (una por par)
+  const units = photoUnits(c.items), pp = $("#pp_recepcion");
+  if(pp && pp.dataset.sig !== units.map(u => u.slot).join(",")){
+    Object.keys(pendingPhotos.recepcion).forEach(k => { if(!units.some(u => u.slot===k)) delete pendingPhotos.recepcion[k]; });
+    pp.outerHTML = pickerHTML("recepcion", units); bindPicker("recepcion", units);
+  }
 }
 function showSuggest(){
   const box = $("#suggest"); if(!box) return;
@@ -793,15 +806,18 @@ async function submitNew(){
   if(c.total<=0){ toast("Revisa los precios: el total es $0.00"); return; }
   if(!draft.avisoOk){ toast("Marca que informaste al cliente sobre el uso de sus datos"); $("#f_aviso").focus(); return; }
   if(draft.abonoMode==="abono" && parseNum(draft.abono) > c.total){ toast("El abono no puede ser mayor que el total"); $("#f_abono").focus(); return; }
+  const units = photoUnits(c.items);
+  const phs = units.filter(u => pendingPhotos.recepcion[u.slot]).map(u => Object.assign({slot:u.slot, label:u.label}, pendingPhotos.recepcion[u.slot]));
+  const miss = units.length - phs.length;
+  if(miss && !confirm(`Falta${miss===1?"":"n"} ${miss} foto${miss===1?"":"s"} de recepción (una por par o artículo). Las fotos protegen al negocio ante reclamos.\n\n¿Registrar el pedido igual?`)) return;
   const o = {id:uid(), num:"", name:draft.name.trim(), phone:draft.phone.trim(), phoneKey:phoneKey(draft.phone),
     items:c.items, subtotal:c.subtotal, discount:c.discount, discountPct:c.apply?settings.loyaltyPct:0, total:c.total,
     abono:c.abono, paidFull:c.saldo<=0, method:draft.method, notes:draft.notes.trim(),
-    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply, createdBy:me?me.u:"", photos:{recepcion:pendingPhotos.recepcion.length, entrega:0}, avisoOk:true, promoOk:!!draft.promoOk};
-  const phs = pendingPhotos.recepcion.slice();
+    status:"recibido", createdAt:Date.now(), dueDate:draft.due, loyaltyRedeemed:c.apply, createdBy:me?me.u:"", photos:{recepcion:phs.length, entrega:0}, avisoOk:true, promoOk:!!draft.promoOk};
   saving = true; const sb = $("#save"); if(sb){ sb.disabled = true; sb.textContent = "Guardando…"; }
   try{ o.num = await takeNumber(); await putOrder(o); if(!cloud) await saveSettings(); }
   catch(err){ saving = false; if(sb){ sb.disabled = false; sb.textContent = "Registrar pedido"; } toast("No se pudo registrar. Revisa tu conexión."); return; }
-  try{ for(const data of phs) await savePhoto({orderId:o.id, num:o.num, stage:"recepcion", data, at:Date.now(), by:me?me.u:""}); }
+  try{ for(const p of phs) await savePhoto({orderId:o.id, num:o.num, stage:"recepcion", data:p.data, at:Date.now(), by:me?me.u:"", slot:p.slot, label:p.label}, p.thumb); }
   catch(err){ toast("El pedido se guardó, pero no las fotos"); }
   finally { saving = false; }
   draft = null; view = HOME[me.role]==="nuevo" ? "nuevo" : "pedidos"; filter = "recibido"; render();
@@ -839,26 +855,34 @@ async function advanceNow(id){
   else if(o.status==="listo" && !isOps()) deliverSheet(o);
 }
 function deliverSheet(o){
-  const s = saldo(o);
-  pendingPhotos.entrega = [];
+  const s = saldo(o), units = photoUnits(o.items), refs = {};
+  pendingPhotos.entrega = {};
   openSheet(`<h2>Confirmar entrega</h2>
     <p><span class="num">N° ${esc(o.num)}</span> · ${esc(o.name)}<br><span class="muted">${esc(itemsText(o))}</span></p>
     ${s>0?`<div class="panel pad"><div class="totals"><div class="big"><span>Cobrar saldo</span><span>${money(s)}</span></div></div>
     <div class="field" style="margin-top:12px"><span class="lbl">Medio de pago</span><div class="seg" role="group" id="dm"><button type="button" aria-pressed="true">Efectivo</button><button type="button" aria-pressed="false">Transferencia</button></div></div></div>`:`<p class="muted">El pedido ya está pagado.</p>`}
-    ${pickerHTML("entrega","Foto de entrega (opcional)")}
+    ${pickerHTML("entrega", units, refs)}
+    <p class="small muted" style="margin:-6px 0 10px">La miniatura pequeña muestra cómo llegó cada par, para comparar.</p>
     <div class="stack"><button class="btn ok block" id="doDeliver">${s>0?"Cobrar "+money(s)+" y entregar":"Confirmar entrega"}</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
   const dm = $("#dm");
-  bindPicker("entrega","Foto de entrega (opcional)");
+  bindPicker("entrega", units, refs);
+  if(photoCount(o)) loadThumbs(o.id).then(list => {
+    list.filter(p => p.stage==="recepcion" && p.slot).forEach(p => { refs[p.slot] = p; });
+    const r = $("#pp_entrega"); if(r){ r.outerHTML = pickerHTML("entrega", units, refs); bindPicker("entrega", units, refs); }
+  }).catch(() => {});
   if(dm) dm.querySelectorAll("button").forEach(b=>b.onclick=()=>dm.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)));
   $("#doDeliver").onclick = async (ev) => {
-    if(ev.currentTarget.disabled) return; ev.currentTarget.disabled = true;
+    const btn = ev.currentTarget; if(btn.disabled) return;
+    const phs = units.filter(u => pendingPhotos.entrega[u.slot]).map(u => Object.assign({slot:u.slot, label:u.label}, pendingPhotos.entrega[u.slot]));
+    const miss = units.length - phs.length;
+    if(miss && !confirm(`Falta${miss===1?"":"n"} ${miss} foto${miss===1?"":"s"} de entrega (una por par o artículo).\n\n¿Entregar igual?`)) return;
+    btn.disabled = true;
     const m = dm ? dm.querySelector('[aria-pressed="true"]').textContent : null;
     const patch = {status:"entregado", deliveredAt:Date.now(), paidFull:true, deliveredBy:me?me.u:"", cobradoEntrega:s};
     if(m) patch.methodFinal = m;
-    const phs = pendingPhotos.entrega.slice();
-    if(phs.length) patch.photos = Object.assign({recepcion:0}, o.photos||{}, {entrega:((o.photos||{}).entrega||0)+phs.length});
-    try{ for(const data of phs) await savePhoto({orderId:o.id, num:o.num, stage:"entrega", data, at:Date.now(), by:me?me.u:""}); }catch(err){ toast("No se pudieron guardar las fotos"); }
-    await patchOrder(o.id, patch); render();
+    if(phs.length) patch.photos = Object.assign({recepcion:0}, o.photos||{}, {entrega:Math.min(PHOTO_MAX, ((o.photos||{}).entrega||0)+phs.length)});
+    try{ for(const p of phs) await savePhoto({orderId:o.id, num:o.num, stage:"entrega", data:p.data, at:Date.now(), by:me?me.u:"", slot:p.slot, label:p.label}, p.thumb); }catch(err){ toast("No se pudieron guardar las fotos"); }
+    await patchOrder(o.id, patch); pendingPhotos.entrega = {}; render();
     const fresh = orders.find(x=>x.id===o.id);
     openSheet(`<h2>Entregado ✓</h2><p>Envía un agradecimiento con el avance de su tarjeta de fidelidad. Así vuelve más pronto.</p>
       <div class="stack"><a class="btn wa block" href="${esc(waLink(fresh.phone,msgThanks(fresh)))}" target="_blank" rel="noopener" data-close>${svgWA} Enviar agradecimiento</a><button class="btn ghost block" data-close>Cerrar</button></div>`);
@@ -878,9 +902,8 @@ function orderSheet(id){
     ${o.notes?`<p><b>Notas:</b> ${esc(o.notes)}</p>`:""}
     <p class="small">Entrega: ${fmtDue(o.dueDate)} · Pago: ${esc(o.method||"—")}</p>
     <div class="small"><b>Fidelidad:</b> ${l.visits}/${settings.loyaltyVisits} visitas</div>${punchHTML(l.visits)}
-    <span class="lbl" style="margin-top:16px">Fotos</span>
+    <span class="lbl" style="margin-top:16px">Fotos · una por par o artículo (toca para ampliar)</span>
     <div id="phbox" class="small muted">${photoCount(o)?"Cargando fotos…":"Sin fotos."}</div>
-    ${((o.photos||{})[o.status==="entregado"?"entrega":"recepcion"]||0) < PHOTO_MAX ? `<label class="btn ghost" style="cursor:pointer;margin-top:8px;min-height:40px">📷 Agregar foto de ${o.status==="entregado"?"entrega":"recepción"}<input type="file" accept="image/*" hidden id="phAdd"></label>` : `<p class="small muted">Máximo ${PHOTO_MAX} fotos por etapa.</p>`}
     <span class="lbl" style="margin-top:16px">Estado</span>
     ${o.status==="entregado" && !isAdmin() ? `<p class="small muted" style="margin:0">Entregado. Solo el administrador puede deshacer una entrega.</p>` : `<div class="stwrap" role="group" id="stSeg">${FLOW.map(k=>`<button type="button" data-st="${k}" aria-pressed="${o.status===k}">${ST[k].ic} ${ST[k].l.replace(" para entregar","")}</button>`).join("")}</div>`}
     <div class="stack">
@@ -888,19 +911,7 @@ function orderSheet(id){
       ${isAdmin()?`<button class="btn danger block" id="del">Eliminar pedido</button>`:""}
       <button class="btn ghost block" data-close>Cerrar</button>
     </div>`);
-  showPhotos(o);
-  if($("#phAdd")) $("#phAdd").onchange = async e => {
-    const f = e.target.files && e.target.files[0]; if(!f) return;
-    const stage = o.status==="entregado" ? "entrega" : "recepcion";
-    if(((o.photos||{})[stage]||0) >= PHOTO_MAX){ toast(`Máximo ${PHOTO_MAX} fotos por etapa`); e.target.value = ""; return; }
-    try{
-      const data = await compressImage(f);
-      await savePhoto({orderId:o.id, num:o.num, stage, data, at:Date.now(), by:me?me.u:""});
-      const ph = Object.assign({recepcion:0, entrega:0}, o.photos||{}); ph[stage]++;
-      await patchOrder(o.id, {photos:ph}); o.photos = ph; toast("Foto guardada"); orderSheet(o.id);
-    }catch(err){ toast(err && err.message==="tipo" ? "Ese archivo no es una foto" : err && err.message==="grande" ? "La foto es demasiado grande" : "No se pudo guardar la foto"); }
-    e.target.value = "";
-  };
+  renderPhotoPanel(o);
   if($("#stSeg")) $("#stSeg").querySelectorAll("[data-st]").forEach(b => b.onclick = async () => {
     if(busy.has(o.id)) return; busy.add(o.id); setTimeout(()=>busy.delete(o.id), 350);
     const k = b.dataset.st; const patch = {status:k};
@@ -1144,7 +1155,7 @@ async function saveFile(filename, data, mime){
   }catch(e){ toast("No se pudo descargar el archivo"); }
 }
 async function backupJSON(){
-  await saveFile("respaldo-shoe-cleaning-"+todayStr()+".json", JSON.stringify({app:"shoe-cleaning",version:2,exportedAt:new Date().toISOString(),settings,orders},null,1), "application/json");
+  await saveFile("respaldo-shoe-cleaning-"+todayStr()+".json", JSON.stringify({app:"shoe-cleaning",version:3,exportedAt:new Date().toISOString(),settings,orders,expenses,supplies},null,1), "application/json");
 }
 function restoreJSON(file){
   const rd = new FileReader();
@@ -1170,7 +1181,8 @@ async function exportCSV(){
   const dc = n => fmt2(n||0).replace(".",",");
   const head = ["Numero","Fecha","Hora","Cliente","Telefono","Articulos","Subtotal","Descuento","Total","Abono","Saldo","Pago","Estado","Entrega"];
   const rows = orders.slice().sort((a,b)=>a.createdAt-b.createdAt).map(o=>{ const d=new Date(o.createdAt); return [o.num, d.toLocaleDateString("es-EC"), d.toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit"}), o.name, o.phone, itemsText(o), dc(o.subtotal), dc(o.discount), dc(o.total), dc(o.paidFull?o.total:o.abono), dc(saldo(o)), o.methodFinal||o.method||"", ST[o.status].l, o.dueDate||""]; });
-  const csv = "\ufeff" + [head,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\n");
+  const cell = v => { let t = String(v); if(/^[=+\-@\t\r]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g,'""') + '"'; }; // un nombre como =HYPERLINK(...) no se ejecuta en Excel
+  const csv = "\ufeff" + [head,...rows].map(r=>r.map(cell).join(";")).join("\n");
   await saveFile("ventas-shoe-cleaning-"+todayStr()+".csv", csv, "text/csv;charset=utf-8");
 }
 
@@ -1201,6 +1213,15 @@ function bind(){
   v.querySelectorAll("[data-consult]").forEach(b => b.onclick = openConsult);
   v.querySelectorAll("[data-report]").forEach(b => b.onclick = () => b.dataset.report==="exec" ? execSheet() : cierreSheet());
   v.querySelectorAll("[data-of]").forEach(b => b.onclick = () => { opsFilter = b.dataset.of; render(); });
+  // gastos e insumos
+  v.querySelectorAll("[data-expnew]").forEach(b => b.onclick = () => expenseSheet());
+  v.querySelectorAll("[data-exp]").forEach(b => b.onclick = () => expDetailSheet(b.dataset.exp));
+  v.querySelectorAll("[data-sup]").forEach(b => b.onclick = () => supplySheet(b.dataset.sup));
+  v.querySelectorAll("[data-supnew]").forEach(b => b.onclick = () => supplySheet(null));
+  v.querySelectorAll("[data-use]").forEach(b => b.onclick = () => useSheet(b.dataset.use));
+  v.querySelectorAll("[data-count]").forEach(b => b.onclick = () => countSheet(b.dataset.count));
+  v.querySelectorAll("[data-em]").forEach(b => b.onclick = () => { expMonth = b.dataset.em; render(); });
+  v.querySelectorAll("[data-expcsv]").forEach(b => b.onclick = exportExpCSV);
   // clientes
   v.querySelectorAll("[data-cf]").forEach(b => b.onclick = () => { clientFilter = b.dataset.cf; render(); });
   v.querySelectorAll("[data-client]").forEach(b => { b.onclick = () => clientSheet(b.dataset.client); b.onkeydown = e => { if(e.key==="Enter"){ clientSheet(b.dataset.client); } }; });
@@ -1224,7 +1245,7 @@ function bind(){
     v.querySelectorAll("[data-price]").forEach(i => { i.oninput = e => { draft.price[i.dataset.price] = e.target.value; refreshNew(); }; i.onblur = e => { draft.price[i.dataset.price] = fmt2(parseNum(e.target.value)); e.target.value = draft.price[i.dataset.price]; refreshNew(); }; i.onfocus = e => e.target.select(); });
     const r = $("#f_reward"); if(r) r.onchange = e => { draft.useReward = e.target.checked; refreshNew(); };
     $("#save").onclick = submitNew;
-    bindPicker("recepcion","Fotos de recepción (opcional)");
+    bindPicker("recepcion", photoUnits(calc().items));
   }
   if(view==="ajustes"){
     $("#saveSet").onclick = saveSettingsForm;
@@ -1252,43 +1273,103 @@ function onData(){
 }
 
 /* ---------- Fotos ---------- */
+// Una foto por cada par o artículo, en recepción y en entrega. Cada foto se guarda en dos tamaños:
+// la foto (máx. 720 px, unos 30-70 KB) y su miniatura (160 px, unos 4-8 KB), en WebP si el
+// navegador lo permite (JPEG si no, por ejemplo Safari antiguo). Las listas cargan solo miniaturas;
+// la foto grande se descarga al tocarla y se libera al cerrarla. Al recomprimir se pierden los
+// datos EXIF (ubicación GPS, modelo del celular): no se guarda nada más que la imagen.
 const photoCount = o => o && o.photos ? (o.photos.recepcion||0) + (o.photos.entrega||0) : 0;
 const PHOTO_IN_MAX = 30 * 1024 * 1024; // archivos más grandes pueden colgar celulares con poca memoria
+// Unidades del pedido: "Zapatos 1", "Zapatos 2", "Gorra"... (una foto por cada una)
+function photoUnits(items){
+  const out = [];
+  (items||[]).forEach(i => {
+    const n = Math.max(0, Math.round(i.qty||0)), key = String(i.key||"art").replace(/[^A-Za-z0-9_]/g,"") || "art";
+    for(let k = 1; k <= n && out.length < PHOTO_MAX; k++) out.push({slot:`${key}:${k}`, label: n>1 ? `${i.label} ${k}` : String(i.label||"Artículo")});
+  });
+  return out;
+}
+let webpOk = null;
+function encodeCanvas(cv, q){
+  if(webpOk !== false){ const u = cv.toDataURL("image/webp", q); if(u.startsWith("data:image/webp")){ webpOk = true; return u; } webpOk = false; }
+  return cv.toDataURL("image/jpeg", q);
+}
+function drawScaled(img, maxpx){
+  const k = Math.min(1, maxpx / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.max(1, Math.round(img.naturalWidth*k)), h = Math.max(1, Math.round(img.naturalHeight*k));
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0,0,w,h); cx.drawImage(img, 0, 0, w, h);
+  return cv;
+}
 async function compressImage(file){
   if(!file || !/^image\//.test(file.type || "")) throw new Error("tipo");
   if(file.size > PHOTO_IN_MAX) throw new Error("grande");
   const img = await new Promise((res, rej) => { const u = URL.createObjectURL(file); const i = new Image(); i.onload = () => { URL.revokeObjectURL(u); res(i); }; i.onerror = () => { URL.revokeObjectURL(u); rej(new Error("img")); }; i.src = u; });
-  const MAXPX = 720; const k = Math.min(1, MAXPX / Math.max(img.naturalWidth, img.naturalHeight));
-  const w = Math.max(1, Math.round(img.naturalWidth*k)), h = Math.max(1, Math.round(img.naturalHeight*k));
-  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
-  const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0,0,w,h); cx.drawImage(img, 0, 0, w, h);
-  let q = 0.62, url = cv.toDataURL("image/jpeg", q);
-  while(url.length > 80000 && q > 0.3){ q -= 0.08; url = cv.toDataURL("image/jpeg", q); }
+  const cv = drawScaled(img, 720);
+  let q = 0.6, data = encodeCanvas(cv, q);
+  while(data.length > 80000 && q > 0.3){ q -= 0.08; data = encodeCanvas(cv, q); }
   cv.width = cv.height = 0; // libera la memoria del lienzo enseguida (Safari en iPhone la retiene)
-  if(url.length > 150000) throw new Error("grande");
-  return url;
+  const tc = drawScaled(img, 160);
+  let tq = 0.55, thumb = encodeCanvas(tc, tq);
+  while(thumb.length > 14000 && tq > 0.25){ tq -= 0.1; thumb = encodeCanvas(tc, tq); }
+  tc.width = tc.height = 0; img.src = "";
+  if(data.length > 150000 || thumb.length > 19000) throw new Error("grande");
+  return {data, thumb};
 }
+const photoErr = err => err && err.message==="tipo" ? "Ese archivo no es una foto" : err && err.message==="grande" ? "La foto es demasiado grande" : "No se pudo guardar la foto";
 let idbP = null;
 function idb(){
   if(idbP) return idbP;
   idbP = new Promise((res, rej) => { const r = indexedDB.open("sc_photos", 1); r.onupgradeneeded = () => { const st = r.result.createObjectStore("photos", {keyPath:"id"}); st.createIndex("orderId","orderId"); }; r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   return idbP;
 }
-async function savePhoto(ph){
-  ph.id = ph.id || uid();
-  if(cloud && fb){ await fb.collection("photos").doc(ph.id).set(ph); return; }
+async function idbByOrder(orderId){
   const d = await idb();
-  await new Promise((res, rej) => { const t = d.transaction("photos","readwrite"); t.objectStore("photos").put(ph); t.oncomplete = res; t.onerror = () => rej(t.error); });
+  return await new Promise((res, rej) => { const r = d.transaction("photos").objectStore("photos").index("orderId").getAll(orderId); r.onsuccess = () => res(r.result||[]); r.onerror = () => rej(r.error); });
 }
-async function loadPhotos(orderId){
-  if(cloud && fb){ const sn = await fb.collection("photos").where("orderId","==",orderId).get(); return sn.docs.map(x => x.data()).sort((a,b) => a.at-b.at); }
+// Guarda la foto y su miniatura juntas (en la nube, en una sola operación)
+async function savePhoto(ph, thumb){
+  ph.id = ph.id || uid();
+  if(!ph.slot) delete ph.slot; if(!ph.label) delete ph.label;
+  if(cloud && fb){
+    const b = fb.batch();
+    b.set(fb.collection("photos").doc(ph.id), ph);
+    if(thumb) b.set(fb.collection("thumbs").doc(ph.id), {id:ph.id, orderId:ph.orderId, stage:ph.stage, slot:ph.slot||"", label:ph.label||"", data:thumb, at:ph.at});
+    await b.commit(); return ph.id;
+  }
   const d = await idb();
-  return await new Promise((res, rej) => { const r = d.transaction("photos").objectStore("photos").index("orderId").getAll(orderId); r.onsuccess = () => res((r.result||[]).sort((a,b) => a.at-b.at)); r.onerror = () => rej(r.error); });
+  await new Promise((res, rej) => { const t = d.transaction("photos","readwrite"); t.objectStore("photos").put(Object.assign({}, ph, thumb ? {thumb} : {})); t.oncomplete = res; t.onerror = () => rej(t.error); });
+  return ph.id;
+}
+// Solo las miniaturas de un pedido. Fotos de antes de las miniaturas: se usa la foto.
+async function loadThumbs(orderId){
+  let list = [];
+  if(cloud && fb){
+    const sn = await fb.collection("thumbs").where("orderId","==",orderId).get();
+    list = sn.docs.map(x => x.data());
+    const o = orders.find(x => x.id===orderId);
+    if(o && list.length < photoCount(o)){
+      const have = new Set(list.map(x => x.id));
+      const ps = await fb.collection("photos").where("orderId","==",orderId).get();
+      ps.docs.forEach(d => { const p = d.data(); if(!have.has(p.id)) list.push({id:p.id, orderId, stage:p.stage, slot:p.slot||"", label:p.label||"", data:p.data, at:p.at}); });
+    }
+  } else {
+    list = (await idbByOrder(orderId)).map(p => ({id:p.id, orderId, stage:p.stage, slot:p.slot||"", label:p.label||"", data:p.thumb||p.data, at:p.at}));
+  }
+  return list.sort((a,b) => (a.at||0)-(b.at||0));
+}
+async function loadFull(id){
+  if(cloud && fb){ const d = await fb.collection("photos").doc(id).get(); return d.exists ? d.data().data : ""; }
+  const d = await idb();
+  return await new Promise((res, rej) => { const r = d.transaction("photos").objectStore("photos").get(id); r.onsuccess = () => res(r.result ? r.result.data : ""); r.onerror = () => rej(r.error); });
 }
 async function deletePhotos(orderId){
-  if(cloud && fb){ const sn = await fb.collection("photos").where("orderId","==",orderId).get(); await Promise.all(sn.docs.map(d => d.ref.delete())); return sn.size; }
+  if(cloud && fb){
+    const [a, t] = await Promise.all([fb.collection("photos").where("orderId","==",orderId).get(), fb.collection("thumbs").where("orderId","==",orderId).get()]);
+    await Promise.all([...a.docs, ...t.docs].map(d => d.ref.delete())); return a.size;
+  }
   const d = await idb();
-  return await new Promise((res, rej) => { const t = d.transaction("photos","readwrite"); const st = t.objectStore("photos"); const r = st.index("orderId").getAllKeys(orderId); r.onsuccess = () => { (r.result||[]).forEach(k => st.delete(k)); }; t.oncomplete = () => res((r.result||[]).length); t.onerror = () => rej(t.error); });
+  return await new Promise((res, rej) => { const t = d.transaction("photos","readwrite"); const st = t.objectStore("photos"); let n = 0; const r = st.index("orderId").getAllKeys(orderId); r.onsuccess = () => { n = (r.result||[]).length; (r.result||[]).forEach(k => st.delete(k)); }; t.oncomplete = () => res(n); t.onerror = () => rej(t.error); });
 }
 // Retención (LOPDP: no guardar más de lo necesario) y cuidado del espacio gratuito:
 // las fotos de pedidos entregados hace más de settings.photoDays días se borran solas.
@@ -1305,38 +1386,72 @@ async function purgeOldPhotos(){
   if(n) toast(`Se borraron ${n} fotos de pedidos entregados hace más de ${settings.photoDays} días`);
 }
 const safeImg = u => /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u||"") ? u : "";
-function viewPhoto(u){ const d = document.createElement("div"); d.className = "lightbox"; d.setAttribute("role","dialog"); d.innerHTML = `<img src="${esc(u)}" alt="Foto ampliada">`; d.onclick = () => d.remove(); document.body.appendChild(d); }
-async function showPhotos(o){
-  const box = $("#phbox"); if(!box || !photoCount(o)) return;
-  try{
-    const list = await loadPhotos(o.id);
-    const b2 = $("#phbox"); if(!b2) return;
-    if(!list.length){ b2.textContent = "Sin fotos."; return; }
-    const grp = st => { const l = list.filter(x => x.stage===st); return l.length ? `<div class="phgroup"><b>${st==="entrega"?"Entrega":"Recepción"}</b><div class="thumbs">${l.map(x => `<img class="thv" src="${esc(safeImg(x.data))}" alt="Foto de ${st}" data-ph="${esc(x.id)}" title="${fmtDate(x.at,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}${x.by?" · "+esc(x.by):""}">`).join("")}</div></div>` : ""; };
-    b2.innerHTML = grp("recepcion") + grp("entrega");
-    b2.querySelectorAll("[data-ph]").forEach(im => im.onclick = () => viewPhoto(im.getAttribute("src")));
-  }catch(err){ const b3 = $("#phbox"); if(b3) b3.textContent = "No se pudieron cargar las fotos."; }
+// Foto grande: se descarga al abrirla y se suelta de la memoria al cerrarla
+function openFull(id, thumb, caption){
+  const d = document.createElement("div"); d.className = "lightbox"; d.setAttribute("role","dialog"); d.setAttribute("aria-label","Foto ampliada");
+  d.innerHTML = `<img alt="Foto ampliada" src="${esc(safeImg(thumb))}"><div class="cap">${esc(caption||"Foto")} · cargando…</div>`;
+  const onKey = e => { if(e.key==="Escape") close(); };
+  const close = () => { const im = d.querySelector("img"); if(im) im.removeAttribute("src"); d.remove(); document.removeEventListener("keydown", onKey); };
+  d.onclick = close; document.addEventListener("keydown", onKey); document.body.appendChild(d);
+  loadFull(id).then(u => { if(!d.isConnected) return; const ok = safeImg(u); if(ok) d.querySelector("img").src = ok; d.querySelector(".cap").textContent = caption || ""; })
+    .catch(() => { if(d.isConnected) d.querySelector(".cap").textContent = "No se pudo cargar la foto (¿sin internet?)"; });
 }
-function pickerHTML(stage, label){
-  const arr = pendingPhotos[stage];
-  return `<div class="photos" id="pp_${stage}">
-    ${arr.length<PHOTO_MAX?`<label class="btn ghost" style="cursor:pointer">📷 ${label}<input type="file" accept="image/*" multiple hidden data-photo="${stage}"></label>`:""}
-    ${arr.length?`<div class="thumbs">${arr.map((u,i) => `<span class="th"><img src="${esc(u)}" alt="Foto ${i+1}"><button type="button" data-rmph="${i}" aria-label="Quitar foto ${i+1}">×</button></span>`).join("")}</div>`:""}
-    <small class="muted">${arr.length}/${PHOTO_MAX} fotos · se comprimen para ocupar poco espacio</small></div>`;
+const thumbGrid = list => `<div class="thgrid">${list.map(p => `<button type="button" class="thb" data-ph="${esc(p.id)}"><img src="${esc(safeImg(p.data))}" alt="${esc(p.label||"Foto")}" loading="lazy" decoding="async"><span>${esc(p.label||"Foto")}</span></button>`).join("")}</div>`;
+function bindThumbs(root, list){
+  root.querySelectorAll("[data-ph]").forEach(b => b.onclick = () => { const p = list.find(x => x.id===b.dataset.ph); if(p) openFull(p.id, p.data, p.label); });
 }
-function bindPicker(stage, label){
+// Fotos de un pedido en su ficha: miniaturas por etapa y espacios para las que faltan
+async function renderPhotoPanel(o, opts = {}){
+  const box = $("#phbox"); if(!box) return;
+  let list = [];
+  if(photoCount(o)){ try{ list = await loadThumbs(o.id); }catch(e){ const b0 = $("#phbox"); if(b0) b0.textContent = "No se pudieron cargar las fotos."; return; } }
+  const b = $("#phbox"); if(!b) return;
+  const units = photoUnits(o.items);
+  const canAdd = st => !opts.readOnly && (st==="recepcion" ? o.status!=="entregado" : o.status==="entregado");
+  let h = "";
+  for(const st of (opts.stages || ["recepcion","entrega"])){
+    const L = list.filter(p => p.stage===st);
+    if(!L.length && !canAdd(st)) continue;
+    const bySlot = {}; L.forEach(p => { if(p.slot) bySlot[p.slot] = p; });
+    const known = units.filter(u => bySlot[u.slot]).map(u => bySlot[u.slot]);
+    const extra = L.filter(p => !p.slot || !units.some(u => u.slot===p.slot));
+    const missing = canAdd(st) ? units.filter(u => !bySlot[u.slot]) : [];
+    h += `<div class="phgroup"><b>${st==="entrega"?"Entrega":"Recepción"}</b> <span class="small muted">${L.length} de ${units.length}</span>
+      ${known.length || extra.length ? thumbGrid(known.concat(extra)) : ""}
+      ${missing.length ? `<div class="slots">${missing.map(u => `<div class="slot"><label class="cam" aria-label="Tomar foto de ${esc(u.label)}">📷<input type="file" accept="image/*" hidden data-addph="${esc(u.slot)}" data-st="${st}" data-lb="${esc(u.label)}"></label><small>${esc(u.label)}</small></div>`).join("")}</div>` : ""}</div>`;
+  }
+  b.className = ""; b.innerHTML = h || `<span class="small muted">Sin fotos.</span>`;
+  bindThumbs(b, list);
+  b.querySelectorAll("[data-addph]").forEach(inp => inp.onchange = async e => {
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    const st = inp.dataset.st, cur = Object.assign({recepcion:0, entrega:0}, o.photos||{});
+    if(cur[st] >= PHOTO_MAX){ toast(`Máximo ${PHOTO_MAX} fotos por etapa`); return; }
+    try{
+      const {data, thumb} = await compressImage(f);
+      await savePhoto({orderId:o.id, num:o.num, stage:st, data, at:Date.now(), by:me?me.u:"", slot:inp.dataset.addph, label:inp.dataset.lb}, thumb);
+      cur[st]++; await patchOrder(o.id, {photos:cur}); o.photos = cur; toast("Foto guardada"); renderPhotoPanel(o, opts);
+    }catch(err){ toast(photoErr(err)); }
+  });
+}
+// Espacios para tomar fotos antes de guardar (nuevo pedido y entrega)
+function pickerHTML(stage, units, refs){
+  const map = pendingPhotos[stage], n = units.filter(u => map[u.slot]).length;
+  return `<div class="photos" id="pp_${stage}" data-sig="${esc(units.map(u => u.slot).join(","))}">
+    <span class="lbl">Fotos de ${stage==="entrega"?"entrega":"recepción"} · una por par o artículo</span>
+    ${units.length ? `<div class="slots">${units.map(u => { const p = map[u.slot], r = refs && refs[u.slot];
+      return `<div class="slot ${p?"has":""}"><span class="refwrap">${p ? `<span class="th"><img src="${esc(safeImg(p.thumb))}" alt="Foto de ${esc(u.label)}"><button type="button" data-rmph="${esc(u.slot)}" aria-label="Quitar foto de ${esc(u.label)}">×</button></span>`
+        : `<label class="cam" aria-label="Tomar foto de ${esc(u.label)}">📷<input type="file" accept="image/*" hidden data-slot="${esc(u.slot)}"></label>`}${r ? `<img class="ref" src="${esc(safeImg(r.data))}" alt="Cómo llegó ${esc(u.label)}" title="Cómo llegó">` : ""}</span><small>${esc(u.label)}</small></div>`; }).join("")}</div>
+      <small class="muted">${n} de ${units.length} fotos · se guardan en formato liviano</small>` : `<small class="muted">Agrega artículos para tomar sus fotos.</small>`}</div>`;
+}
+function bindPicker(stage, units, refs){
   const root = $("#pp_"+stage); if(!root) return;
-  const redo = () => { const r = $("#pp_"+stage); if(r){ r.outerHTML = pickerHTML(stage, label); bindPicker(stage, label); } };
-  const inp = root.querySelector("[data-photo]");
-  if(inp) inp.onchange = async e => {
-    const all = [...e.target.files], imgs = all.filter(f => /^image\//.test(f.type || ""));
-    if(imgs.length < all.length) toast("Se ignoró un archivo que no es foto");
-    if(imgs.length > PHOTO_MAX - pendingPhotos[stage].length) setTimeout(() => toast(`Máximo ${PHOTO_MAX} fotos`), 1200);
-    const files = imgs.slice(0, PHOTO_MAX - pendingPhotos[stage].length);
-    for(const f of files){ try{ pendingPhotos[stage].push(await compressImage(f)); }catch(err){ toast(err && err.message==="tipo" ? "Ese archivo no es una foto" : err && err.message==="grande" ? "La foto es demasiado grande" : "No se pudo leer una foto"); } }
+  const redo = () => { const r = $("#pp_"+stage); if(r){ r.outerHTML = pickerHTML(stage, units, refs); bindPicker(stage, units, refs); } };
+  root.querySelectorAll("[data-slot]").forEach(inp => inp.onchange = async e => {
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    try{ pendingPhotos[stage][inp.dataset.slot] = await compressImage(f); }catch(err){ toast(photoErr(err)); }
     redo();
-  };
-  root.querySelectorAll("[data-rmph]").forEach(b => b.onclick = () => { pendingPhotos[stage].splice(+b.dataset.rmph, 1); redo(); });
+  });
+  root.querySelectorAll("[data-rmph]").forEach(b => b.onclick = () => { delete pendingPhotos[stage][b.dataset.rmph]; redo(); });
 }
 
 /* ---------- Personal: ingresos y presencia ---------- */
@@ -1463,7 +1578,10 @@ function viewTablero(){
     <div class="kpi"><span>En taller</span><b>${active.length - listos.length}</b><small>${late?`<span class="late">${late} atrasado${late===1?"":"s"}</span>`:"ninguno atrasado"}</small></div>
     <div class="kpi"><span>Listos sin retirar</span><b>${listos.length}</b><small>${delivT} entregado${delivT===1?"":"s"} hoy</small></div>
     <div class="kpi"><span>A tiempo (30 días)</span><b>${otPct==null?"—":otPct.toFixed(0)+"%"}</b><small>listos antes de la fecha</small></div>
+    ${(() => { const R = monthRange("mes"), g = sumExp(expIn(R.a, R.b)), v = r2(orders.filter(o => o.createdAt>=R.a).reduce((t,o) => t+(o.total||0), 0));
+      return `<button class="kpi ${v-g<0?"warn":""}" data-go="gastos" style="text-align:left"><span>Gastos del mes</span><b>${money(g)}</b><small>resultado ${money(v-g)}</small></button>`; })()}
   </div>
+  ${lowSupplies().length ? `<button class="alertbar" data-go="gastos">🧴 <span><b>${lowSupplies().length} insumo${lowSupplies().length===1?"":"s"} por acabarse:</b> ${lowSupplies().map(x => esc(x.name)).join(", ")}</span></button>` : ""}
 
   <h3 class="sec">Operación en tiempo real</h3>
   <div class="stagebar">${live.map(x => `<div style="--c:var(${x.c})" title="${x.n} pedidos · promedio ${fmtDur(x.avg)} en esta etapa"><span>${x.l}</span><b>${x.n}</b><small>${x.n?"prom. "+fmtDur(x.avg):"vacío"}</small></div>`).join("")}</div>
@@ -1590,7 +1708,7 @@ function periodRange(k){
   const name = new Date(m0).toLocaleDateString("es-EC",{month:"long",year:"numeric"});
   return {a:m0, b:k==="mesant"?m1:end, l:name.charAt(0).toUpperCase()+name.slice(1) + (k==="mes"?" (hasta hoy)":"")};
 }
-function execData(k){
+function execData(k, limited){
   const {a, b, l} = periodRange(k), len = b - a;
   const inR = (t,x=a,y=b) => t && t>=x && t<y;
   const P = orders.filter(o => inR(o.createdAt)), Q = orders.filter(o => inR(o.createdAt, a-len, a));
@@ -1609,7 +1727,7 @@ function execData(k){
   const prodArr = Object.entries(prod).sort((x,y) => y[1].rev-x[1].rev);
   const st = {}; const addS = (u,f) => { if(!u) return; (st[u] = st[u] || {u, recibidos:0, etapas:0, entregas:0})[f]++; };
   orders.forEach(o => { if(inR(o.createdAt)) addS(o.createdBy,"recibidos"); ["lavado","secado","esterilizacion","listo"].forEach(s => { const t = s==="listo" ? o.readyAt : o[s+"At"]; if(inR(t)) addS(o[s+"By"],"etapas"); }); if(inR(o.deliveredAt)) addS(o.deliveredBy,"entregas"); });
-  const staff = Object.values(st).sort((x,y) => (y.recibidos+y.etapas+y.entregas)-(x.recibidos+x.etapas+x.entregas));
+  const staff = limited ? [] : Object.values(st).sort((x,y) => (y.recibidos+y.etapas+y.entregas)-(x.recibidos+x.etapas+x.entregas));
   const late = active.filter(o => dueLevel(o)==="late").length, listos = active.filter(o => o.status==="listo");
   const discounts = P.reduce((t,o)=>t+(o.discount||0),0);
   const notes = [];
@@ -1619,7 +1737,11 @@ function execData(k){
   if(late) notes.push(`${late} pedido${late===1?"":"s"} atrasado${late===1?"":"s"} a la fecha de este reporte.`);
   if(keys.size) notes.push(`${keys.size - newC} de ${keys.size} clientes atendidos ya habían venido antes (${((keys.size-newC)/keys.size*100).toFixed(0)}% de recompra).`);
   if(prodArr[0]) notes.push(`Servicio con más ingresos: ${prodArr[0][0]} (${money(prodArr[0][1].rev)}, ${prodArr[0][1].qty} unidades).`);
-  return {k, l, P, sales, prevSales, n:P.length, prevN:Q.length, avg: P.length ? sales/P.length : 0, cobr, tra, efe: cobr-tra, nPays:pays.length, porCobrar, clients:keys.size, newC, deliv:deliv.length, otPct, lead, ss, slow, prodArr, staff, late, listos:listos.length, taller:active.length-listos.length, discounts, notes};
+  const G = limited ? [] : expenses.filter(e => inR(expDayTs(e))), gastos = sumExp(G);
+  const gCat = EXP_CATS.map(([k2,,l2]) => [l2, sumExp(G.filter(e => e.cat===k2))]).filter(x => x[1]>0).sort((x,y) => y[1]-x[1]);
+  if(!limited && gastos) notes.push(`Gastos del periodo: ${money(gastos)}${gCat[0] ? ` (el mayor: ${gCat[0][0].toLowerCase()}, ${money(gCat[0][1])})` : ""}. Resultado estimado: ${money(sales - gastos)}.`);
+  if(!limited && lowSupplies().length) notes.push(`Insumos por acabarse: ${lowSupplies().map(x => x.name).join(", ")}.`);
+  return {k, l, limited:!!limited, gastos, gCat, result: r2(sales - gastos), P, sales, prevSales, n:P.length, prevN:Q.length, avg: P.length ? sales/P.length : 0, cobr, tra, efe: cobr-tra, nPays:pays.length, porCobrar, clients:keys.size, newC, deliv:deliv.length, otPct, lead, ss, slow, prodArr, staff, late, listos:listos.length, taller:active.length-listos.length, discounts, notes};
 }
 function cierreData(day){
   const a = dayStart(day), b = a + DAY, inR = t => t && t>=a && t<b;
@@ -1627,7 +1749,9 @@ function cierreData(day){
   const cobr = sumAmt(pays), tra = sumAmt(pays.filter(p => p.method==="Transferencia"));
   const rec = orders.filter(o => inR(o.createdAt)), del = orders.filter(o => inR(o.deliveredAt));
   const listos = orders.filter(o => o.status==="listo"), active = orders.filter(o => o.status!=="entregado");
-  return {day, a, pays, cobr, tra, efe: cobr-tra, abonos: sumAmt(pays.filter(p=>p.kind==="abono")), saldos: sumAmt(pays.filter(p=>p.kind==="saldo")),
+  const gastos = expenses.filter(e => e.day===day).sort((x,y) => (x.at||0)-(y.at||0)), gEfe = sumExp(gastos.filter(e => e.method==="Efectivo"));
+  const gVisible = isAdmin() || !cloud || day >= todayStr(-1); // recepción ve los gastos de las últimas 48 horas
+  return {day, a, pays, cobr, tra, efe: cobr-tra, gastos, gTot: sumExp(gastos), gEfe, gTra: r2(sumExp(gastos) - gEfe), efeCaja: r2(cobr - tra - gEfe), gVisible, abonos: sumAmt(pays.filter(p=>p.kind==="abono")), saldos: sumAmt(pays.filter(p=>p.kind==="saldo")),
     rec: rec.length, ventas: rec.reduce((t,o)=>t+(o.total||0),0), del: del.length, listos: listos.length, porCobrarListos: listos.reduce((t,o)=>t+saldo(o),0),
     taller: active.length - listos.length, late: active.filter(o => dueLevel(o)==="late").length};
 }
@@ -1653,30 +1777,40 @@ function execPDF(d){
     {l:"En taller / listos", v:`${d.taller} / ${d.listos}`, s:d.late?`${d.late} atrasados`:"ninguno atrasado", warn:d.late>0},
     {l:"Descuentos fidelidad", v:money(d.discounts), s:"otorgados"},
   ]);
+  if(!d.limited){
+    R.section("Gastos y resultado");
+    R.kpis([
+      {l:"Ventas del periodo", v:money(d.sales), s:`${d.n} pedidos`},
+      {l:"Gastos del periodo", v:money(d.gastos), s:d.gCat.length ? `${d.gCat.length} tipos de gasto` : "sin gastos registrados"},
+      {l:"Resultado estimado", v:money(d.result), s:"ventas - gastos", warn:d.result<0},
+    ]);
+    if(d.gCat.length) R.table([{l:"Tipo de gasto",w:.6},{l:"Monto",w:.4,r:1}], d.gCat.map(([n,v]) => [n, money(v)]));
+  }
   R.section("Hallazgos");
   R.bullets(d.notes.length ? d.notes : ["Sin datos suficientes en el periodo."]);
   R.section("Servicios");
   R.table([{l:"Servicio",w:.5},{l:"Unidades",w:.2,r:1},{l:"Ingresos",w:.3,r:1}], d.prodArr.map(([n,p]) => [n, p.qty, money(p.rev)]));
   R.section("Tiempo por etapa");
   R.table([{l:"Etapa",w:.4},{l:"Pedidos",w:.2,r:1},{l:"Promedio",w:.2,r:1},{l:"Máximo",w:.2,r:1}], d.ss.map(s => [s.l, s.n, fmtDur(s.avg), fmtDur(s.max)]));
+  if(d.limited) return R.finish();
   R.section("Personal");
   R.table([{l:"Persona",w:.4},{l:"Recibidos",w:.2,r:1},{l:"Etapas",w:.2,r:1},{l:"Entregas",w:.2,r:1}], d.staff.map(s => [userName(s.u), s.recibidos, s.etapas, s.entregas]));
   return R.finish();
 }
 function execMsg(d){
-  return `📊 *Resumen ejecutivo · ${settings.business}*\n${d.l}\n\n💰 Ventas: *${money(d.sales)}* (${d.n} pedidos)${d.prevSales?` · ${pctTxt(d.sales,d.prevSales)}`:""}\n🧾 Ticket promedio: ${money(d.avg)}\n💵 Cobrado: *${money(d.cobr)}* (efectivo ${money(d.efe)} · transferencia ${money(d.tra)})\n📌 Por cobrar: ${money(d.porCobrar)}\n\n👥 Clientes: ${d.clients} (${d.newC} nuevos)\n✅ Entregados: ${d.deliv} · a tiempo: ${d.otPct==null?"—":d.otPct.toFixed(0)+"%"}\n⏱️ Ingreso a listo: ${fmtDur(d.lead)}\n🏭 En taller: ${d.taller} · listos: ${d.listos}${d.late?` · ⚠️ ${d.late} atrasados`:""}\n\n${d.notes.slice(0,4).map(n=>"• "+n).join("\n")}`;
+  return `📊 *Resumen ejecutivo · ${settings.business}*\n${d.l}\n\n💰 Ventas: *${money(d.sales)}* (${d.n} pedidos)${d.prevSales?` · ${pctTxt(d.sales,d.prevSales)}`:""}\n🧾 Ticket promedio: ${money(d.avg)}\n💵 Cobrado: *${money(d.cobr)}* (efectivo ${money(d.efe)} · transferencia ${money(d.tra)})\n📌 Por cobrar: ${money(d.porCobrar)}${d.limited?"":`\n💸 Gastos: ${money(d.gastos)} · resultado: *${money(d.result)}*`}\n\n👥 Clientes: ${d.clients} (${d.newC} nuevos)\n✅ Entregados: ${d.deliv} · a tiempo: ${d.otPct==null?"—":d.otPct.toFixed(0)+"%"}\n⏱️ Ingreso a listo: ${fmtDur(d.lead)}\n🏭 En taller: ${d.taller} · listos: ${d.listos}${d.late?` · ⚠️ ${d.late} atrasados`:""}\n\n${d.notes.slice(0,4).map(n=>"• "+n).join("\n")}`;
 }
 function cierrePDF(d, x){
   const R = reportPDF("Cierre de caja y resumen de operación", fmtDate(d.a,{day:"numeric",month:"long",year:"numeric"}));
   R.para(fmtDay(d.a).replace(/^./, c => c.toUpperCase()) + " · Responsable: " + (me ? (me.name||me.u) : "-"), {color:"#5b7184"});
   R.section("Caja");
-  const diff = x.contado==null ? null : r2(x.contado - d.efe);
+  const diff = x.contado==null ? null : r2(x.contado - d.efeCaja);
   R.kpis([
     {l:"Total cobrado", v:money(d.cobr), s:`${d.pays.length} cobros`},
-    {l:"Efectivo (sistema)", v:money(d.efe), s:"debe haber en caja"},
+    {l:"Cobros en efectivo", v:money(d.efe), s:`abonos ${money(d.abonos)} · saldos ${money(d.saldos)}`},
     {l:"Transferencias", v:money(d.tra), s:"verificar en el banco"},
-    {l:"Abonos al recibir", v:money(d.abonos), s:"pedidos nuevos"},
-    {l:"Saldos al entregar", v:money(d.saldos), s:"pedidos entregados"},
+    {l:"Gastos en efectivo", v:money(d.gEfe), s:d.gVisible?`${d.gastos.length} gastos del día`:"solo los ve el administrador"},
+    {l:"Efectivo que debe haber", v:money(d.efeCaja), s:"cobros en efectivo - gastos"},
     {l:"Efectivo contado", v:x.contado==null?"-":money(x.contado), s:diff==null?"no registrado":diff===0?"cuadra":(diff>0?"sobrante ":"faltante ")+money(Math.abs(diff)), warn:diff!=null&&diff!==0},
   ]);
   R.section("Operación del día");
@@ -1689,13 +1823,18 @@ function cierrePDF(d, x){
   R.section("Detalle de cobros");
   R.table([{l:"Hora",w:.11},{l:"N°",w:.13},{l:"Cliente",w:.32},{l:"Concepto",w:.16},{l:"Medio",w:.14},{l:"Monto",w:.14,r:1}],
     d.pays.map(p => [new Date(p.at).toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit",hour12:false}), p.o.num, p.o.name, p.kind==="abono"?"Abono":"Saldo", p.method, money(p.amt)]).concat(d.pays.length ? [Object.assign(["","","","","TOTAL",money(d.cobr)],{bold:true})] : []));
+  if(d.gVisible){
+    R.section("Gastos del día");
+    R.table([{l:"Hora",w:.11},{l:"Tipo",w:.17},{l:"Descripción",w:.4},{l:"Pago",w:.16},{l:"Monto",w:.16,r:1}],
+      d.gastos.map(e => [e.at ? new Date(e.at).toLocaleTimeString("es-EC",{hour:"2-digit",minute:"2-digit",hour12:false}) : "", catInfo(e.cat)[2], e.desc, e.method, money(e.amount)]).concat(d.gastos.length ? [Object.assign(["","","","TOTAL",money(d.gTot)],{bold:true})] : []));
+  }
   if(x.obs){ R.section("Observaciones"); R.para(x.obs); }
   R.signature(["Entrega: " + (me ? (me.name||me.u) : ""), "Recibe / revisa"]);
   return R.finish();
 }
 function cierreMsg(d, x){
-  const diff = x.contado==null ? null : r2(x.contado - d.efe);
-  return `🧾 *Cierre de caja · ${settings.business}*\n${fmtDay(d.a)}\nResponsable: ${me?(me.name||me.u):""}\n\n💵 Total cobrado: *${money(d.cobr)}* (${d.pays.length} cobros)\n• Efectivo: ${money(d.efe)}\n• Transferencia: ${money(d.tra)}\n• Abonos: ${money(d.abonos)} · Saldos: ${money(d.saldos)}${x.contado!=null?`\n🔢 Efectivo contado: ${money(x.contado)} → ${diff===0?"✅ cuadra":(diff>0?"sobrante ":"⚠️ faltante ")+money(Math.abs(diff))}`:""}\n\n📥 Recibidos: ${d.rec} (ventas ${money(d.ventas)})\n🤝 Entregados: ${d.del}\n✅ Listos sin retirar: ${d.listos} (${money(d.porCobrarListos)} por cobrar)\n🏭 En taller: ${d.taller}${d.late?` · ⚠️ ${d.late} atrasados`:""}${x.obs?`\n\n📝 ${x.obs}`:""}`;
+  const diff = x.contado==null ? null : r2(x.contado - d.efeCaja);
+  return `🧾 *Cierre de caja · ${settings.business}*\n${fmtDay(d.a)}\nResponsable: ${me?(me.name||me.u):""}\n\n💵 Total cobrado: *${money(d.cobr)}* (${d.pays.length} cobros)\n• Efectivo: ${money(d.efe)}\n• Transferencia: ${money(d.tra)}\n• Abonos: ${money(d.abonos)} · Saldos: ${money(d.saldos)}${d.gVisible?`\n💸 Gastos: ${money(d.gTot)} (efectivo ${money(d.gEfe)})`:""}\n💰 *Efectivo que debe haber: ${money(d.efeCaja)}*${x.contado!=null?`\n🔢 Efectivo contado: ${money(x.contado)} → ${diff===0?"✅ cuadra":(diff>0?"sobrante ":"⚠️ faltante ")+money(Math.abs(diff))}`:""}\n\n📥 Recibidos: ${d.rec} (ventas ${money(d.ventas)})\n🤝 Entregados: ${d.del}\n✅ Listos sin retirar: ${d.listos} (${money(d.porCobrarListos)} por cobrar)\n🏭 En taller: ${d.taller}${d.late?` · ⚠️ ${d.late} atrasados`:""}${x.obs?`\n\n📝 ${x.obs}`:""}`;
 }
 const reportWa = msg => "https://wa.me/" + (digits(settings.reportPhone) ? waNumber(settings.reportPhone) : "") + "?text=" + encodeURIComponent(msg);
 async function sharePDF(bytes, filename, text){
@@ -1710,13 +1849,14 @@ async function sharePDF(bytes, filename, text){
 /* ---------- Reportes: hojas ---------- */
 let execPeriod = "hoy";
 function execSheet(){
-  const d = execData(execPeriod);
+  const d = execData(execPeriod, !isAdmin());
   openSheet(`<h2>Resumen ejecutivo</h2>
     <div class="chips" role="group" aria-label="Periodo" style="margin:10px 0 12px">${REPORT_PERIODS.map(([k,l]) => `<button class="chip" data-rp="${k}" aria-pressed="${execPeriod===k}">${l}</button>`).join("")}</div>
     <p class="small muted" style="margin:0 0 10px">${esc(d.l)}</p>
     <div class="kpis"><div class="kpi"><span>Ventas</span><b>${money(d.sales)}</b><small>${d.n} pedidos${d.prevSales?" · "+pctTxt(d.sales,d.prevSales):""}</small></div>
       <div class="kpi"><span>Cobrado</span><b>${money(d.cobr)}</b><small>Efectivo ${money(d.efe)} · Transf. ${money(d.tra)}</small></div>
-      <div class="kpi"><span>A tiempo</span><b>${d.otPct==null?"—":d.otPct.toFixed(0)+"%"}</b><small>${d.deliv} entregados</small></div></div>
+      <div class="kpi"><span>A tiempo</span><b>${d.otPct==null?"—":d.otPct.toFixed(0)+"%"}</b><small>${d.deliv} entregados</small></div>
+      ${d.limited ? "" : `<div class="kpi ${d.result<0?"warn":""}"><span>Resultado</span><b>${money(d.result)}</b><small>gastos ${money(d.gastos)}</small></div>`}</div>
     <div class="stack">
       <button class="btn wa block" id="rpShare">${svgWA} Compartir PDF por WhatsApp</button>
       <a class="btn ghost block" id="rpText" href="${esc(reportWa(execMsg(d)))}" target="_blank" rel="noopener">Enviar resumen en texto</a>
@@ -1734,11 +1874,13 @@ function cierreSheet(){
   openSheet(`<h2>Cierre de caja</h2>
     <div class="field" style="margin-top:10px"><label for="cj_d">Día</label><input class="input" type="date" id="cj_d" value="${cierreX.day}" max="${todayStr()}"></div>
     <div class="kpis"><div class="kpi hero"><span>Total cobrado</span><b>${money(d.cobr)}</b><small>${d.pays.length} cobros</small></div>
-      <div class="kpi"><span>Efectivo</span><b>${money(d.efe)}</b><small>debe haber en caja</small></div>
+      <div class="kpi"><span>Efectivo en caja</span><b>${money(d.efeCaja)}</b><small>cobros ${money(d.efe)} − gastos ${money(d.gEfe)}</small></div>
       <div class="kpi"><span>Transferencia</span><b>${money(d.tra)}</b><small>verificar en el banco</small></div></div>
-    <p class="small muted" style="margin:-4px 0 12px">Recibidos ${d.rec} · Entregados ${d.del} · Listos sin retirar ${d.listos} · En taller ${d.taller}</p>
-    <div class="field"><label for="cj_c">Efectivo contado en caja (opcional)</label><input class="input" id="cj_c" inputmode="decimal" placeholder="Ej. ${fmt2(d.efe)}" value="${cierreX.contado==null?"":fmt2(cierreX.contado)}"><small class="small" id="cj_diff"></small></div>
-    <div class="field"><label for="cj_o">Observaciones (opcional)</label><textarea class="input" id="cj_o" rows="2" placeholder="Ej. se pagó $5 de insumos con efectivo">${esc(cierreX.obs)}</textarea></div>
+    <p class="small muted" style="margin:-4px 0 6px">Recibidos ${d.rec} · Entregados ${d.del} · Listos sin retirar ${d.listos} · En taller ${d.taller}</p>
+    ${d.efeCaja < 0 ? `<p class="small" style="margin:0 0 6px;color:var(--danger)">Los gastos en efectivo superan lo cobrado en efectivo: se pagaron con el fondo de caja u otro dinero. Anótalo en observaciones.</p>` : ""}
+    <p class="small muted" style="margin:0 0 12px">${d.gVisible ? `Gastos del día: <b>${d.gastos.length}</b> · ${money(d.gTot)} (efectivo ${money(d.gEfe)}).` : "Los gastos de días anteriores solo los ve el administrador."}</p>
+    <div class="field"><label for="cj_c">Efectivo contado en caja (opcional)</label><input class="input" id="cj_c" inputmode="decimal" placeholder="Ej. ${fmt2(Math.max(0, d.efeCaja))}" value="${cierreX.contado==null?"":fmt2(cierreX.contado)}"><small class="small" id="cj_diff"></small></div>
+    <div class="field"><label for="cj_o">Observaciones (opcional)</label><textarea class="input" id="cj_o" rows="2" placeholder="Ej. se cambió un billete de $20">${esc(cierreX.obs)}</textarea></div>
     <div class="stack">
       <button class="btn wa block" id="cjShare">${svgWA} Compartir PDF por WhatsApp</button>
       <a class="btn ghost block" id="cjText" target="_blank" rel="noopener">Enviar resumen en texto</a>
@@ -1746,7 +1888,7 @@ function cierreSheet(){
       <button class="btn ghost block" data-close>Cerrar</button></div>`);
   const sync = () => {
     const raw = $("#cj_c").value.trim(); cierreX.contado = raw==="" ? null : r2(parseNum(raw)); cierreX.obs = $("#cj_o").value.trim();
-    const diff = cierreX.contado==null ? null : r2(cierreX.contado - d.efe), el = $("#cj_diff");
+    const diff = cierreX.contado==null ? null : r2(cierreX.contado - d.efeCaja), el = $("#cj_diff");
     el.textContent = diff==null ? "" : diff===0 ? "✅ Cuadra con el sistema" : (diff>0 ? "Sobrante " : "⚠️ Faltante ") + money(Math.abs(diff));
     el.style.color = diff ? "var(--danger)" : "";
     $("#cjText").href = reportWa(cierreMsg(d, cierreX));
@@ -1759,6 +1901,269 @@ function cierreSheet(){
 }
 const reportBtns = (exec) => exec ? `<div class="two" style="margin:0 0 14px"><button class="btn ghost block" data-report="exec">📊 Resumen ejecutivo</button><button class="btn ghost block" data-report="cierre">🧾 Cierre de caja</button></div>`
   : `<button class="btn ghost block" data-report="cierre" style="margin-bottom:14px">🧾 Cierre de caja del día</button>`;
+
+/* ---------- Gastos e inventario de insumos ---------- */
+// Gastos: insumos, obligaciones (arriendo, servicios, impuestos, sueldos), almuerzos y otros.
+// Administrador y recepción registran; solo el administrador corrige, borra y ve el mes.
+// Los gastos en efectivo se restan del efectivo que debe haber en caja.
+// Inventario: las compras de insumos suman stock; el uso diario y los conteos lo ajustan.
+const EXP_CATS = [["insumos","🧴","Insumos"],["obligaciones","🏛️","Obligaciones"],["almuerzos","🍽️","Almuerzos"],["transporte","🛵","Transporte"],["mantenimiento","🔧","Mantenimiento"],["otros","📦","Otros"]];
+const EXP_HINT = {insumos:"Ej. jabón neutro y cepillos", obligaciones:"Ej. arriendo de noviembre, luz, IESS, SRI", almuerzos:"Ej. almuerzo del personal", transporte:"Ej. entrega a domicilio", mantenimiento:"Ej. arreglo de la secadora", otros:"Describe el gasto"};
+const catInfo = k => EXP_CATS.find(c => c[0]===k) || EXP_CATS[EXP_CATS.length-1];
+const r3 = n => Math.round(((+n)||0)*1000)/1000;
+const fmtQ = n => String(r3(n)).replace(".", ",");
+let expenses = [], supplies = [], expMonth = "mes", expDraft = null;
+function normExpense(e){
+  const x = (e && typeof e === "object") ? e : {};
+  return {id:STR(x.id,40).replace(/[^A-Za-z0-9_-]/g,""), day:DATE(x.day) || todayStr(), at:TS(x.at), cat:catInfo(x.cat)[0], desc:STR(x.desc,200), provider:STR(x.provider,100),
+    amount:NUM(x.amount,100000), method:x.method==="Transferencia" ? "Transferencia" : "Efectivo", by:STR(x.by,60),
+    lines:Array.isArray(x.lines) ? x.lines.slice(0,10).filter(l => l && typeof l === "object").map(l => ({sid:STR(l.sid,40), name:STR(l.name,80), qty:NUM(l.qty,1e6), unit:STR(l.unit,20)})) : []};
+}
+function normSupply(x){
+  x = (x && typeof x === "object") ? x : {};
+  return {id:STR(x.id,40).replace(/[^A-Za-z0-9_-]/g,""), name:STR(x.name,80), unit:STR(x.unit,20) || "unidades", stock:r3(NUM(x.stock,1e6)), min:r3(NUM(x.min,1e6)), updatedAt:TS(x.updatedAt)};
+}
+function saveLocalExp(){ if(cloud) return; try{ localStorage.setItem("sc_expenses", JSON.stringify(expenses.slice(0,3000))); localStorage.setItem("sc_supplies", JSON.stringify(supplies)); }catch(e){} }
+function loadLocalExp(){ if(cloud) return; try{ expenses = (JSON.parse(localStorage.getItem("sc_expenses")||"[]")||[]).map(normExpense); supplies = (JSON.parse(localStorage.getItem("sc_supplies")||"[]")||[]).map(normSupply); }catch(e){} }
+function localMoves(){ try{ return JSON.parse(localStorage.getItem("sc_moves")||"[]"); }catch(e){ return []; } }
+function pushLocalMove(m){ try{ const a = localMoves(); a.push(m); localStorage.setItem("sc_moves", JSON.stringify(a.slice(-800))); }catch(e){} }
+const fbInc = n => firebase.firestore.FieldValue.increment(n);
+const expDayTs = e => dayStart(e.day) + 12*3600000;
+function monthRange(k){
+  const d = new Date(), m0 = new Date(d.getFullYear(), d.getMonth() - (k==="mesant"?1:0), 1), m1 = new Date(m0.getFullYear(), m0.getMonth()+1, 1);
+  const name = m0.toLocaleDateString("es-EC",{month:"long",year:"numeric"});
+  return {a:m0.getTime(), b:m1.getTime(), l:name.charAt(0).toUpperCase()+name.slice(1)};
+}
+const expIn = (a, b) => expenses.filter(e => { const t = expDayTs(e); return t>=a && t<b; });
+const sumExp = L => r2(L.reduce((t,e) => t + e.amount, 0));
+const lowSupplies = () => supplies.filter(x => x.min>0 && x.stock<=x.min);
+
+async function addExpense(e){
+  if(cloud && fb){
+    const b = fb.batch();
+    b.set(fb.collection("expenses").doc(e.id), e);
+    for(const l of e.lines){ const mid = uid();
+      b.set(fb.collection("supplyMoves").doc(mid), {id:mid, sid:l.sid, type:"compra", qty:l.qty, at:Date.now(), by:me.u, note:e.desc.slice(0,200), expenseId:e.id});
+      b.update(fb.collection("supplies").doc(l.sid), {stock:fbInc(l.qty), updatedAt:Date.now(), lastMove:mid}); }
+    await b.commit(); return;
+  }
+  expenses.unshift(e);
+  e.lines.forEach(l => { const x = supplies.find(y => y.id===l.sid); if(x){ x.stock = r3(x.stock + l.qty); pushLocalMove({id:uid(), sid:x.id, type:"compra", qty:l.qty, at:Date.now(), by:me.u, note:e.desc}); } });
+  saveLocalExp();
+}
+async function removeExpense(id){
+  if(cloud && fb){ await fb.collection("expenses").doc(id).delete(); return; }
+  expenses = expenses.filter(e => e.id!==id); saveLocalExp();
+}
+async function moveSupply(sid, type, qty, note){
+  const x = supplies.find(y => y.id===sid); if(!x) throw new Error("insumo");
+  const mid = uid(), mv = {id:mid, sid, type, qty:r3(qty), at:Date.now(), by:me.u};
+  if(note) mv.note = String(note).slice(0,200);
+  if(cloud && fb){
+    const ref = fb.collection("supplies").doc(sid);
+    if(type==="ajuste"){ // conteo: el stock queda en lo contado aunque otro equipo lo haya cambiado
+      await fb.runTransaction(async t => { const d = await t.get(ref); const cur = d.exists ? Number(d.data().stock)||0 : 0; mv.qty = r3(qty - cur);
+        t.set(fb.collection("supplyMoves").doc(mid), mv); t.update(ref, {stock:r3(qty), updatedAt:Date.now(), lastMove:mid}); });
+      return;
+    }
+    const b = fb.batch(); b.set(fb.collection("supplyMoves").doc(mid), mv); b.update(ref, {stock:fbInc(mv.qty), updatedAt:Date.now(), lastMove:mid}); await b.commit(); return;
+  }
+  if(type==="ajuste"){ mv.qty = r3(qty - x.stock); x.stock = r3(qty); } else x.stock = r3(x.stock + mv.qty);
+  pushLocalMove(mv); saveLocalExp();
+}
+async function saveSupply(x, isNew){
+  if(cloud && fb){
+    const ref = fb.collection("supplies").doc(x.id);
+    if(isNew) await ref.set({id:x.id, name:x.name, unit:x.unit, stock:x.stock, min:x.min, createdAt:Date.now(), updatedAt:Date.now()});
+    else await ref.update({name:x.name, unit:x.unit, min:x.min, updatedAt:Date.now()});
+    return;
+  }
+  const i = supplies.findIndex(y => y.id===x.id); if(i>=0) supplies[i] = Object.assign(supplies[i], x); else supplies.push(x);
+  saveLocalExp();
+}
+async function loadMoves(sid){
+  if(cloud && fb){ const sn = await fb.collection("supplyMoves").where("sid","==",sid).limit(200).get(); return sn.docs.map(d => d.data()).sort((a,b) => b.at-a.at).slice(0,15); }
+  return localMoves().filter(m => m.sid===sid).sort((a,b) => b.at-a.at).slice(0,15);
+}
+
+function expRow(e){
+  const [, ic, l] = catInfo(e.cat);
+  return `<button class="attn" data-exp="${esc(e.id)}"><span>${ic} <b>${esc(e.desc)}</b><br><span class="small muted">${esc(l)} · ${fmtDate(expDayTs(e))}${e.at && e.day===todayStr() ? " " + fmtHour(e.at) : ""} · ${esc(e.method)}${e.provider ? " · " + esc(e.provider) : ""} · @${esc(e.by)}</span></span><b>${money(e.amount)}</b></button>`;
+}
+function inventarioHTML(){
+  const low = lowSupplies(), admin = isAdmin();
+  let h = `<h3 class="sec">Inventario de insumos</h3>`;
+  if(low.length) h += `<div class="alertbar">⚠️ <span><b>${low.length} insumo${low.length===1?"":"s"} por acabarse:</b> ${low.map(x => esc(x.name)).join(", ")}</span></div>`;
+  if(!supplies.length) h += `<div class="empty"><strong>Sin insumos registrados</strong>${admin ? "Crea los insumos que compras (jabón, cepillos, bolsas…) para llevar su stock." : "El administrador aún no ha creado los insumos."}</div>`;
+  else h += `<div class="panel">${supplies.slice().sort((a,b) => a.name.localeCompare(b.name)).map(x => `<div class="sup ${x.min>0 && x.stock<=x.min ? "low" : ""}">
+      <button class="supn" data-sup="${esc(x.id)}"><b>${esc(x.name)}</b><br><span class="small muted">${x.min>0 ? "Mínimo " + fmtQ(x.min) + " " + esc(x.unit) : "Ver movimientos"}</span></button>
+      <span class="supq"><b>${fmtQ(x.stock)}</b> <small>${esc(x.unit)}</small></span>
+      <button class="btn ghost" data-use="${esc(x.id)}">Usar</button>${admin ? `<button class="btn ghost" data-count="${esc(x.id)}">Contar</button>` : ""}</div>`).join("")}</div>`;
+  if(admin) h += `<button class="btn ghost block" data-supnew style="margin-top:8px">＋ Nuevo insumo</button>`;
+  return h;
+}
+function viewGastos(){
+  const admin = isAdmin();
+  let h = `<div class="listhead"><h2>Gastos</h2><button class="btn" data-expnew style="min-height:42px;padding:8px 14px">＋ Registrar gasto</button></div>`;
+  if(admin){
+    const R = monthRange(expMonth), L = expIn(R.a, R.b).sort((x,y) => (y.at||0)-(x.at||0));
+    const tot = sumExp(L), efe = sumExp(L.filter(e => e.method==="Efectivo"));
+    const ventas = r2(orders.filter(o => o.createdAt>=R.a && o.createdAt<R.b).reduce((t,o) => t+(o.total||0), 0)), res = r2(ventas - tot);
+    const byCat = EXP_CATS.map(([k,ic,l]) => ({l:ic+" "+l, v:sumExp(L.filter(e => e.cat===k))})).filter(x => x.v>0).sort((a,b) => b.v-a.v);
+    h += `<div class="chips" role="group" aria-label="Mes">${[["mes","Este mes"],["mesant","Mes anterior"]].map(([k,l]) => `<button class="chip" data-em="${k}" aria-pressed="${expMonth===k}">${l}</button>`).join("")}</div>
+    <p class="small muted" style="margin:-6px 0 10px">${esc(R.l)}</p>
+    <div class="kpis"><div class="kpi hero"><span>Gastos del mes</span><b>${money(tot)}</b><small>${L.length} registro${L.length===1?"":"s"} · efectivo ${money(efe)}</small></div>
+      <div class="kpi"><span>Ventas del mes</span><b>${money(ventas)}</b><small>pedidos registrados</small></div>
+      <div class="kpi ${res<0?"warn":""}"><span>Resultado estimado</span><b>${money(res)}</b><small>ventas − gastos</small></div></div>
+    ${byCat.length ? `<h3 class="sec">En qué se gasta</h3><div class="panel pad">${barRows(byCat, money)}</div>` : ""}
+    <h3 class="sec">Registros del mes</h3>
+    ${L.length ? `<div class="panel pad">${L.map(expRow).join("")}</div><button class="btn ghost block" data-expcsv style="margin-top:8px">Exportar gastos a Excel (CSV)</button>` : `<div class="empty"><strong>Sin gastos este mes</strong>Registra compras de insumos, pagos de obligaciones y almuerzos.</div>`}`;
+  } else {
+    const L = expenses.filter(e => e.day===todayStr()).sort((x,y) => (y.at||0)-(x.at||0));
+    h += `<div class="kpis"><div class="kpi hero"><span>Gastos de hoy</span><b>${money(sumExp(L))}</b><small>${L.length} registro${L.length===1?"":"s"}</small></div>
+      <div class="kpi"><span>Pagado en efectivo</span><b>${money(sumExp(L.filter(e => e.method==="Efectivo")))}</b><small>se resta de la caja</small></div></div>
+    ${L.length ? `<div class="panel pad">${L.map(expRow).join("")}</div>` : `<div class="empty"><strong>Sin gastos hoy</strong>Registra aquí las compras de insumos, almuerzos y pagos que hagas con dinero del local.</div>`}
+    <p class="small muted">Si te equivocas, avisa al administrador: él puede corregir o borrar el gasto.</p>`;
+  }
+  return h + inventarioHTML();
+}
+function viewInsumos(){
+  return `<div class="listhead"><h2>Insumos</h2></div><p class="small muted" style="margin:-6px 0 6px">Registra lo que usas del inventario. Así se sabe cuándo comprar.</p>` + inventarioHTML();
+}
+function expenseSheet(){
+  const admin = isAdmin();
+  if(!expDraft) expDraft = {cat:"insumos", desc:"", provider:"", amount:"", method:"Efectivo", day:todayStr(), lines:[]};
+  const d = expDraft;
+  if(d.cat==="insumos" && !d.lines.length && supplies.length) d.lines.push({sid:supplies[0].id, qty:""});
+  const opts = sel => supplies.slice().sort((a,b) => a.name.localeCompare(b.name)).map(x => `<option value="${esc(x.id)}" ${x.id===sel?"selected":""}>${esc(x.name)} (${esc(x.unit)})</option>`).join("");
+  const m0 = new Date(); const minDay = new Date(m0.getFullYear(), m0.getMonth()-1, 1);
+  openSheet(`<h2>Registrar gasto</h2>
+    <span class="lbl" style="margin-top:12px">Tipo de gasto</span>
+    <div class="catpick" id="ex_cat">${EXP_CATS.map(([k,ic,l]) => `<button type="button" class="chip" data-c="${k}" aria-pressed="${d.cat===k}">${ic} ${l}</button>`).join("")}</div>
+    <div class="field"><label for="ex_d">Descripción</label><input class="input" id="ex_d" maxlength="200" placeholder="${esc(EXP_HINT[d.cat])}" value="${esc(d.desc)}"></div>
+    ${d.cat==="insumos" ? `<div class="panel pad" style="margin-bottom:12px"><b class="small">¿Qué compraste? Se suma al inventario</b>
+      ${supplies.length ? d.lines.map((l,i) => `<div class="exline"><select class="input" data-ls="${i}" aria-label="Insumo ${i+1}">${opts(l.sid)}</select><input class="input" data-lq="${i}" inputmode="decimal" placeholder="Cant." aria-label="Cantidad ${i+1}" value="${esc(l.qty)}"><button type="button" class="btn ghost" data-lr="${i}" aria-label="Quitar insumo ${i+1}">×</button></div>`).join("")
+        + `<button type="button" class="btn ghost block" id="ex_addl" style="margin-top:8px">＋ Otro insumo</button>`
+        : `<p class="small muted" style="margin:6px 0 0">${admin ? "Aún no hay insumos. Créalos abajo, en Inventario de insumos." : "Aún no hay insumos en el inventario. Pide al administrador que los cree."}</p>`}</div>` : ""}
+    <div class="field"><label for="ex_p">Proveedor (opcional)</label><input class="input" id="ex_p" maxlength="100" value="${esc(d.provider)}"></div>
+    <div class="two"><div class="field"><label for="ex_a">Monto total</label><input class="input" id="ex_a" inputmode="decimal" placeholder="0,00" value="${esc(d.amount)}"></div>
+      <div class="field"><label for="ex_m">Pagado con</label><select class="input" id="ex_m"><option ${d.method==="Efectivo"?"selected":""}>Efectivo</option><option ${d.method==="Transferencia"?"selected":""}>Transferencia</option></select></div></div>
+    ${admin ? `<div class="field"><label for="ex_day">Fecha</label><input class="input" type="date" id="ex_day" min="${todayStr(-Math.round((Date.now()-minDay.getTime())/DAY))}" max="${todayStr()}" value="${esc(d.day)}"></div>` : ""}
+    <p class="small muted" style="margin:0 0 8px">Lo pagado en efectivo se resta del efectivo que debe haber en caja.</p>
+    <div class="stack"><button class="btn block" id="ex_save">Guardar gasto</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
+  const sync = () => {
+    d.desc = $("#ex_d").value; d.provider = $("#ex_p").value; d.amount = $("#ex_a").value; d.method = $("#ex_m").value;
+    if($("#ex_day")) d.day = $("#ex_day").value || todayStr();
+    document.querySelectorAll("[data-ls]").forEach(x => { d.lines[+x.dataset.ls].sid = x.value; });
+    document.querySelectorAll("[data-lq]").forEach(x => { d.lines[+x.dataset.lq].qty = x.value; });
+  };
+  $("#ex_cat").querySelectorAll("[data-c]").forEach(b => b.onclick = () => { sync(); d.cat = b.dataset.c; if(d.cat!=="insumos") d.lines = []; expenseSheet(); });
+  const al = $("#ex_addl"); if(al) al.onclick = () => { sync(); if(d.lines.length < 10) d.lines.push({sid:supplies[0].id, qty:""}); expenseSheet(); };
+  document.querySelectorAll("[data-lr]").forEach(b => b.onclick = () => { sync(); d.lines.splice(+b.dataset.lr, 1); expenseSheet(); });
+  $("#ex_save").onclick = async ev => {
+    sync();
+    const amount = r2(parseNum(d.amount)), desc = d.desc.trim();
+    if(!desc){ toast("Escribe qué se pagó"); $("#ex_d").focus(); return; }
+    if(!(amount > 0)){ toast("Escribe el monto"); $("#ex_a").focus(); return; }
+    const merged = {};
+    for(const l of d.lines){ const q = r3(parseNum(l.qty)); if(!l.sid) continue; if(!(q > 0)){ toast("Escribe la cantidad de cada insumo comprado"); return; } merged[l.sid] = r3((merged[l.sid]||0) + q); }
+    const lines = Object.entries(merged).map(([sid, qty]) => { const x = supplies.find(y => y.id===sid); return {sid, name:x ? x.name : "", qty, unit:x ? x.unit : ""}; });
+    const day = admin ? (DATE(d.day) || todayStr()) : todayStr();
+    const e = {id:uid(), day, at: day===todayStr() ? Date.now() : dayStart(day) + 12*3600000, cat:d.cat, desc, provider:d.provider.trim(), amount, method:d.method==="Transferencia"?"Transferencia":"Efectivo", by:me.u, lines};
+    if(!e.provider) delete e.provider;
+    const btn = ev.currentTarget; btn.disabled = true; btn.textContent = "Guardando…";
+    try{ await addExpense(e); expDraft = null; closeSheet(); render(); toast(`Gasto de ${money(amount)} registrado${lines.length ? " · inventario actualizado" : ""}`); }
+    catch(err){ btn.disabled = false; btn.textContent = "Guardar gasto"; toast(cloud ? fbErr(err) : "No se pudo guardar el gasto"); }
+  };
+}
+function expDetailSheet(id){
+  const e = expenses.find(x => x.id===id); if(!e) return;
+  const [, ic, l] = catInfo(e.cat);
+  openSheet(`<h2>${ic} ${esc(e.desc)}</h2>
+    <div class="panel pad" style="margin-top:12px"><div class="totals">
+      <div class="big"><span>Monto</span><span>${money(e.amount)}</span></div>
+      <div><span>Tipo</span><span>${esc(l)}</span></div><div><span>Pagado con</span><span>${esc(e.method)}</span></div>
+      <div><span>Fecha</span><span>${fmtDate(expDayTs(e),{day:"numeric",month:"long",year:"numeric"})}</span></div>
+      ${e.provider ? `<div><span>Proveedor</span><span>${esc(e.provider)}</span></div>` : ""}<div><span>Registró</span><span>@${esc(e.by)}</span></div>
+      ${e.lines.map(x => `<div><span>📦 ${esc(x.name)}</span><span>+${fmtQ(x.qty)} ${esc(x.unit)}</span></div>`).join("")}</div></div>
+    <div class="stack">${isAdmin() ? `<button class="btn danger block" id="exDel">Borrar gasto</button>` : ""}<button class="btn ghost block" data-close>Cerrar</button></div>`);
+  const del = $("#exDel");
+  if(del) del.onclick = async () => {
+    if(!confirm(`¿Borrar el gasto "${e.desc}" de ${money(e.amount)}?${e.lines.length ? "\n\nEl inventario no se descuenta solo: si hace falta, usa Contar en el insumo." : ""}`)) return;
+    try{ await removeExpense(e.id); closeSheet(); render(); toast("Gasto borrado"); }catch(err){ toast(cloud ? fbErr(err) : "No se pudo borrar"); }
+  };
+}
+function supplySheet(id){
+  const admin = isAdmin(), x = id ? supplies.find(y => y.id===id) : null;
+  if(id && !x) return;
+  const isNew = !x;
+  openSheet(`<h2>${isNew ? "Nuevo insumo" : esc(x.name)}</h2>
+    ${admin ? `<div class="field" style="margin-top:12px"><label for="su_n">Nombre</label><input class="input" id="su_n" maxlength="80" placeholder="Ej. Jabón neutro" value="${esc(x ? x.name : "")}"></div>
+      <div class="two"><div class="field"><label for="su_u">Unidad</label><input class="input" id="su_u" maxlength="20" placeholder="Ej. litros, frascos, unidades" value="${esc(x ? x.unit : "")}"></div>
+        <div class="field"><label for="su_m">Avisar cuando quede</label><input class="input" id="su_m" inputmode="decimal" placeholder="Ej. 2" value="${x ? fmtQ(x.min) : ""}"></div></div>
+      ${isNew ? `<div class="field"><label for="su_s">Cantidad que hay ahora</label><input class="input" id="su_s" inputmode="decimal" placeholder="0"></div>` : ""}`
+      : `<p class="muted" style="margin:6px 0 0">Hay <b>${fmtQ(x.stock)} ${esc(x.unit)}</b>${x.min>0 ? ` · aviso con ${fmtQ(x.min)}` : ""}</p>`}
+    ${isNew ? "" : `<span class="lbl" style="margin-top:14px">Últimos movimientos</span><div id="mvbox" class="small muted">Cargando…</div>`}
+    <div class="stack">${admin ? `<button class="btn block" id="su_save">${isNew ? "Crear insumo" : "Guardar cambios"}</button>` : ""}
+      ${admin && !isNew ? `<button class="btn danger block" id="su_del">Quitar insumo</button>` : ""}<button class="btn ghost block" data-close>Cerrar</button></div>`);
+  if(!isNew) loadMoves(x.id).then(list => { const b = $("#mvbox"); if(!b) return;
+    const T = {compra:"🛒 Compra", uso:"🧴 Uso", ajuste:"🔢 Conteo"};
+    b.className = ""; b.innerHTML = list.length ? `<div class="panel pad"><div class="totals">${list.map(m => `<div><span>${T[m.type]||esc(m.type)} · ${fmtDate(m.at)} ${fmtHour(m.at)} · @${esc(m.by)}${m.note ? `<br><span class="small muted">${esc(m.note)}</span>` : ""}</span><span>${m.qty>0?"+":""}${fmtQ(m.qty)}</span></div>`).join("")}</div></div>` : `<span class="small muted">Sin movimientos todavía.</span>`;
+  }).catch(() => { const b = $("#mvbox"); if(b) b.textContent = "No se pudieron cargar los movimientos."; });
+  const sv = $("#su_save");
+  if(sv) sv.onclick = async () => {
+    const name = $("#su_n").value.trim(), unit = $("#su_u").value.trim() || "unidades", min = r3(parseNum($("#su_m").value)), stock = isNew ? r3(parseNum(($("#su_s")||{}).value)) : x.stock;
+    if(!name){ toast("Escribe el nombre del insumo"); return; }
+    if(isNew && supplies.some(y => y.name.toLowerCase()===name.toLowerCase())){ toast("Ya existe un insumo con ese nombre"); return; }
+    if(min < 0 || stock < 0){ toast("Las cantidades no pueden ser negativas"); return; }
+    sv.disabled = true;
+    try{ await saveSupply({id: isNew ? uid() : x.id, name, unit, min, stock}, isNew); closeSheet(); render(); toast(isNew ? "Insumo creado" : "Insumo actualizado"); }
+    catch(err){ sv.disabled = false; toast(cloud ? fbErr(err) : "No se pudo guardar"); }
+  };
+  const dl = $("#su_del");
+  if(dl) dl.onclick = async () => {
+    if(!confirm(`¿Quitar "${x.name}" del inventario? Los gastos ya registrados no cambian.`)) return;
+    try{ if(cloud && fb) await fb.collection("supplies").doc(x.id).delete(); else { supplies = supplies.filter(y => y.id!==x.id); saveLocalExp(); } closeSheet(); render(); toast("Insumo quitado"); }
+    catch(err){ toast(cloud ? fbErr(err) : "No se pudo quitar"); }
+  };
+}
+function useSheet(id){
+  const x = supplies.find(y => y.id===id); if(!x) return;
+  openSheet(`<h2>Usar ${esc(x.name)}</h2><p class="muted" style="margin:0">Hay <b>${fmtQ(x.stock)} ${esc(x.unit)}</b></p>
+    <div class="field" style="margin-top:12px"><label for="us_q">Cantidad usada (${esc(x.unit)})</label><input class="input" id="us_q" inputmode="decimal" placeholder="Ej. 1"></div>
+    <div class="field"><label for="us_n">Nota (opcional)</label><input class="input" id="us_n" maxlength="200" placeholder="Ej. lavado del pedido 000123"></div>
+    <div class="stack"><button class="btn block" id="us_ok">Registrar uso</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
+  $("#us_ok").onclick = async ev => {
+    const q = r3(parseNum($("#us_q").value));
+    if(!(q > 0)){ toast("Escribe cuánto usaste"); return; }
+    if(q > x.stock){ toast(`Solo hay ${fmtQ(x.stock)} ${x.unit}. Si el stock está mal, pide al administrador que haga un conteo.`); return; }
+    ev.currentTarget.disabled = true;
+    try{ await moveSupply(x.id, "uso", -q, $("#us_n").value.trim()); closeSheet(); render(); toast(`Uso registrado: −${fmtQ(q)} ${x.unit}`); }
+    catch(err){ toast(cloud ? fbErr(err) : "No se pudo registrar"); const b = $("#us_ok"); if(b) b.disabled = false; }
+  };
+}
+function countSheet(id){
+  const x = supplies.find(y => y.id===id); if(!x) return;
+  openSheet(`<h2>Contar ${esc(x.name)}</h2><p class="muted" style="margin:0">El sistema dice <b>${fmtQ(x.stock)} ${esc(x.unit)}</b>. Escribe lo que hay de verdad en bodega.</p>
+    <div class="field" style="margin-top:12px"><label for="ct_q">Cantidad contada (${esc(x.unit)})</label><input class="input" id="ct_q" inputmode="decimal" placeholder="${fmtQ(x.stock)}"></div>
+    <div class="field"><label for="ct_n">Nota (opcional)</label><input class="input" id="ct_n" maxlength="200" placeholder="Ej. conteo de fin de mes"></div>
+    <div class="stack"><button class="btn block" id="ct_ok">Guardar conteo</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
+  $("#ct_ok").onclick = async ev => {
+    const raw = $("#ct_q").value.trim(), q = r3(parseNum(raw));
+    if(raw==="" || q < 0){ toast("Escribe la cantidad contada"); return; }
+    ev.currentTarget.disabled = true;
+    try{ await moveSupply(x.id, "ajuste", q, $("#ct_n").value.trim() || "Conteo físico"); closeSheet(); render(); toast("Conteo guardado"); }
+    catch(err){ toast(cloud ? fbErr(err) : "No se pudo guardar"); const b = $("#ct_ok"); if(b) b.disabled = false; }
+  };
+}
+async function exportExpCSV(){
+  const R = monthRange(expMonth), dc = n => fmt2(n||0).replace(".",",");
+  const head = ["Fecha","Tipo","Descripcion","Proveedor","Monto","Pagado con","Registro","Insumos"];
+  const rows = expIn(R.a, R.b).sort((a,b) => a.day.localeCompare(b.day)).map(e => [e.day, catInfo(e.cat)[2], e.desc, e.provider||"", dc(e.amount), e.method, e.by, e.lines.map(l => `${l.name} +${fmtQ(l.qty)} ${l.unit}`).join(" | ")]);
+  const cell = v => { let t = String(v); if(/^[=+\-@\t\r]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g,'""') + '"'; }; // evita fórmulas al abrir en Excel
+  const csv = "\ufeff" + [head, ...rows].map(r => r.map(cell).join(";")).join("\n");
+  await saveFile(`gastos-shoe-cleaning-${R.l.toLowerCase().replace(/\s+/g,"-")}.csv`, csv, "text/csv;charset=utf-8");
+}
 
 /* ---------- Análisis extra ---------- */
 function extraAnalytics(P, start){
@@ -1839,12 +2244,16 @@ async function takeNumber(){
   const n = settings.nextNumber; settings.nextNumber++;
   return (settings.prefix||"") + String(n).padStart(6,"0");
 }
-function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = () => rej(new Error("No cargó " + src)); document.head.appendChild(el); }); }
+// Integridad (SRI) de Firebase 10.12.2: si alguien altera estos archivos en el camino, el navegador no los ejecuta
+const FB_SRI = {"firebase-app-compat.js":"sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9",
+  "firebase-auth-compat.js":"sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1",
+  "firebase-firestore-compat.js":"sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC"};
+function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement("script"); const sri = FB_SRI[src.split("/").pop()]; if(sri){ el.integrity = sri; el.crossOrigin = "anonymous"; } el.src = src; el.onload = res; el.onerror = () => rej(new Error("No cargó " + src)); document.head.appendChild(el); }); }
 function stopCloud(){ clearInterval(hbTimer); unsub.forEach(f => { try{ f(); }catch(e){} }); unsub = []; }
 const pristineDraft = () => !draft || (!draft.name && !draft.phone && !Object.values(draft.qty).some(x=>x>0));
 async function startSession(u){
   stopCloud();
-  if(!u){ me = null; mode = "local"; orders = []; cloudUsers = []; ready = true; gateShown = null; draft = null; closeSheet(); render(); setSync("Nube"); return; }
+  if(!u){ me = null; mode = "local"; orders = []; cloudUsers = []; expenses = []; supplies = []; ready = true; gateShown = null; draft = null; closeSheet(); render(); setSync("Nube"); return; }
   let ud = null;
   try{ ud = await fb.doc("users/" + u.uid).get(); }catch(e){}
   if(!ud || !ud.exists){ try{ await fbAuth.signOut(); }catch(e){} toast("Tu usuario no está activo. Habla con el administrador."); return; }
@@ -1872,6 +2281,15 @@ async function startSession(u){
     if(!mine){ toast("Tu usuario fue desactivado"); fbAuth.signOut().catch(()=>{}); return; }
     if(mine.role!==me.role || mine.name!==me.name){ me = Object.assign({}, me, {role:mine.role, name:mine.name}); render(); }
     else if(view==="ajustes") render();
+  }, () => {}));
+  if(me.role!=="operaciones"){
+    const n0 = new Date(), since = isAdmin() ? new Date(n0.getFullYear(), n0.getMonth()-1, 1).getTime() : Date.now() - 36*3600000;
+    unsub.push(fb.collection("expenses").where("at",">=",since).orderBy("at","desc").limit(2000).onSnapshot(sn => {
+      expenses = sn.docs.map(x => normExpense(x.data())); if(["gastos","tablero"].includes(view)) softRender();
+    }, () => {}));
+  }
+  unsub.push(fb.collection("supplies").onSnapshot(sn => {
+    supplies = sn.docs.map(x => normSupply(x.data())); if(["gastos","insumos","tablero"].includes(view)) softRender();
   }, () => {}));
   if(isAdmin()){
     let privFirst = true;
@@ -1972,6 +2390,7 @@ async function initCloud(){
 }
 
 loadLocal();
+loadLocalExp();
 if(cloud) initCloud();
 if(ready) restoreSession();
 if(me && !cloud){ recordLogin("apertura"); startPresence(); }

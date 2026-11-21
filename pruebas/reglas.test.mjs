@@ -66,7 +66,8 @@ test("recepción entrega y cobra", () => assertSucceeds(db("r1").doc("orders/p1"
 test("recepción NO cambia el total de un pedido", () => assertFails(db("r1").doc("orders/p1").update({ total: 1 })));
 test("recepción NO deshace una entrega", () => assertFails(db("r1").doc("orders/p2").update({ status: "listo", deliveredAt: null })));
 test("recepción agrega foto a pedido entregado", () => assertSucceeds(db("r1").doc("orders/p2").update({ photos: { recepcion: 0, entrega: 1 } })));
-test("contador de fotos no pasa de 3", () => assertFails(db("r1").doc("orders/p1").update({ photos: { recepcion: 4, entrega: 0 } })));
+test("contador de fotos admite una por par (hasta 30)", () => assertSucceeds(db("r1").doc("orders/p1").update({ photos: { recepcion: 12, entrega: 0 } })));
+test("contador de fotos no pasa de 30", () => assertFails(db("r1").doc("orders/p1").update({ photos: { recepcion: 31, entrega: 0 } })));
 test("recepción avanza el N° de recibo de uno en uno", () => assertSucceeds(db("r1").doc("config/settings").update({ nextNumber: 11 })));
 test("recepción NO salta números de recibo", () => assertFails(db("r1").doc("config/settings").update({ nextNumber: 50 })));
 test("operaciones NO toca el N° de recibo", () => assertFails(db("o1").doc("config/settings").update({ nextNumber: 11 })));
@@ -141,3 +142,109 @@ test("administrador NO pone un rol inventado", () => assertFails(db("a1").doc("u
 test("administrador NO cambia el usuario al cambiar el rol", () => assertFails(db("a1").doc("users/r1").update({ role: "admin", username: "otra" })));
 test("recepción NO cambia el rol de otro", () => assertFails(db("r1").doc("users/o1").update({ role: "admin" })));
 test("operaciones NO se sube a administrador", () => assertFails(db("o1").doc("users/o1").update({ role: "admin" })));
+
+// ---------- Fotos por par con miniatura ----------
+const THUMB = "data:image/webp;base64,UklGRhIAAABXRUJQVlA4";
+const photoDoc = (id, o = {}) => Object.assign({ id, orderId: "p1", num: "B000001", stage: "recepcion", data: IMG, at: now(), by: "maria", slot: "clasicos:1", label: "Zapatos 1" }, o);
+test("recepción guarda foto y miniatura de un par", async () => {
+  const f = db("r1"); const b = f.batch();
+  b.set(f.doc("photos/f1"), photoDoc("f1"));
+  b.set(f.doc("thumbs/f1"), { id: "f1", orderId: "p1", stage: "recepcion", slot: "clasicos:1", label: "Zapatos 1", data: THUMB, at: now() });
+  await assertSucceeds(b.commit());
+});
+test("miniatura sin su foto se rechaza", () =>
+  assertFails(db("r1").doc("thumbs/f9").set({ id: "f9", orderId: "p1", stage: "recepcion", slot: "", label: "", data: THUMB, at: now() })));
+test("miniatura de otro pedido que su foto se rechaza", async () => {
+  await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("photos/f2").set(photoDoc("f2")); });
+  await assertFails(db("r1").doc("thumbs/f2").set({ id: "f2", orderId: "p2", stage: "recepcion", slot: "", label: "", data: THUMB, at: now() }));
+});
+test("miniatura grande (más de 20 KB) se rechaza", async () => {
+  const f = db("r1"); const b = f.batch();
+  b.set(f.doc("photos/f3"), photoDoc("f3"));
+  b.set(f.doc("thumbs/f3"), { id: "f3", orderId: "p1", stage: "recepcion", slot: "", label: "", data: "data:image/webp;base64," + "A".repeat(21000), at: now() });
+  await assertFails(b.commit());
+});
+test("foto con slot inválido se rechaza", () => assertFails(db("r1").doc("photos/f4").set(photoDoc("f4", { slot: "<b>" }))));
+test("operaciones ve miniaturas", async () => {
+  await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("thumbs/f5").set({ id: "f5", orderId: "p1", stage: "recepcion", slot: "", label: "", data: THUMB, at: now() }); });
+  await assertSucceeds(db("o1").doc("thumbs/f5").get());
+});
+
+// ---------- Gastos ----------
+const gasto = (id, o = {}) => Object.assign({ id, day: "2026-11-21", at: now(), cat: "almuerzos", desc: "Almuerzo del personal", amount: 9, method: "Efectivo", by: "maria" }, o);
+test("recepción registra un gasto", () => assertSucceeds(db("r1").doc("expenses/g1").set(gasto("g1"))));
+test("recepción NO registra gastos con fecha pasada", () => assertFails(db("r1").doc("expenses/g2").set(gasto("g2", { at: now() - 5 * 86400000 }))));
+test("recepción NO registra a nombre de otro", () => assertFails(db("r1").doc("expenses/g3").set(gasto("g3", { by: "admin" }))));
+test("operaciones NO registra gastos", () => assertFails(db("o1").doc("expenses/g4").set(gasto("g4", { by: "pedro" }))));
+test("gasto con categoría inventada o monto 0 se rechaza", async () => {
+  await assertFails(db("r1").doc("expenses/g5").set(gasto("g5", { cat: "fiesta" })));
+  await assertFails(db("r1").doc("expenses/g6").set(gasto("g6", { amount: 0 })));
+});
+test("recepción ve gastos recientes y NO los antiguos", async () => {
+  await env.withSecurityRulesDisabled(async c => {
+    const fs = c.firestore();
+    await fs.doc("expenses/n1").set(gasto("n1"));
+    await fs.doc("expenses/v1").set(gasto("v1", { at: now() - 10 * 86400000 }));
+  });
+  const f = db("r1");
+  const step = async (n, p) => { try { await p; } catch (e) { throw new Error(n + ": " + e.message); } };
+  await step("lee reciente", assertSucceeds(f.doc("expenses/n1").get()));
+  await step("no lee antiguo", assertFails(f.doc("expenses/v1").get()));
+  await step("consulta reciente", assertSucceeds(f.collection("expenses").where("at", ">=", now() - 36 * 3600000).get()));
+  await step("consulta todo", assertFails(f.collection("expenses").get()));
+});
+test("operaciones NO ve gastos", async () => {
+  await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("expenses/n2").set(gasto("n2")); });
+  await assertFails(db("o1").doc("expenses/n2").get());
+});
+test("solo el administrador borra o corrige gastos", async () => {
+  await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("expenses/n3").set(gasto("n3")); });
+  await assertFails(db("r1").doc("expenses/n3").delete());
+  await assertFails(db("r1").doc("expenses/n3").update({ amount: 1 }));
+  await assertSucceeds(db("a1").doc("expenses/n3").update({ amount: 10 }));
+  await assertSucceeds(db("a1").doc("expenses/n3").delete());
+});
+
+// ---------- Inventario de insumos ----------
+const supply = (o = {}) => Object.assign({ id: "s1", name: "Jabón neutro", unit: "litros", stock: 5, min: 2, createdAt: now(), updatedAt: now() }, o);
+const seedSupply = () => env.withSecurityRulesDisabled(async c => { await c.firestore().doc("supplies/s1").set(supply()); });
+const moveBatch = (uid, by, mid, type, qty, newStock) => {
+  const f = db(uid); const b = f.batch();
+  b.set(f.doc("supplyMoves/" + mid), { id: mid, sid: "s1", type, qty, at: now(), by });
+  b.update(f.doc("supplies/s1"), { stock: newStock, updatedAt: now(), lastMove: mid });
+  return b.commit();
+};
+test("solo el administrador crea insumos", async () => {
+  await assertFails(db("r1").doc("supplies/s1").set(supply()));
+  await assertSucceeds(db("a1").doc("supplies/s1").set(supply()));
+});
+test("operaciones registra uso y baja el stock", async () => { await seedSupply(); await assertSucceeds(moveBatch("o1", "pedro", "m1", "uso", -1, 4)); });
+test("uso con stock que no cuadra se rechaza", async () => { await seedSupply(); await assertFails(moveBatch("o1", "pedro", "m2", "uso", -1, 5)); });
+test("cambiar el stock sin movimiento se rechaza", async () => {
+  await seedSupply();
+  await assertFails(db("o1").doc("supplies/s1").update({ stock: 50 }));
+  await assertFails(db("a1").doc("supplies/s1").update({ stock: 50 }));
+});
+test("recepción registra compra (sube stock); operaciones NO", async () => {
+  await seedSupply();
+  await assertSucceeds(moveBatch("r1", "maria", "m3", "compra", 3, 8));
+  await assertFails(moveBatch("o1", "pedro", "m4", "compra", 3, 11));
+});
+test("solo el administrador ajusta por conteo", async () => {
+  await seedSupply();
+  await assertFails(moveBatch("r1", "maria", "m5", "ajuste", 2, 7));
+  await assertSucceeds(moveBatch("a1", "admin", "m6", "ajuste", 2, 7));
+});
+test("uso que deja stock negativo se rechaza", async () => { await seedSupply(); await assertFails(moveBatch("o1", "pedro", "m7", "uso", -9, -4)); });
+test("movimiento suelto (sin actualizar stock) se rechaza", () =>
+  assertFails(db("o1").doc("supplyMoves/m8").set({ id: "m8", sid: "s1", type: "uso", qty: -1, at: now(), by: "pedro" })));
+test("nadie edita ni borra movimientos", async () => {
+  await seedSupply(); await moveBatch("a1", "admin", "m9", "ajuste", 1, 6);
+  await assertFails(db("a1").doc("supplyMoves/m9").update({ qty: 100 }));
+  await assertFails(db("a1").doc("supplyMoves/m9").delete());
+});
+test("administrador edita nombre y mínimo sin tocar stock", async () => {
+  await seedSupply();
+  await assertSucceeds(db("a1").doc("supplies/s1").update({ name: "Jabón", min: 3, updatedAt: now() }));
+  await assertFails(db("r1").doc("supplies/s1").update({ name: "X", updatedAt: now() }));
+});

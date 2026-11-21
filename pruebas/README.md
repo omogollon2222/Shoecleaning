@@ -12,3 +12,5 @@ npm test
 ```
 
 Todas deben pasar **antes** de copiar las reglas a la consola de Firebase.
+
+Además hay una prueba de la app completa en tres navegadores: ver `e2e/README.md`.

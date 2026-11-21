@@ -134,3 +134,10 @@ test("correo inválido en el perfil se rechaza", () =>
   assertFails(db("a1").doc("users/nuevo").set({ username: "dueno", name: "Dueño", role: "admin", email: "<script>", createdAt: now(), createdBy: "admin" })));
 test("recepción NO crea administradores con correo", () =>
   assertFails(db("r1").doc("users/nuevo").set({ username: "dueno", name: "Dueño", role: "admin", email: "dueno@gmail.com", createdAt: now() })));
+
+// ---------- Cambiar rol ----------
+test("administrador cambia el rol de otro usuario", () => assertSucceeds(db("a1").doc("users/r1").update({ role: "operaciones" })));
+test("administrador NO pone un rol inventado", () => assertFails(db("a1").doc("users/r1").update({ role: "superadmin" })));
+test("administrador NO cambia el usuario al cambiar el rol", () => assertFails(db("a1").doc("users/r1").update({ role: "admin", username: "otra" })));
+test("recepción NO cambia el rol de otro", () => assertFails(db("r1").doc("users/o1").update({ role: "admin" })));
+test("operaciones NO se sube a administrador", () => assertFails(db("o1").doc("users/o1").update({ role: "admin" })));

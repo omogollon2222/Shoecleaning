@@ -532,7 +532,7 @@ function usersPanel(){
   return `<div class="lbl">Usuarios y roles</div><div class="panel pad">
     <p class="small muted" style="margin:0 0 6px">Operadores: <b>${nOps}/${MAX_OPS}</b></p>
     ${users().map(u=>`<div class="hist" style="align-items:center"><span><b>${esc(u.name)}</b> <span class="muted small">${u.email?esc(u.email):"@"+esc(u.u)}</span><br><span class="rolepill r-${u.role}">${ROLE[u.role]}</span></span>
-      <span class="row" style="gap:6px">${cloud?"":`<button class="btn ghost" style="min-height:38px;padding:6px 10px" data-upw="${esc(u.u)}">Cambiar clave</button>`}${u.u!==me.u?`<button class="btn danger" style="min-height:38px;padding:6px 10px" data-udel="${esc(u.u)}">${cloud?"Desactivar":"Quitar"}</button>`:""}</span></div>`).join("")}
+      <span class="row" style="gap:6px">${cloud?"":`<button class="btn ghost" style="min-height:38px;padding:6px 10px" data-upw="${esc(u.u)}">Cambiar clave</button>`}${u.u!==me.u?`<button class="btn ghost" style="min-height:38px;padding:6px 10px" data-urole="${esc(u.u)}">Cambiar rol</button>`:""}${u.u!==me.u?`<button class="btn danger" style="min-height:38px;padding:6px 10px" data-udel="${esc(u.u)}">${cloud?"Desactivar":"Quitar"}</button>`:""}</span></div>`).join("")}
     <button class="btn block" id="uAdd" style="margin-top:10px">Agregar usuario</button>
     ${cloud?`<p class="small muted" style="margin:10px 0 0">Cada usuario cambia su propia contraseña tocando su nombre arriba a la derecha. Los administradores entran con su correo y, si la olvidan, usan «¿Olvidaste tu contraseña?» al iniciar sesión. Si alguien de recepción u operaciones la olvida, desactívalo y créale un usuario nuevo (por ejemplo maria2).</p>`:""}</div>`;
 }
@@ -580,6 +580,30 @@ function pwSheet(u){
     const salt = newSalt(), h = await hashPw(salt,p);
     settings.users = users().map(x => x.u===u ? Object.assign({}, x, {salt, h}) : x);
     await saveSettings(); closeSheet(); toast("Contraseña actualizada");
+  };
+}
+function roleSheet(u){
+  const f = users().find(x=>x.u===u); if(!f || u===me.u) return;
+  let role = f.role;
+  openSheet(`<h2>Cambiar rol</h2><p class="muted" style="margin:0">${esc(f.name)} · ${f.email?esc(f.email):"@"+esc(f.u)}</p>
+    <span class="lbl" style="margin-top:14px">Rol</span><div class="rolepick" id="ur_r">${Object.keys(ROLE).map(k=>`<button type="button" data-r="${k}" aria-pressed="${k===role}"><b>${ROLE[k]}</b><small>${ROLE_DESC[k]}</small></button>`).join("")}</div>
+    ${cloud && !f.email?`<p class="small muted" style="margin:8px 0 0">Seguirá entrando con su usuario <b>${esc(f.u)}</b> y la misma contraseña.</p>`:""}
+    <div class="stack"><button class="btn block" id="ur_save">Guardar rol</button><button class="btn ghost block" data-close>Cancelar</button></div>`);
+  $("#ur_r").querySelectorAll("[data-r]").forEach(b => b.onclick = () => { role = b.dataset.r; $("#ur_r").querySelectorAll("[data-r]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  $("#ur_save").onclick = async () => {
+    if(role===f.role){ closeSheet(); return; }
+    if(f.role==="admin" && users().filter(x=>x.role==="admin").length<=1){ toast("Debe quedar al menos un administrador"); return; }
+    if(role==="operaciones" && users().filter(x=>x.role==="operaciones").length>=MAX_OPS){ toast(`Máximo ${MAX_OPS} operadores. Desactiva uno para cambiar este.`); return; }
+    if(role==="admin" && !confirm(`${f.name} podrá ver y cambiar todo: caja, precios, usuarios y respaldos. ¿Continuar?`)) return;
+    const sb = $("#ur_save"); sb.disabled = true; sb.textContent = "Guardando…";
+    if(cloud){
+      try{ await fb.doc("users/"+f.uid).update({role}); }
+      catch(err){ toast(fbErr(err)); sb.disabled = false; sb.textContent = "Guardar rol"; return; }
+    } else {
+      settings.users = users().map(x => x.u===u ? Object.assign({}, x, {role}) : x);
+      await saveSettings();
+    }
+    closeSheet(); render(); toast(`${f.name} ahora es ${ROLE[role]}`);
   };
 }
 async function delUser(u){
@@ -1207,6 +1231,7 @@ function bind(){
     $("#uAdd").onclick = userSheet;
     v.querySelectorAll("[data-upw]").forEach(b => b.onclick = () => pwSheet(b.dataset.upw));
     v.querySelectorAll("[data-udel]").forEach(b => b.onclick = () => delUser(b.dataset.udel));
+    v.querySelectorAll("[data-urole]").forEach(b => b.onclick = () => roleSheet(b.dataset.urole));
     $("#export").onclick = exportCSV;
     $("#backup").onclick = backupJSON;
     $("#restore").onchange = e => { const f = e.target.files && e.target.files[0]; if(f) restoreJSON(f); e.target.value = ""; };

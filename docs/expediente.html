@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expediente · Shoe Cleaning</title>
+<style>
+@page{size:A4;margin:16mm 14mm 16mm}
+:root{--ink:#0c2f4b;--muted:#587084;--line:#d5e3ee;--brand:#2580bf;--soft:#eef5fb;--warn:#b35f00;--ok:#0f8a60;--bad:#c22d27}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:10.5pt/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:#fff}
+main{max-width:860px;margin:0 auto;padding:24px 18px}
+h1{font-size:22pt;line-height:1.15;margin:0 0 4px}
+h2{font-size:14pt;margin:26px 0 8px;padding-top:6px;border-top:3px solid var(--brand);break-after:avoid}
+h3{font-size:11.5pt;margin:14px 0 6px;break-after:avoid}
+p{margin:0 0 8px} ul,ol{margin:0 0 10px;padding-left:22px} li{margin:0 0 3px}
+.cover{background:var(--ink);color:#fff;border-radius:14px;padding:24px;margin-bottom:16px}
+.cover p{color:#d5e3ee;margin:0}
+table{border-collapse:collapse;width:100%;font-size:9.5pt;margin:6px 0 12px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+tr{break-inside:avoid}
+code{background:var(--soft);border-radius:4px;padding:0 4px;font-size:9pt}
+.note{background:var(--soft);border-left:4px solid var(--brand);border-radius:8px;padding:9px 12px;margin:8px 0 12px}
+.warn{background:#fff4e5;border-left-color:var(--warn)}
+.ok{color:var(--ok);font-weight:700}.pend{color:var(--warn);font-weight:700}.crit{color:var(--bad);font-weight:700}
+.foot{margin-top:26px;text-align:center;color:var(--muted);font-size:9pt}
+.foot b{display:block;font-family:"Segoe Script","Brush Script MT",cursive;font-weight:400;font-size:16pt;color:var(--brand)}
+</style>
+</head>
+<body><main>
+
+<div class="cover">
+  <h1>Shoe Cleaning — Expediente de la app</h1>
+  <p>Actualizado: 21 de noviembre de 2026 · Revisión final antes de la entrega al cliente</p>
+</div>
+
+<p>Este expediente reúne lo que hay que saber de la app de Shoe Cleaning: qué servicios usa, qué datos guarda, cómo está protegida, cómo se probó y qué queda pendiente. <b>No contiene contraseñas:</b> esas se guardan aparte, en un gestor de contraseñas o en un sobre cerrado. Es un documento interno: no lo publiques (la carpeta <code>docs</code> está bloqueada en el servidor).</p>
+
+<h2>1. Ficha general</h2>
+<table>
+  <tr><th style="width:32%">Campo</th><th>Valor</th></tr>
+  <tr><td>Nombre</td><td>Shoe Cleaning</td></tr>
+  <tr><td>Giro</td><td>Lavandería de zapatos y accesorios (lavado, secado y esterilización), Ecuador</td></tr>
+  <tr><td>Titular responsable, RUC, dirección y correo</td><td class="pend">Pendiente: se ingresan en la app, en Ajustes → Aviso de privacidad</td></tr>
+  <tr><td>WhatsApp de contacto</td><td>098 003 5702</td></tr>
+  <tr><td>App (producción)</td><td><b>https://shoecleaning.consultecapps.com</b></td></tr>
+  <tr><td>Aviso de privacidad (público)</td><td>https://shoecleaning.consultecapps.com/privacidad.html</td></tr>
+  <tr><td>Desarrollo</td><td>Consultecapps</td></tr>
+  <tr><td>Versión</td><td>Revisión final del 21-nov-2026 (caché <code>shoe-cleaning-v12</code>)</td></tr>
+</table>
+
+<h2>2. Cómo funciona</h2>
+<p>Es una app web instalable (PWA) en HTML y JavaScript, sin servidor propio. Hostinger publica los archivos; los datos y el inicio de sesión los maneja <b>Firebase</b> (Google). La base de datos decide qué puede ver o cambiar cada rol:</p>
+<ul>
+  <li><b>Administración:</b> todo (tablero, pedidos, clientes, gastos e inventario, análisis, usuarios, ajustes, respaldos). Entra con su <b>correo</b> y puede recuperar la contraseña por correo.</li>
+  <li><b>Recepción:</b> registra pedidos con una foto por par, cobra, entrega con foto por par, registra gastos del momento, hace el cierre de caja y ve un resumen ejecutivo sin datos del personal ni gastos. Entra con usuario y contraseña.</li>
+  <li><b>Operaciones:</b> cola de trabajo, fotos de recepción en miniatura (la grande al tocarla), avance de etapas y uso de insumos. No ve dinero ni gastos.</li>
+</ul>
+<p>Funciona sin internet: guarda en el equipo y sincroniza al volver la conexión. Al cerrar sesión se borra la copia local (tablets compartidas).</p>
+
+<h2>3. Cuentas y servicios</h2>
+<table>
+  <tr><th>Servicio</th><th>Para qué sirve</th><th>Dónde se administra</th><th>Plan</th></tr>
+  <tr><td>Firebase (Google)</td><td>Inicio de sesión (Authentication) y base de datos (Firestore): pedidos, fotos, gastos, inventario, usuarios. Proyecto <code>shoe-cleaning-2ed47</code></td><td>console.firebase.google.com, con la cuenta de Google de Consultecapps</td><td>Spark (gratis)</td></tr>
+  <tr><td>Hostinger</td><td>Publica la app en <code>public_html/shoecleaning</code> (subdominio shoecleaning.consultecapps.com, SSL activo)</td><td>hPanel → Avanzado → GIT</td><td>Plan de hosting de Consultecapps</td></tr>
+  <tr><td>GitHub</td><td>Código y su historial. Repositorio <code>omogollon2222/Shoecleaning</code>, rama de producción <code>seguro</code></td><td>github.com</td><td>Gratis</td></tr>
+  <tr><td>Google Fonts / gstatic</td><td>Tipografías y librerías de Firebase (versión fija 10.12.2, con verificación de integridad)</td><td>—</td><td>Gratis</td></tr>
+  <tr><td>WhatsApp</td><td>Comprobantes, avisos de etapa y reportes (se abren desde la app; no se envían solos)</td><td>WhatsApp del local</td><td>Gratis</td></tr>
+</table>
+<div class="note"><b>Copia local del código:</b> <code>Escritorio\Consultec Projects\All Clean</code> (con historial git). Allí están también las pruebas (<code>pruebas/</code>) y la guía técnica <code>CLAUDE.md</code>.</div>
+
+<h2>4. Datos que se guardan</h2>
+<table>
+  <tr><th>Dato</th><th>Dónde</th><th>Quién lo ve</th><th>Cuánto tiempo</th></tr>
+  <tr><td>Pedidos: artículos, precios, cobros, fechas y etapas</td><td>Firestore <code>orders</code></td><td>Los tres roles (operaciones sin cambiar montos)</td><td>Mientras se necesiten para la contabilidad</td></tr>
+  <tr><td>Clientes: nombre, celular, notas, permiso de promociones</td><td>Dentro de cada pedido</td><td>Administración y recepción; operaciones ve el nombre</td><td>Hasta 2 años desde la última visita (plazo recomendado; se fija en Ajustes) o antes si el cliente lo pide</td></tr>
+  <tr><td>Fotos de los artículos: una por par al recibir y al entregar</td><td>Firestore <code>photos</code> (~40 KB c/u) y <code>thumbs</code> (miniaturas ~6 KB)</td><td>Los tres roles</td><td>Se borran solas 60 días después de entregado el pedido</td></tr>
+  <tr><td>Gastos (insumos, obligaciones, almuerzos, transporte, mantenimiento, otros)</td><td>Firestore <code>expenses</code></td><td>Administración (todo); recepción solo las últimas 48 h</td><td>Mientras se necesiten para la contabilidad</td></tr>
+  <tr><td>Inventario de insumos y sus movimientos (compra, uso, conteo)</td><td>Firestore <code>supplies</code>, <code>supplyMoves</code></td><td>Los tres roles</td><td>Los movimientos no se pueden editar ni borrar (auditoría)</td></tr>
+  <tr><td>Personal: nombre, usuario, rol, correo (administradores)</td><td>Firestore <code>users</code> y Firebase Authentication</td><td>Usuarios activos; solo administración los cambia</td><td>Mientras trabajen en el local</td></tr>
+  <tr><td>Ingresos del personal y presencia en línea</td><td>Firestore <code>logins</code>, <code>presence</code></td><td>Solo administración</td><td>Se consultan los últimos 8 días</td></tr>
+  <tr><td>Datos del responsable para el aviso de privacidad</td><td>Firestore <code>config/privacy</code></td><td>Público (es el aviso)</td><td>Mientras esté vigente</td></tr>
+</table>
+<p>No se guardan cédulas, direcciones, tarjetas ni datos sensibles. Al comprimir las fotos se eliminan los datos ocultos del celular (ubicación GPS, modelo). Las fotos son de los artículos, no de las personas.</p>
+
+<h2>5. Seguridad (auditoría del 21-nov-2026)</h2>
+<table>
+  <tr><th>Control</th><th>Estado</th></tr>
+  <tr><td>Conexión cifrada HTTPS forzada, HSTS de 1 año</td><td class="ok">Activo</td></tr>
+  <tr><td>Cabeceras: Content-Security-Policy (solo scripts propios y de Google), X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy (cámara solo propia; sin micrófono ni ubicación)</td><td class="ok">Activo</td></tr>
+  <tr><td>Integridad (SRI) de las librerías de Firebase: si alguien las altera, el navegador no las ejecuta</td><td class="ok">Nuevo</td></tr>
+  <tr><td>Reglas de Firestore: cerradas por defecto; cada rol solo toca sus campos; tipos y tamaños validados; recepción no cambia montos ni deshace entregas; operaciones no ve dinero ni gastos</td><td class="ok">80/80 pruebas</td></tr>
+  <tr><td>Gastos: recepción solo registra con la hora del momento y a su nombre; solo administración corrige o borra</td><td class="ok">Nuevo</td></tr>
+  <tr><td>Inventario: el stock solo cambia junto con su movimiento (compra, uso o conteo), nunca queda negativo y los movimientos no se editan</td><td class="ok">Nuevo</td></tr>
+  <tr><td>Fotos y miniaturas: solo imágenes JPEG/PNG/WebP, tamaño máximo, ligadas a un pedido existente</td><td class="ok">Activo</td></tr>
+  <tr><td>Todo texto se muestra escapado (protección contra código malicioso en nombres y notas)</td><td class="ok">Revisado</td></tr>
+  <tr><td>Exportaciones a Excel sin fórmulas ejecutables (inyección CSV)</td><td class="ok">Nuevo</td></tr>
+  <tr><td>Contraseñas manejadas por Firebase (no se guardan en la app); mínimo 8 caracteres en la app</td><td class="ok">Activo</td></tr>
+  <tr><td>Recuperación de contraseña de administradores sin revelar qué correos existen</td><td class="ok">Activo</td></tr>
+  <tr><td>Cierre de sesión borra la copia local; desactivar un usuario corta su acceso al instante</td><td class="ok">Activo</td></tr>
+  <tr><td>Archivos internos (<code>.git</code>, <code>pruebas</code>, <code>docs</code>, reglas, <code>.md</code>) bloqueados en el servidor</td><td class="ok">Activo</td></tr>
+  <tr><td>Restringir la clave de API de Firebase al dominio de la app (Google Cloud → Credenciales)</td><td class="pend">Pendiente (consola)</td></tr>
+  <tr><td>Política de contraseñas en Firebase Authentication (mínimo 8) y protección contra enumeración de correos</td><td class="pend">Pendiente (consola)</td></tr>
+  <tr><td>App Check (bloquea clientes que no sean la app)</td><td class="pend">Recomendado cuando haya más clientes</td></tr>
+</table>
+
+<h2>6. Pruebas realizadas</h2>
+<table>
+  <tr><th>Prueba</th><th>Resultado</th></tr>
+  <tr><td>Reglas de seguridad con el emulador de Firebase (roles, pedidos, fotos, miniaturas, gastos, inventario, usuarios, aviso)</td><td class="ok">80 de 80</td></tr>
+  <tr><td>Recorrido completo con los tres roles en <b>Chrome 157</b> (registro con correo, usuarios, insumos, pedido con foto por par, gastos, cierre, resumen, operaciones, entrega)</td><td class="ok">30 de 30</td></tr>
+  <tr><td>El mismo recorrido en <b>Microsoft Edge 157</b></td><td class="ok">30 de 30</td></tr>
+  <tr><td>El mismo recorrido en <b>Firefox</b></td><td class="ok">30 de 30</td></tr>
+  <tr><td><b>Safari</b> (iPhone/iPad): simulado — sin compresión WebP la app usa JPEG liviano (~40 KB)</td><td class="pend">Simulado; probar en un iPhone real</td></tr>
+  <tr><td>Tamaño de fotos desde imágenes de 3000×2000 px: foto ~27-45 KB, miniatura ~6 KB</td><td class="ok">Cumple</td></tr>
+  <tr><td>Consola sin errores de JavaScript en los tres navegadores</td><td class="ok">Cumple</td></tr>
+</table>
+
+<h2>7. Espacio y costos</h2>
+<p>El plan gratuito de Firebase (Spark) incluye 1 GB en la base de datos, 50 000 lecturas y 20 000 escrituras al día. Cálculo con 30 pares diarios: cada par usa unos 90-120 KB entre fotos y miniaturas de recepción y entrega, unos 3-4 MB por día. Como las fotos se borran 60 días después de entregado el pedido, el uso se estabiliza en unos 250 MB. Las listas cargan solo miniaturas, así que las lecturas también se mantienen bajas. Si el negocio crece mucho, revisa el uso en Firebase → Uso y facturación.</p>
+
+<h2>8. Cómo actualizar la app</h2>
+<ol>
+  <li>Los cambios se suben a GitHub, a la rama <code>seguro</code>.</li>
+  <li>En Hostinger: <b>Avanzado → GIT → Implementar</b> (solo cambia <code>public_html/shoecleaning</code>).</li>
+  <li>Si cambió <code>firestore.rules</code>: Firebase → Firestore Database → Reglas → pegar el archivo → <b>Publicar</b>. Antes, correr las pruebas de <code>pruebas/</code>.</li>
+  <li>Las tablets toman la versión nueva la próxima vez que abran la app con internet.</li>
+</ol>
+
+<h2>9. Respaldo y continuidad</h2>
+<ul>
+  <li><b>Semanal:</b> Ajustes → Descargar respaldo (pedidos, ajustes, gastos e inventario) y guardarlo fuera del celular.</li>
+  <li><b>Mensual:</b> exportar ventas y gastos a Excel para el contador.</li>
+  <li>Las fotos no van en el respaldo (se borran a los 60 días por diseño).</li>
+  <li>El código está en GitHub y en la computadora de Consultecapps.</li>
+</ul>
+
+<h2>10. Pendientes antes y después de la entrega</h2>
+<table>
+  <tr><th>Pendiente</th><th>Quién</th><th>Prioridad</th></tr>
+  <tr><td>Publicar en Firebase las reglas nuevas (<code>firestore.rules</code> de esta revisión). Sin ellas no funcionan las miniaturas, los gastos ni el inventario</td><td>Consultecapps</td><td class="crit">Antes de entregar</td></tr>
+  <tr><td>Subir la revisión a la rama <code>seguro</code> e <b>Implementar</b> en Hostinger</td><td>Consultecapps</td><td class="crit">Antes de entregar</td></tr>
+  <tr><td>Completar los datos del responsable en Ajustes → Aviso de privacidad</td><td>Dueño del negocio</td><td class="pend">Al entregar</td></tr>
+  <tr><td>Crear los insumos reales y los usuarios del personal</td><td>Dueño del negocio</td><td class="pend">Al entregar</td></tr>
+  <tr><td>Probar en un iPhone o iPad real (Safari): tomar foto por par y entregar</td><td>Consultecapps</td><td class="pend">Primera semana</td></tr>
+  <tr><td>Restringir la clave de API, política de contraseñas y protección contra enumeración de correos en Firebase</td><td>Consultecapps</td><td class="pend">Primera semana</td></tr>
+  <tr><td>Plantilla del correo de restablecimiento en español (Authentication → Plantillas)</td><td>Consultecapps</td><td class="pend">Primera semana</td></tr>
+  <tr><td>Borrado automático de nombre y celular al cumplirse el plazo de conservación (hoy se hace a mano desde Clientes)</td><td>Consultecapps</td><td>Antes de 2028</td></tr>
+</table>
+
+<p class="foot">Engineered with pride by<b>Consultecapps</b></p>
+</main></body>
+</html>

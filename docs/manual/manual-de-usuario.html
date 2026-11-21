@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de usuario · Shoe Cleaning</title>
+<style>
+@page{size:A4;margin:16mm 14mm 16mm}
+:root{--ink:#0c2f4b;--muted:#587084;--line:#d5e3ee;--brand:#2580bf;--soft:#eef5fb;--ok:#0f8a60;--warn:#b35f00}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:11pt/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:#fff}
+main{max-width:820px;margin:0 auto;padding:24px 18px}
+h1{font-size:24pt;line-height:1.15;margin:0 0 4px}
+h2{font-size:15pt;margin:28px 0 8px;padding-top:6px;border-top:3px solid var(--brand);break-after:avoid}
+h3{font-size:12pt;margin:18px 0 6px;break-after:avoid}
+p{margin:0 0 8px}
+ol,ul{margin:0 0 10px;padding-left:22px}
+li{margin:0 0 4px}
+.cover{background:var(--ink);color:#fff;border-radius:14px;padding:26px 24px;margin-bottom:18px}
+.cover p{color:#d5e3ee;margin:0}
+.cover .who{margin-top:14px;font-size:10pt}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:9pt;font-weight:700}
+.p-admin{background:#e3effa;color:#17598c}.p-rec{background:#ddf3ea;color:#0f8a60}.p-ops{background:#efe6fb;color:#6b3fb5}
+.tip{background:var(--soft);border-left:4px solid var(--brand);border-radius:8px;padding:9px 12px;margin:8px 0 12px;font-size:10pt}
+.warn{background:#fff4e5;border-left-color:var(--warn)}
+.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:10px 0 14px;break-inside:avoid}
+.shots.two{grid-template-columns:repeat(2,1fr);max-width:540px}
+figure{margin:0;break-inside:avoid}
+figure img{width:100%;border:1px solid var(--line);border-radius:12px;display:block}
+figcaption{font-size:8.5pt;color:var(--muted);text-align:center;margin-top:4px}
+table{border-collapse:collapse;width:100%;font-size:10pt;margin:6px 0 12px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+.toc{columns:2;font-size:10pt;margin:0 0 6px}
+.foot{margin-top:26px;text-align:center;color:var(--muted);font-size:9pt}
+.foot b{display:block;font-family:"Segoe Script","Brush Script MT",cursive;font-weight:400;font-size:16pt;color:var(--brand)}
+h2,h3,.shots,table{break-inside:avoid}
+</style>
+</head>
+<body><main>
+
+<div class="cover">
+  <h1>Manual de usuario</h1>
+  <p>Shoe Cleaning · Lavandería de zapatos y accesorios</p>
+  <p class="who">App: <b>shoecleaning.consultecapps.com</b> · Versión del 21 de noviembre de 2026</p>
+</div>
+
+<p>La app funciona en el celular, la tablet o la computadora, con Chrome, Edge, Safari o Firefox. Cada persona entra con su propio usuario y ve solo lo que necesita para su trabajo:</p>
+<table>
+  <tr><th>Rol</th><th>Qué hace</th></tr>
+  <tr><td><span class="pill p-rec">Recepción</span></td><td>Recibe pedidos con foto de cada par, cobra, entrega, registra gastos del día y hace el cierre de caja.</td></tr>
+  <tr><td><span class="pill p-ops">Operaciones</span></td><td>Ve la cola de trabajo y las fotos, avanza las etapas (lavado, secado, esterilización, listo) y registra el uso de insumos.</td></tr>
+  <tr><td><span class="pill p-admin">Administración</span></td><td>Todo lo anterior, más el tablero en vivo, gastos del mes, inventario, usuarios, precios, reportes y respaldos.</td></tr>
+</table>
+
+<p class="toc"><b>Contenido</b><br>1. Entrar a la app<br>2. Recepción: registrar un pedido<br>3. Recepción: entregar y cobrar<br>4. Gastos del día<br>5. Cierre de caja y resumen<br>6. Operaciones: cola, fotos e insumos<br>7. Administración<br>8. Preguntas frecuentes</p>
+
+<h2>1. Entrar a la app</h2>
+<div class="shots two">
+  <figure><img src="img/login.jpg" alt="Pantalla de inicio de sesión"><figcaption>Inicio de sesión</figcaption></figure>
+</div>
+<ol>
+  <li>Abre <b>shoecleaning.consultecapps.com</b>.</li>
+  <li>Escribe tu <b>usuario</b> (recepción y operaciones) o tu <b>correo</b> (administración) y tu contraseña.</li>
+  <li>Toca <b>Entrar</b>.</li>
+</ol>
+<div class="tip"><b>Instálala como app:</b> en Chrome o Edge toca el menú ⋮ → <i>Instalar app</i>; en el iPhone o iPad (Safari) toca Compartir → <i>Agregar a inicio</i>. Así se abre con un toque, como cualquier app.</div>
+<div class="tip"><b>¿Olvidaste la contraseña?</b> Si entras con correo, escríbelo y toca <i>¿Olvidaste tu contraseña?</i>: te llega un enlace para crear una nueva (revisa también el spam). Si entras con usuario, pide al administrador que te cree uno nuevo.</div>
+
+<h2>2. Recepción: registrar un pedido</h2>
+<div class="shots">
+  <figure><img src="img/rec-nuevo.jpg" alt="Fotos por par en el nuevo pedido"><figcaption>Una foto por cada par</figcaption></figure>
+  <figure><img src="img/rec-nuevo-registrado.jpg" alt="Pedido registrado"><figcaption>Pedido registrado</figcaption></figure>
+</div>
+<ol>
+  <li>Toca <b>Nuevo</b> (el botón redondo +).</li>
+  <li>Escribe el <b>teléfono</b>. Si el cliente ya vino antes, la app completa su nombre y muestra su tarjeta de fidelidad.</li>
+  <li>Con <b>+</b> y <b>−</b> indica cuántos pares o artículos deja de cada tipo. Puedes cambiar el precio si hace falta.</li>
+  <li><b>Fotos:</b> aparece un espacio 📷 por cada par o artículo (por ejemplo «Zapatos clásicos 1», «Zapatos clásicos 2»). Toca cada uno y toma la foto de cómo llega. Si te equivocas, toca la × y tómala de nuevo.</li>
+  <li>Elige la fecha de entrega y el pago: <b>Pagado</b>, <b>Abono</b> o <b>Paga al retirar</b>.</li>
+  <li>Marca <b>Informé al cliente</b> (obligatorio por la ley de datos) y, si acepta, <b>promociones</b>.</li>
+  <li>Toca <b>Registrar pedido</b> y envía el comprobante por WhatsApp.</li>
+</ol>
+<div class="tip">Si falta alguna foto, la app te avisa antes de guardar. Puedes seguir si el cliente tiene apuro, pero las fotos protegen al negocio ante cualquier reclamo.</div>
+
+<h2>3. Recepción: entregar y cobrar</h2>
+<div class="shots">
+  <figure><img src="img/rec-entregas.jpg" alt="Pedidos listos para entregar"><figcaption>Entregas</figcaption></figure>
+  <figure><img src="img/rec-entrega-fotos.jpg" alt="Fotos de entrega comparando con la llegada"><figcaption>Foto de entrega por par</figcaption></figure>
+</div>
+<ol>
+  <li>En <b>Entregas</b> aparecen los pedidos que operaciones marcó como listos. Busca por nombre, teléfono o número.</li>
+  <li>Toca <b>Entregar</b>. Si hay saldo, elige <b>Efectivo</b> o <b>Transferencia</b>.</li>
+  <li>Toma la <b>foto de entrega de cada par</b>. La miniatura pequeña en la esquina muestra cómo llegó, para comparar delante del cliente.</li>
+  <li>Toca <b>Confirmar entrega</b> y envía el agradecimiento por WhatsApp.</li>
+</ol>
+<div class="tip">Para saber en qué etapa está un pedido, toca <b>Consultar</b> y busca por número, celular o nombre.</div>
+
+<h2>4. Gastos del día</h2>
+<div class="shots">
+  <figure><img src="img/rec-gastos.jpg" alt="Gastos de hoy"><figcaption>Gastos de hoy</figcaption></figure>
+  <figure><img src="img/gasto-registrar.jpg" alt="Registrar un gasto"><figcaption>Registrar gasto</figcaption></figure>
+</div>
+<ol>
+  <li>Toca <b>Gastos</b> → <b>＋ Registrar gasto</b>.</li>
+  <li>Elige el tipo: <b>Insumos</b>, <b>Obligaciones</b> (arriendo, luz, agua, internet, impuestos, sueldos), <b>Almuerzos</b>, <b>Transporte</b>, <b>Mantenimiento</b> u <b>Otros</b>.</li>
+  <li>Escribe qué se pagó, el monto y si fue en efectivo o transferencia.</li>
+  <li>Si compraste <b>insumos</b>, elige cuáles y la cantidad: se suman solos al inventario.</li>
+  <li>Toca <b>Guardar gasto</b>.</li>
+</ol>
+<div class="tip">Lo pagado en <b>efectivo</b> se resta del efectivo que debe haber en caja. Si te equivocas, avisa al administrador: él corrige o borra el gasto.</div>
+
+<h2>5. Cierre de caja y resumen ejecutivo</h2>
+<div class="shots">
+  <figure><img src="img/rec-cierre.jpg" alt="Cierre de caja"><figcaption>Cierre de caja</figcaption></figure>
+  <figure><img src="img/rec-resumen.jpg" alt="Resumen ejecutivo"><figcaption>Resumen ejecutivo</figcaption></figure>
+</div>
+<p>Al final del día, en <b>Entregas</b>:</p>
+<ol>
+  <li>Toca <b>🧾 Cierre de caja</b>. Verás lo cobrado, las transferencias y el <b>efectivo que debe haber</b> (cobros en efectivo menos gastos en efectivo).</li>
+  <li>Cuenta el dinero y escríbelo en <b>Efectivo contado</b>: la app te dice si <b>cuadra</b>, si hay <b>sobrante</b> o <b>faltante</b>.</li>
+  <li>Toca <b>Compartir PDF por WhatsApp</b> para enviarlo al dueño, o <b>Descargar PDF</b>.</li>
+</ol>
+<p><b>📊 Resumen ejecutivo:</b> ventas, cobros, clientes, cumplimiento de entregas y servicios más vendidos de hoy, 7 días, 30 días o el mes. Se comparte en PDF o texto.</p>
+
+<h2>6. Operaciones: cola, fotos e insumos</h2>
+<div class="shots">
+  <figure><img src="img/ops-cola.jpg" alt="Cola de trabajo"><figcaption>Cola de trabajo</figcaption></figure>
+  <figure><img src="img/ops-ficha-miniaturas.jpg" alt="Miniaturas en la ficha del pedido"><figcaption>Fotos en miniatura</figcaption></figure>
+  <figure><img src="img/ops-foto-grande.jpg" alt="Foto ampliada"><figcaption>Foto ampliada</figcaption></figure>
+</div>
+<ol>
+  <li>En <b>Cola</b> están los pedidos por lavar, ordenados por fecha de entrega. 🚩 marca los que se entregan hoy o mañana y ⚠️ los atrasados.</li>
+  <li>Toca un pedido para ver sus <b>fotos en miniatura</b> (una por par). Toca una miniatura para verla <b>en grande</b> y revisarla a fondo; toca otra vez para cerrarla.</li>
+  <li>Avanza la etapa con el botón del pedido: <b>Lavado → Secado → Esterilización → Listo</b>. Al marcar «Listo», recepción ve el pedido para avisar al cliente.</li>
+</ol>
+<div class="shots two">
+  <figure><img src="img/ops-insumos.jpg" alt="Insumos"><figcaption>Insumos</figcaption></figure>
+  <figure><img src="img/ops-usar.jpg" alt="Registrar uso de insumo"><figcaption>Registrar uso</figcaption></figure>
+</div>
+<p><b>Insumos:</b> cuando abras un frasco o uses material, toca <b>Insumos</b> → <b>Usar</b>, escribe la cantidad y toca <b>Registrar uso</b>. Así el dueño sabe cuándo comprar. Los insumos en rojo están por acabarse.</p>
+<div class="tip">Las miniaturas pesan muy poco: la foto grande solo se descarga cuando la tocas, así el celular no se llena ni se pone lento.</div>
+
+<h2>7. Administración</h2>
+<div class="shots">
+  <figure><img src="img/admin-tablero.jpg" alt="Tablero en vivo"><figcaption>Tablero en vivo</figcaption></figure>
+  <figure><img src="img/admin-gastos.jpg" alt="Gastos del mes e inventario"><figcaption>Gastos del mes e inventario</figcaption></figure>
+  <figure><img src="img/admin-resumen.jpg" alt="Resumen ejecutivo del administrador"><figcaption>Resumen con resultado</figcaption></figure>
+</div>
+<h3>Tablero</h3>
+<p>Caja del día, ventas, lo que falta cobrar, pedidos en cada etapa, cuello de botella, personal en línea, tiempos por etapa, <b>gastos del mes</b> y aviso de <b>insumos por acabarse</b>. Se actualiza solo.</p>
+<h3>Gastos e inventario</h3>
+<ul>
+  <li>En <b>Gastos</b> ves el mes actual o el anterior: total, ventas, <b>resultado estimado</b> (ventas − gastos), en qué se gasta y cada registro. Toca un gasto para verlo o <b>borrarlo</b>. Puedes exportarlos a Excel.</li>
+  <li><b>＋ Nuevo insumo:</b> nombre (por ejemplo «Jabón neutro»), unidad (litros, frascos, unidades), cuánto hay y con cuánto avisar.</li>
+  <li><b>Contar:</b> cada cierto tiempo cuenta lo que hay en bodega y escríbelo; el stock queda corregido y el movimiento queda registrado.</li>
+</ul>
+<h3>Usuarios</h3>
+<div class="shots two">
+  <figure><img src="img/admin-usuarios.jpg" alt="Usuarios y roles"><figcaption>Usuarios y roles</figcaption></figure>
+  <figure><img src="img/admin-aviso.jpg" alt="Aviso de privacidad"><figcaption>Datos del aviso de privacidad</figcaption></figure>
+</div>
+<ul>
+  <li><b>Ajustes → Agregar usuario:</b> elige el rol. Para recepción u operaciones pones usuario y contraseña (mínimo 8 caracteres). Para otro administrador escribes su <b>correo</b>: le llega un enlace para crear su propia contraseña.</li>
+  <li><b>Cambiar rol</b> o <b>Desactivar</b> junto a cada persona. Siempre queda al menos un administrador. Máximo 5 operadores.</li>
+</ul>
+<h3>Ajustes y respaldos</h3>
+<ul>
+  <li><b>Precios</b> de cada servicio, fidelización (visitas y descuento), horario, días de entrega y WhatsApp para reportes.</li>
+  <li><b>Aviso de privacidad:</b> completa razón social, RUC, dirección, correo y años que se guardan los datos (se recomiendan 2). Aparecen en la página del aviso que ven los clientes.</li>
+  <li><b>Descargar respaldo</b> una vez por semana y guárdalo fuera del celular (Drive o correo). <b>Exportar ventas a Excel</b> cuando lo necesite el contador.</li>
+</ul>
+
+<h2>8. Preguntas frecuentes</h2>
+<table>
+  <tr><th>Pregunta</th><th>Respuesta</th></tr>
+  <tr><td>¿Funciona sin internet?</td><td>Sí. Lo que registres se guarda en el equipo y se sube solo cuando vuelve la conexión. Arriba a la derecha dice «Sin conexión · guardado local» o «Sincronizado ✓».</td></tr>
+  <tr><td>¿Cuánto espacio ocupan las fotos?</td><td>Muy poco: cada foto se comprime a unos 40 KB y su miniatura a unos 6 KB. Se borran solas 60 días después de entregado el pedido.</td></tr>
+  <tr><td>El efectivo de caja sale negativo</td><td>Los gastos en efectivo fueron más que lo cobrado en efectivo (se pagaron con el fondo de caja). Anótalo en observaciones del cierre.</td></tr>
+  <tr><td>Un insumo tiene un stock que no es real</td><td>El administrador toca <b>Contar</b> y escribe la cantidad real.</td></tr>
+  <tr><td>Un cliente pide borrar sus datos</td><td>El administrador abre el cliente en <b>Clientes</b> → <b>Borrar datos personales</b>. Se quitan nombre, celular, notas y fotos; los montos quedan para la contabilidad.</td></tr>
+  <tr><td>Se perdió o robaron un celular</td><td>El administrador desactiva ese usuario en Ajustes y crea uno nuevo. Al cerrar sesión, la app borra la copia local del equipo.</td></tr>
+</table>
+
+<p class="foot">Engineered with pride by<b>Consultecapps</b></p>
+</main></body>
+</html>

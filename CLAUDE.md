@@ -32,13 +32,20 @@ Si se agrega un script o dominio externo, actualizar la CSP de `.htaccess` o el 
 
 ## Cuentas
 - **Administradores:** entran con su **correo real**. El primer administrador se registra con correo y crea su contraseña. Los siguientes se invitan en Ajustes → Agregar usuario → Administrador: se crea la cuenta con una clave al azar y Firebase envía el enlace para que creen la suya (`cloudInviteAdmin`). «¿Olvidaste tu contraseña?» en el inicio de sesión envía el enlace de recuperación (mismo mensaje exista o no el correo).
-- **Recepción y operaciones:** usuario + contraseña (correo interno `usuario@shoecleaning.app`, sin recuperación por correo).
+- **Recepción:** usuario + contraseña (correo interno `usuario@shoecleaning.app`, sin recuperación por correo).
 - El perfil (`users/{uid}`) guarda `username` (para firmar pedidos; en administradores con correo es la parte antes de la @) y `email` opcional, validado en las reglas.
 
 ## Roles
 - **Administrador:** Tablero en vivo (caja, por cobrar, etapas, cuello de botella, personal en línea, tiempos por etapa), pedidos, clientes, análisis (incl. asistencia y productividad), precios, usuarios (máx. 5 operadores), respaldo/restauración.
 - **Recepción:** registrar pedidos y cobrar, fotos de recepción y entrega, entregas, buscar por N°, celular o nombre.
-- **Operaciones:** cola de trabajo por lavar → lavado → secado → esterilización → listo. 🚩 un día antes de la fecha de entrega. Solo puede avanzar etapas y subir fotos.
+- **Operaciones: RETIRADO el 22-nov-2026.** Recepción y administración reciben, pasan a producción y marcan listo (pestaña **Taller**). Un perfil con rol `operaciones` no tiene acceso (reglas: `active()` exige rol admin o recepcion; la app lo saca con un aviso).
+
+## Cambios del 22 nov 2026 (v14)
+- **Etapas:** `recibido → produccion → listo → entregado` (`FLOW`). Estados antiguos lavado/secado/esterilizacion se leen como `produccion` (`OLD_PROC` en `norm`); las reglas ya no dejan escribir campos de etapas antiguas.
+- **Descuentos:** promoción del día (`settings.promos`, editables en Ajustes → Promociones; tipos `pct` y `nxm`, días, artículos, requisito) + descuento manual ≤ 15 % (`MANUAL_MAX`) sobre lo que queda tras la promoción. La fidelidad no se combina. Campos del pedido: `promoName`, `promoDisc`, `manualPct`, `manualDisc` (y `discount` = suma). Promociones de ejemplo en `DEFAULT_PROMOS`.
+- **Sin internet:** `cloudWrite()` no espera al servidor (la escritura queda en la caché de Firestore, `CACHE_SIZE_UNLIMITED`, y se sube sola); numeración por bloques de 20 por equipo (`takeNumber`/`topUpBlock`, regla de settings permite +1..+20; `numEpoch` invalida bloques si el admin cambia el próximo N°); perfil guardado (`sc_me_<uid>`) para iniciar sin red; el service worker guarda la app y Firebase (cache-first para gstatic); `logout` no deja salir con escrituras pendientes.
+- **Respaldo de fotos:** ZIP propio (`zipFiles`, sin compresión) con nombres `<N° ticket>_<etapa>_<n>_<artículo>.<ext>`; por pedido (ficha) y por fechas (Ajustes).
+- **Registro de cambios:** `CAMBIOS.txt` (bloc de notas, bloqueado en el servidor). Agregar arriba cada cambio con su fecha.
 
 ## Fotos, gastos e inventario (revisión final 21 nov 2026)
 - **Fotos:** una por cada par o artículo (unidades = cantidad de cada servicio, máx. 30 por etapa), en recepción y en entrega. Se pide cada foto y se avisa si falta, pero se puede seguir. Se guardan en dos tamaños: `photos/{id}` (máx. 720 px, ~30-70 KB) y `thumbs/{id}` (160 px, ~5 KB), en **WebP** (JPEG si el navegador no lo permite, p. ej. Safari). Las listas cargan solo miniaturas; la foto grande se baja al tocarla y se libera al cerrar. Campos `slot` ("clasicos:1") y `label` ("Zapatos clásicos 1"). Operaciones ve las miniaturas de recepción en la ficha del pedido.
@@ -58,9 +65,9 @@ Colecciones: `users`, `config`, `orders`, `photos`, `presence`, `logins`.
 
 ### Reglas (revisión 8 nov 2026, rama `revision-seguridad`) — no debilitar
 - Cierran por defecto; regla final niega cualquier colección no prevista.
-- `orders`: `id` del campo == id del documento; tipos y tamaños validados; Operaciones solo cambia etapa/fotos; solo admin cambia fecha y autor de creación.
+- `orders`: `id` del campo == id del documento; tipos validados con `orderTypesOk` (liviana: límite de 1000 operaciones por escritura; el admin al crear no la repite); solo admin cambia fecha y autor de creación; descuento manual ≤ 15 % del subtotal y descuento total ≤ subtotal.
 - `photos`: se validan `id`, `orderId` y etapa.
-- `users`: rol ∈ {admin, recepcion, operaciones}; solo admin gestiona usuarios.
+- `users`: rol ∈ {admin, recepcion}; solo admin gestiona usuarios.
 - `logins`: el rol no se puede falsificar.
 - Revisión 8 nov: cada campo se valida por tipo (`orderTypesOk`); Operaciones solo toca etapas (no entrega ni cobra); Recepción no cambia montos ni deshace entregas; fotos solo `data:image`, <160 KB, sin campos extra, de un pedido existente.
 - Pruebas en `pruebas/` (emulador, requiere Java). Correrlas antes de publicar reglas.
@@ -83,7 +90,7 @@ Colecciones: `users`, `config`, `orders`, `photos`, `presence`, `logins`.
 3. Firebase Auth → política de contraseñas mínimo 8.
 4. App Check cuando haya varios clientes; alerta de presupuesto si se pasa a Blaze.
 5. La versión antigua (artefacto en Claude) no tiene las funciones nuevas; la oficial es este repo.
-6. Variante pedida: versión HTML **sin contraseñas** para tablet, con Operaciones simplificada a solo "recibido" y "listo para entrega" (sin etapas) y fotos por cada par en recepción y entrega.
+6. ~~Variante sin contraseñas~~ (reemplazada el 22-nov-2026 por el flujo de 3 etapas sin Operaciones).
 
 ## Hacia multi-cliente (SaaS con pago mensual)
 Decisiones (8 nov 2026): una sola página y cada negocio entra con su **código de negocio** (no subdominios); **seguir en Spark** (fotos en Firestore, sin Storage); por ahora **2 clientes**.

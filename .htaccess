@@ -7,7 +7,7 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # 2) No listar carpetas ni exponer archivos internos
 Options -Indexes
-<FilesMatch "(^\.|\.(rules|md|json\.bak|log|sh)$)">
+<FilesMatch "(^\.|\.(rules|md|txt|json\.bak|log|sh)$)">
   Require all denied
 </FilesMatch>
 <Files "manifest.json">

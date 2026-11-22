@@ -1,0 +1,86 @@
+SHOE CLEANING - REGISTRO DE CAMBIOS
+====================================
+App: https://shoecleaning.consultecapps.com
+Desarrollo: Consultecapps
+Cada cambio nuevo se agrega ARRIBA, con su fecha.
+
+
+22-11-2026  (version 14)
+------------------------
+- Se retira el modulo de Operaciones. Recepcion y Administracion reciben,
+  pasan a produccion y marcan listo para entrega.
+- Etapas del pedido simplificadas: Recibido -> En produccion -> Listo -> Entregado.
+  Los pedidos que estaban en lavado, secado o esterilizacion ahora se ven
+  como "En produccion".
+- Nueva pestana "Taller" para Recepcion (pedidos por producir y en produccion).
+- Usuarios con el rol Operaciones ya no pueden entrar; el administrador debe
+  cambiarles el rol a Recepcion o desactivarlos.
+- Descuento manual en el cobro: casilla "Aplicar descuento manual", porcentaje
+  escrito a mano, maximo 15 %. La base de datos tambien rechaza mas de 15 %.
+- Promociones: nuevo menu en Ajustes para crear, editar, pausar y borrar.
+  Tipos: % de descuento o "lleva N, paga M"; por dias de la semana, por
+  articulos y con requisito a verificar (por ejemplo, presentar cedula).
+  Vienen 3 de ejemplo: Lunes de Blanco (25 % en zapatos blancos),
+  Miercoles de negro (3x2 en calzado negro u oscuro) y Promocion
+  cumpleanera (2x1 presentando la cedula).
+- La promocion se puede sumar con el descuento manual. La tarjeta de
+  fidelidad va sola (no se combina con otros descuentos).
+- Modo sin internet reforzado para la tablet Redmi:
+  * La app y las librerias de Firebase quedan guardadas en la tablet: abre
+    sin internet y con la sesion iniciada.
+  * Pedidos, fotos, cambios de etapa y gastos se guardan en la memoria de la
+    tablet y se suben solos cuando vuelve el internet.
+  * Cada tablet reserva bloques de 20 numeros de ticket para seguir numerando
+    sin internet sin repetir numeros.
+  * Arriba se ve el estado: "Sin internet - guardado en este equipo",
+    "Subiendo cambios..." o "Sincronizado".
+  * No deja cerrar sesion si hay datos sin subir (para no perderlos).
+- Respaldo de fotos: archivo ZIP con el numero de ticket en el nombre de cada
+  foto (ej. B000575_recepcion_1_Zapatos-clasicos-1.webp). Por pedido (boton en
+  la ficha) y por fechas en Ajustes (hoy, 7 dias, 30 dias).
+- Reglas de la base de datos optimizadas: un pedido muy grande (o restaurar un
+  respaldo) ya no choca con el limite de 1000 operaciones de Firebase.
+- Pruebas: reglas 95/95; recorrido completo 30/30 en Chrome y Edge (incluido
+  sin internet) y 24/24 en Firefox.
+
+21-11-2026  (versiones 9 a 13)
+------------------------------
+- Firma "Engineered with pride by CONSULTECAPPS" con estilo futurista (v13).
+- Manual de usuario y expediente en PDF (carpeta docs).
+- Revision final (v12): una foto por cada par o articulo en recepcion y en
+  entrega, en formato WebP liviano con miniaturas; operaciones veia las
+  miniaturas y abria la foto grande solo al tocarla.
+- Panel Gastos (insumos, obligaciones, almuerzos, transporte, mantenimiento,
+  otros) con inventario de insumos: compras, uso y conteos.
+- Cierre de caja resta los gastos en efectivo. Recepcion ve el resumen
+  ejecutivo (sin datos del personal ni gastos).
+- Seguridad: integridad (SRI) de las librerias de Firebase, exportaciones a
+  Excel sin formulas, carpeta docs bloqueada.
+- Boton "Cambiar rol" en Ajustes -> Usuarios (v11).
+- Administradores con correo: registro, invitacion por correo y recuperacion
+  de contrasena (v10).
+- Aviso de privacidad editable desde Ajustes (v9).
+- Publicacion de la revision de seguridad y LOPDP del 08-11-2026 (v8).
+
+08-11-2026
+----------
+- Seguridad, fotos y LOPDP: reglas reforzadas por rol, aviso de privacidad,
+  casilla "Informe al cliente", borrado de datos personales a pedido del
+  cliente, fotos que se borran a los 60 dias de entregado.
+
+05-11-2026
+----------
+- Seguridad: politica de contenido (CSP), scripts fuera del HTML, reglas
+  reforzadas y .htaccess para Hostinger. Primera publicacion en Hostinger.
+
+07-10-2026 al 09-10-2026
+------------------------
+- Avisos por WhatsApp en cada cambio de etapa.
+- Resumen ejecutivo y cierre de caja en PDF para compartir por WhatsApp.
+- App de escritorio para Windows con instalador.
+
+04-10-2026
+----------
+- Primera version: pedidos, clientes, fidelidad, conexion a Firebase,
+  usuarios y roles, etapas, banderita de entrega, tablero en vivo, fotos,
+  personal, tiempos por etapa y caja.

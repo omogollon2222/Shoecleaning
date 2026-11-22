@@ -6,12 +6,13 @@ service cloud.firestore {
   match /databases/{db}/documents {
     function signedIn()     { return request.auth != null; }
     function profile()      { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data; }
-    function active()       { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)); }
+    // Desde el 22-nov-2026 solo existen Administración y Recepción: un perfil con otro rol (Operaciones) no tiene acceso.
+    function active()       { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)) && profile().role in ['admin', 'recepcion']; }
     function isAdmin()      { return active() && profile().role == 'admin'; }
     function isOps()        { return active() && profile().role == 'operaciones'; }
     function isRecep()      { return active() && profile().role == 'recepcion'; }
     function bootstrapped() { return exists(/databases/$(db)/documents/config/bootstrap); }
-    function validRole(r)   { return r in ['admin', 'recepcion', 'operaciones']; }
+    function validRole(r)   { return r in ['admin', 'recepcion']; }
     function str(v, n)      { return v is string && v.size() <= n; }
     function money(v)       { return v is number && v >= 0 && v < 1000000; }
     function ts(v)          { return v is number && v >= 0 && v < 4102444800000; }
@@ -19,60 +20,65 @@ service cloud.firestore {
 
     // ---------- Pedidos ----------
     function stageKeys() {
-      return ['status', 'recibidoAt', 'recibidoBy', 'lavadoAt', 'lavadoBy', 'secadoAt', 'secadoBy',
-              'esterilizacionAt', 'esterilizacionBy', 'listoAt', 'listoBy', 'readyAt',
+      // lavado/secado/esterilización: etapas antiguas; ya no se escriben (los pedidos viejos las conservan)
+      return ['status', 'recibidoAt', 'recibidoBy', 'produccionAt', 'produccionBy', 'listoAt', 'listoBy', 'readyAt',
               'photos', 'notifiedStatus', 'notifiedAt'];
     }
     function deliveryKeys() { return ['deliveredAt', 'deliveredBy', 'paidFull', 'cobradoEntrega', 'methodFinal']; }
     function orderKeys() {
       return stageKeys().concat(deliveryKeys()).concat(['id', 'num', 'name', 'phone', 'phoneKey', 'items',
         'subtotal', 'discount', 'discountPct', 'total', 'abono', 'method', 'notes', 'createdAt', 'dueDate',
-        'loyaltyRedeemed', 'createdBy', 'avisoOk', 'promoOk', 'erasedAt']);
+        'loyaltyRedeemed', 'createdBy', 'avisoOk', 'promoOk', 'erasedAt', 'promoName', 'promoDisc', 'manualPct', 'manualDisc']);
     }
-    // Revisa el tipo y tamaño de cada campo que se escribe (ks = campos nuevos o cambiados).
+    // Revisa el tipo de cada campo que se escribe (ks = campos nuevos o cambiados). Es liviana a propósito:
+    // Firebase permite máximo 1000 operaciones por escritura. La app además limpia todo dato al leerlo (norm).
     function orderTypesOk(d, ks) {
-      return (!ks.hasAny(['num'])       || str(d.num, 30))
-        && (!ks.hasAny(['name'])        || str(d.name, 120))
-        && (!ks.hasAny(['phone'])       || str(d.phone, 30))
-        && (!ks.hasAny(['phoneKey'])    || str(d.phoneKey, 20))
-        && (!ks.hasAny(['notes'])       || str(d.notes, 2000))
-        && (!ks.hasAny(['method'])      || d.method in ['Efectivo', 'Transferencia'])
-        && (!ks.hasAny(['methodFinal']) || d.methodFinal in ['Efectivo', 'Transferencia'])
-        && (!ks.hasAny(['items'])       || (d.items is list && d.items.size() <= 50))
-        && (!ks.hasAny(['subtotal'])    || money(d.subtotal))
-        && (!ks.hasAny(['discount'])    || money(d.discount))
-        && (!ks.hasAny(['total'])       || money(d.total))
-        && (!ks.hasAny(['abono'])       || money(d.abono))
-        && (!ks.hasAny(['cobradoEntrega']) || money(d.cobradoEntrega))
-        && (!ks.hasAny(['discountPct']) || (d.discountPct is number && d.discountPct >= 0 && d.discountPct <= 100))
-        && (!ks.hasAny(['paidFull'])    || d.paidFull is bool)
-        && (!ks.hasAny(['loyaltyRedeemed']) || d.loyaltyRedeemed is bool)
-        && (!ks.hasAny(['avisoOk'])     || d.avisoOk is bool)
-        && (!ks.hasAny(['promoOk'])     || d.promoOk is bool)
-        && (!ks.hasAny(['dueDate'])     || (d.dueDate is string && d.dueDate.matches('^([0-9]{4}-[0-9]{2}-[0-9]{2})?$')))
-        && (!ks.hasAny(['createdAt'])   || (ts(d.createdAt) && d.createdAt <= request.time.toMillis() + 600000))
-        && (!ks.hasAny(['readyAt'])     || tsOrNull(d.readyAt))
-        && (!ks.hasAny(['deliveredAt']) || tsOrNull(d.deliveredAt))
-        && (!ks.hasAny(['notifiedAt'])  || tsOrNull(d.notifiedAt))
-        && (!ks.hasAny(['erasedAt'])    || tsOrNull(d.erasedAt))
-        && (!ks.hasAny(['recibidoAt'])  || tsOrNull(d.recibidoAt))
-        && (!ks.hasAny(['lavadoAt'])    || tsOrNull(d.lavadoAt))
-        && (!ks.hasAny(['secadoAt'])    || tsOrNull(d.secadoAt))
-        && (!ks.hasAny(['esterilizacionAt']) || tsOrNull(d.esterilizacionAt))
-        && (!ks.hasAny(['listoAt'])     || tsOrNull(d.listoAt))
-        && (!ks.hasAny(['createdBy'])   || str(d.createdBy, 60))
-        && (!ks.hasAny(['deliveredBy']) || str(d.deliveredBy, 60))
-        && (!ks.hasAny(['recibidoBy'])  || str(d.recibidoBy, 60))
-        && (!ks.hasAny(['lavadoBy'])    || str(d.lavadoBy, 60))
-        && (!ks.hasAny(['secadoBy'])    || str(d.secadoBy, 60))
-        && (!ks.hasAny(['esterilizacionBy']) || str(d.esterilizacionBy, 60))
-        && (!ks.hasAny(['listoBy'])     || str(d.listoBy, 60))
-        && (!ks.hasAny(['notifiedStatus']) || str(d.notifiedStatus, 20))
-        && (!ks.hasAny(['photos'])      || (d.photos is map && d.photos.keys().hasOnly(['recepcion', 'entrega'])
-                                            && (!('recepcion' in d.photos) || (d.photos.recepcion is int && d.photos.recepcion >= 0 && d.photos.recepcion <= 30))
-                                            && (!('entrega' in d.photos)   || (d.photos.entrega is int && d.photos.entrega >= 0 && d.photos.entrega <= 30))));
+      return (!('num' in ks)       || d.num is string)
+        && (!('name' in ks)        || (d.name is string && d.name.size() <= 120))
+        && (!('phone' in ks)       || d.phone is string)
+        && (!('phoneKey' in ks)    || d.phoneKey is string)
+        && (!('notes' in ks)       || (d.notes is string && d.notes.size() <= 2000))
+        && (!('method' in ks)      || d.method in ['Efectivo', 'Transferencia'])
+        && (!('methodFinal' in ks) || d.methodFinal in ['Efectivo', 'Transferencia'])
+        && (!('items' in ks)       || (d.items is list && d.items.size() <= 50))
+        && (!('subtotal' in ks)    || d.subtotal is number)
+        && (!('discount' in ks)    || d.discount is number)
+        && (!('total' in ks)       || d.total is number)
+        && (!('abono' in ks)       || d.abono is number)
+        && (!('cobradoEntrega' in ks) || d.cobradoEntrega is number)
+        && (!('discountPct' in ks) || d.discountPct is number)
+        // Descuentos: promoción + descuento manual de máximo 15 %; nunca más que el subtotal
+        && (!('promoName' in ks)   || d.promoName is string)
+        && (!('promoDisc' in ks)   || d.promoDisc is number)
+        && (!('manualPct' in ks)   || (d.manualPct is number && d.manualPct >= 0 && d.manualPct <= 15))
+        && (!('manualDisc' in ks)  || (d.manualDisc is number && d.manualDisc >= 0 && d.manualDisc <= d.subtotal * 0.15 + 0.01))
+        && (!('discount' in ks)    || d.discount <= d.subtotal + 0.01)
+        && (!('paidFull' in ks)    || d.paidFull is bool)
+        && (!('loyaltyRedeemed' in ks) || d.loyaltyRedeemed is bool)
+        && (!('avisoOk' in ks)     || d.avisoOk is bool)
+        && (!('promoOk' in ks)     || d.promoOk is bool)
+        && (!('dueDate' in ks)     || d.dueDate is string)
+        && (!('createdAt' in ks)   || (d.createdAt is number && d.createdAt <= request.time.toMillis() + 600000))
+        && (!('readyAt' in ks)     || d.readyAt == null || d.readyAt is number)
+        && (!('deliveredAt' in ks) || d.deliveredAt == null || d.deliveredAt is number)
+        && (!('notifiedAt' in ks)  || d.notifiedAt == null || d.notifiedAt is number)
+        && (!('erasedAt' in ks)    || d.erasedAt == null || d.erasedAt is number)
+        && (!('recibidoAt' in ks)  || d.recibidoAt == null || d.recibidoAt is number)
+        && (!('produccionAt' in ks) || d.produccionAt == null || d.produccionAt is number)
+        && (!('listoAt' in ks)     || d.listoAt == null || d.listoAt is number)
+        && (!('produccionBy' in ks) || d.produccionBy is string)
+        && (!('createdBy' in ks)   || d.createdBy is string)
+        && (!('deliveredBy' in ks) || d.deliveredBy is string)
+        && (!('recibidoBy' in ks)  || d.recibidoBy is string)
+        && (!('listoBy' in ks)     || d.listoBy is string)
+        && (!('notifiedStatus' in ks) || d.notifiedStatus is string)
+        && (!('photos' in ks)      || (d.photos is map && d.photos.get('recepcion', 0) is int && d.photos.get('entrega', 0) is int
+                                       && d.photos.get('recepcion', 0) <= 30 && d.photos.get('entrega', 0) <= 30));
     }
-    function statusOk(s) { return s in ['recibido', 'lavado', 'secado', 'esterilizacion', 'listo', 'entregado']; }
+    // Los valores se calculan una sola vez (let) para no gastar el límite de 1000 operaciones
+    function orderTypesNew() { let d = request.resource.data; let ks = d.keys().toSet(); return orderTypesOk(d, ks); }
+    function orderTypesChanged() { let d = request.resource.data; let ks = d.diff(resource.data).affectedKeys(); return orderTypesOk(d, ks); }
+    function statusOk(s) { return s in ['recibido', 'produccion', 'lavado', 'secado', 'esterilizacion', 'listo', 'entregado']; }
 
     match /orders/{id} {
       allow read: if active();
@@ -85,14 +91,16 @@ service cloud.firestore {
         && statusOk(request.resource.data.status)
         // Solo el administrador (al restaurar un respaldo) crea pedidos en otra etapa o a nombre de otra persona.
         && (isAdmin() || (request.resource.data.status == 'recibido' && request.resource.data.createdBy == profile().username))
-        && orderTypesOk(request.resource.data, request.resource.data.keys().toSet());
+        // El administrador (por ejemplo al restaurar un respaldo) no repite cada validación: así un pedido
+        // completo no supera el límite de 1000 operaciones de las reglas.
+        && (isAdmin() || orderTypesNew());
 
       // Cambiar: cada rol solo toca sus campos.
       allow update: if active()
         && request.resource.data.id == resource.data.id
         && statusOk(request.resource.data.status)
         && request.resource.data.keys().hasOnly(orderKeys().concat(resource.data.keys()))
-        && orderTypesOk(request.resource.data, request.resource.data.diff(resource.data).affectedKeys())
+        && orderTypesChanged()
         && (
           isAdmin()
           // Operaciones: solo avanza etapas del taller (no entrega, no cobra, no ve dinero cambiar).
@@ -255,7 +263,9 @@ service cloud.firestore {
       allow update: if (isAdmin() && request.resource.data.size() <= 40)
         || (active() && !isOps()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nextNumber'])
-            && request.resource.data.nextNumber == resource.data.nextNumber + 1);
+            // cada equipo reserva de 1 a 20 números (para poder numerar sin internet)
+            && request.resource.data.nextNumber > resource.data.nextNumber
+            && request.resource.data.nextNumber <= resource.data.nextNumber + 20);
       allow delete: if false;
     }
 

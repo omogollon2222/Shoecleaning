@@ -51,8 +51,11 @@ test("recepción no puede meter HTML en el % de descuento", () => assertFails(db
 test("no se aceptan campos desconocidos al crear", () => assertFails(db("r1").doc("orders/p3").set(order({ id: "p3", extra: "x" }))));
 
 // ---------- Operaciones ----------
-test("operaciones avanza etapa", () => assertSucceeds(db("o1").doc("orders/p1").update({ status: "lavado", lavadoAt: now(), lavadoBy: "pedro" })));
-test("operaciones marca listo", () => assertSucceeds(db("o1").doc("orders/p1").update({ status: "listo", readyAt: now(), listoBy: "pedro" })));
+test("operaciones (rol retirado) ya NO avanza etapas", () => assertFails(db("o1").doc("orders/p1").update({ status: "produccion", produccionAt: now(), produccionBy: "pedro" })));
+test("operaciones (rol retirado) ya NO lee pedidos", () => assertFails(db("o1").doc("orders/p1").get()));
+test("recepción pasa el pedido a producción", () => assertSucceeds(db("r1").doc("orders/p1").update({ status: "produccion", produccionAt: now(), produccionBy: "maria" })));
+test("recepción marca listo", () => assertSucceeds(db("r1").doc("orders/p1").update({ status: "listo", readyAt: now(), listoBy: "maria" })));
+test("administración pasa a producción", () => assertSucceeds(db("a1").doc("orders/p1").update({ status: "produccion", produccionAt: now(), produccionBy: "admin" })));
 test("operaciones NO entrega", () => assertFails(db("o1").doc("orders/p1").update({ status: "entregado", deliveredAt: now() })));
 test("operaciones NO toca el cobro", () => assertFails(db("o1").doc("orders/p1").update({ cobradoEntrega: 0 })));
 test("operaciones NO cambia la fecha de entrega", () => assertFails(db("o1").doc("orders/p1").update({ dueDate: "2030-01-01" })));
@@ -69,7 +72,9 @@ test("recepción agrega foto a pedido entregado", () => assertSucceeds(db("r1").
 test("contador de fotos admite una por par (hasta 30)", () => assertSucceeds(db("r1").doc("orders/p1").update({ photos: { recepcion: 12, entrega: 0 } })));
 test("contador de fotos no pasa de 30", () => assertFails(db("r1").doc("orders/p1").update({ photos: { recepcion: 31, entrega: 0 } })));
 test("recepción avanza el N° de recibo de uno en uno", () => assertSucceeds(db("r1").doc("config/settings").update({ nextNumber: 11 })));
-test("recepción NO salta números de recibo", () => assertFails(db("r1").doc("config/settings").update({ nextNumber: 50 })));
+test("recepción reserva un bloque de 20 números (sin internet)", () => assertSucceeds(db("r1").doc("config/settings").update({ nextNumber: 30 })));
+test("recepción NO reserva más de 20 números", () => assertFails(db("r1").doc("config/settings").update({ nextNumber: 31 })));
+test("recepción NO retrocede el N° de recibo", () => assertFails(db("r1").doc("config/settings").update({ nextNumber: 9 })));
 test("operaciones NO toca el N° de recibo", () => assertFails(db("o1").doc("config/settings").update({ nextNumber: 11 })));
 test("recepción NO borra pedidos", () => assertFails(db("r1").doc("orders/p1").delete()));
 
@@ -137,7 +142,9 @@ test("recepción NO crea administradores con correo", () =>
   assertFails(db("r1").doc("users/nuevo").set({ username: "dueno", name: "Dueño", role: "admin", email: "dueno@gmail.com", createdAt: now() })));
 
 // ---------- Cambiar rol ----------
-test("administrador cambia el rol de otro usuario", () => assertSucceeds(db("a1").doc("users/r1").update({ role: "operaciones" })));
+test("administrador cambia el rol de otro usuario", () => assertSucceeds(db("a1").doc("users/r1").update({ role: "admin" })));
+test("ya no se asigna el rol Operaciones", () => assertFails(db("a1").doc("users/r1").update({ role: "operaciones" })));
+test("administrador pasa un usuario de Operaciones a Recepción", () => assertSucceeds(db("a1").doc("users/o1").update({ role: "recepcion" })));
 test("administrador NO pone un rol inventado", () => assertFails(db("a1").doc("users/r1").update({ role: "superadmin" })));
 test("administrador NO cambia el usuario al cambiar el rol", () => assertFails(db("a1").doc("users/r1").update({ role: "admin", username: "otra" })));
 test("recepción NO cambia el rol de otro", () => assertFails(db("r1").doc("users/o1").update({ role: "admin" })));
@@ -165,9 +172,10 @@ test("miniatura grande (más de 20 KB) se rechaza", async () => {
   await assertFails(b.commit());
 });
 test("foto con slot inválido se rechaza", () => assertFails(db("r1").doc("photos/f4").set(photoDoc("f4", { slot: "<b>" }))));
-test("operaciones ve miniaturas", async () => {
+test("recepción ve miniaturas; operaciones ya no", async () => {
   await env.withSecurityRulesDisabled(async c => { await c.firestore().doc("thumbs/f5").set({ id: "f5", orderId: "p1", stage: "recepcion", slot: "", label: "", data: THUMB, at: now() }); });
-  await assertSucceeds(db("o1").doc("thumbs/f5").get());
+  await assertSucceeds(db("r1").doc("thumbs/f5").get());
+  await assertFails(db("o1").doc("thumbs/f5").get());
 });
 
 // ---------- Gastos ----------
@@ -218,11 +226,11 @@ test("solo el administrador crea insumos", async () => {
   await assertFails(db("r1").doc("supplies/s1").set(supply()));
   await assertSucceeds(db("a1").doc("supplies/s1").set(supply()));
 });
-test("operaciones registra uso y baja el stock", async () => { await seedSupply(); await assertSucceeds(moveBatch("o1", "pedro", "m1", "uso", -1, 4)); });
-test("uso con stock que no cuadra se rechaza", async () => { await seedSupply(); await assertFails(moveBatch("o1", "pedro", "m2", "uso", -1, 5)); });
+test("recepción registra uso y baja el stock", async () => { await seedSupply(); await assertSucceeds(moveBatch("r1", "maria", "m1", "uso", -1, 4)); });
+test("uso con stock que no cuadra se rechaza", async () => { await seedSupply(); await assertFails(moveBatch("r1", "maria", "m2", "uso", -1, 5)); });
 test("cambiar el stock sin movimiento se rechaza", async () => {
   await seedSupply();
-  await assertFails(db("o1").doc("supplies/s1").update({ stock: 50 }));
+  await assertFails(db("r1").doc("supplies/s1").update({ stock: 50 }));
   await assertFails(db("a1").doc("supplies/s1").update({ stock: 50 }));
 });
 test("recepción registra compra (sube stock); operaciones NO", async () => {
@@ -235,9 +243,9 @@ test("solo el administrador ajusta por conteo", async () => {
   await assertFails(moveBatch("r1", "maria", "m5", "ajuste", 2, 7));
   await assertSucceeds(moveBatch("a1", "admin", "m6", "ajuste", 2, 7));
 });
-test("uso que deja stock negativo se rechaza", async () => { await seedSupply(); await assertFails(moveBatch("o1", "pedro", "m7", "uso", -9, -4)); });
+test("uso que deja stock negativo se rechaza", async () => { await seedSupply(); await assertFails(moveBatch("r1", "maria", "m7", "uso", -9, -4)); });
 test("movimiento suelto (sin actualizar stock) se rechaza", () =>
-  assertFails(db("o1").doc("supplyMoves/m8").set({ id: "m8", sid: "s1", type: "uso", qty: -1, at: now(), by: "pedro" })));
+  assertFails(db("r1").doc("supplyMoves/m8").set({ id: "m8", sid: "s1", type: "uso", qty: -1, at: now(), by: "maria" })));
 test("nadie edita ni borra movimientos", async () => {
   await seedSupply(); await moveBatch("a1", "admin", "m9", "ajuste", 1, 6);
   await assertFails(db("a1").doc("supplyMoves/m9").update({ qty: 100 }));
@@ -248,3 +256,20 @@ test("administrador edita nombre y mínimo sin tocar stock", async () => {
   await assertSucceeds(db("a1").doc("supplies/s1").update({ name: "Jabón", min: 3, updatedAt: now() }));
   await assertFails(db("r1").doc("supplies/s1").update({ name: "X", updatedAt: now() }));
 });
+
+// ---------- Descuentos: promoción + manual (máx. 15 %) ----------
+test("recepción crea pedido con promoción y descuento manual de 10 %", () => assertSucceeds(db("r1").doc("orders/d1").set(order({ id: "d1",
+  items: [{ key: "clasicos", label: "Zapatos", qty: 3, price: 4 }], subtotal: 12, promoName: "Miércoles de negro", promoDisc: 4, manualPct: 10, manualDisc: 0.8, discount: 4.8, total: 7.2, abono: 7.2 }))));
+test("descuento manual de 20 % se rechaza", () => assertFails(db("r1").doc("orders/d2").set(order({ id: "d2", subtotal: 4, manualPct: 20, manualDisc: 0.8, discount: 0.8, total: 3.2, abono: 3.2 }))));
+test("monto de descuento manual mayor al 15 % del subtotal se rechaza", () => assertFails(db("r1").doc("orders/d3").set(order({ id: "d3", subtotal: 4, manualPct: 10, manualDisc: 2, discount: 2, total: 2, abono: 2 }))));
+test("descuento mayor que el subtotal se rechaza", () => assertFails(db("r1").doc("orders/d4").set(order({ id: "d4", subtotal: 4, promoName: "X", promoDisc: 5, discount: 5, total: 0, abono: 0 }))));
+test("nombre de promoción que no es texto se rechaza", () => assertFails(db("r1").doc("orders/d5").set(order({ id: "d5", promoName: 123, promoDisc: 1, discount: 1, total: 3, abono: 3 }))));
+test("administración restaura un pedido con TODOS los campos", () => assertSucceeds(db("a1").doc("orders/full").set(order({ id: "full",
+  items: Array.from({ length: 9 }, (_, i) => ({ key: "k" + i, label: "Art " + i, qty: 3, price: 4 })), subtotal: 108, promoName: "Miércoles de negro", promoDisc: 12, manualPct: 15, manualDisc: 14.4, discount: 26.4, discountPct: 0, total: 81.6, abono: 20, paidFull: true,
+  notes: "x".repeat(1500), status: "entregado", recibidoAt: now(), recibidoBy: "maria", produccionAt: now(), produccionBy: "maria",
+  listoAt: now(), listoBy: "maria", readyAt: now(), deliveredAt: now(), deliveredBy: "maria", cobradoEntrega: 61.6, methodFinal: "Transferencia",
+  notifiedStatus: "listo", notifiedAt: now(), photos: { recepcion: 27, entrega: 27 }, promoOk: true, erasedAt: null }))));
+test("recepción: pedido más completo posible (50 artículos, notas largas, promoción y descuento)", () => assertSucceeds(db("r1").doc("orders/big").set(order({ id: "big",
+  items: Array.from({ length: 50 }, (_, i) => ({ key: "k" + i, label: "Art " + i, qty: 2, price: 4 })), subtotal: 400, promoName: "x".repeat(80), promoDisc: 40, manualPct: 15, manualDisc: 54, discount: 94, total: 306, abono: 100, paidFull: false,
+  notes: "x".repeat(2000), photos: { recepcion: 30, entrega: 0 }, promoOk: true, method: "Transferencia" }))));
+test("recepción NO puede escribir etapas antiguas", () => assertFails(db("r1").doc("orders/p1").update({ lavadoAt: now() })));

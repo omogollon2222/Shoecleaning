@@ -30,7 +30,7 @@ const shot = async (name, full = false) => { await ev(`(document.activeElement &
   if (full) { await send("Emulation.setDeviceMetricsOverride", { width: 390, height: h, deviceScaleFactor: 2, mobile: true }); await w(400); }
   const r = await send("Page.captureScreenshot", { format: "jpeg", quality: 72 }); fs.writeFileSync(path.join(OUT, name + ".jpg"), Buffer.from(r.result.data, "base64"));
   if (full) await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true }); console.log("  " + name); };
-const open = async () => { await send("Page.navigate", { url: "http://127.0.0.1:8097/" }); await w(3500); await until(`!!window.__ev && !!document.querySelector("#gateForm")`); await ev(HELP); };
+const open = async () => { await send("Page.navigate", { url: "http://127.0.0.1:8096/" }); await w(3500); await until(`!!window.__ev && !!document.querySelector("#gateForm")`); await ev(HELP); };
 const login = async (u, p) => { await open(); await ev(`(__set("#l_u", ${JSON.stringify(u)}), __set("#l_p", ${JSON.stringify(p)}), document.querySelector("#gateForm").requestSubmit(), true)`); await until(`me && me.u`); await ev(HELP); await w(1500); };
 const logout = async () => { await ev(`(logout(), true)`).catch(() => {}); await w(3500); };
 await send("Page.enable"); await send("Runtime.enable");
@@ -40,7 +40,7 @@ await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, devi
 await open();
 await ev(`(__set("#g_n", "Dueña"), __set("#g_u", "duena@ejemplo.com"), __set("#g_p", "Ejemplo12345"), __set("#g_p2", "Ejemplo12345"), document.querySelector("#gateForm").requestSubmit(), true)`);
 await until(`me && me.role === "admin"`); await ev(HELP);
-await ev(`(async () => { await cloudCreateUser("maria", "María", "recepcion", "Ejemplo12345"); await cloudCreateUser("pedro", "Pedro", "operaciones", "Ejemplo12345");
+await ev(`(async () => { await cloudCreateUser("maria", "María", "recepcion", "Ejemplo12345"); 
   await saveSupply({id: uid(), name: "Jabón neutro", unit: "litros", min: 2, stock: 5}, true);
   await saveSupply({id: uid(), name: "Cepillos de cerda suave", unit: "unidades", min: 2, stock: 1}, true);
   await saveSupply({id: uid(), name: "Bolsas de entrega", unit: "unidades", min: 20, stock: 60}, true); return true; })()`);
@@ -51,7 +51,9 @@ const nuevo = async (phone, name, incs, colors, shotName) => {
   await ev(`(async () => { __set("#f_phone", ${JSON.stringify(phone)}); __set("#f_name", ${JSON.stringify(name)}); const inc = [...document.querySelectorAll("[data-inc]")]; for (const i of ${JSON.stringify(incs)}) inc[i].click(); await __w(300);
     const cols = ${JSON.stringify(colors)}; for (let k = 0; k < cols.length; k++) { const inp = document.querySelector("#pp_recepcion [data-slot]"); if (!inp) break; await __attach(inp, cols[k]); const t0 = Date.now(); while (document.querySelectorAll("#pp_recepcion .th").length < k + 1 && Date.now() - t0 < 15000) await __w(150); }
     const a = document.querySelector("#f_aviso"); if (!a.checked) a.click(); return true; })()`);
-  if (shotName) { await ev(`(document.querySelector("#pp_recepcion").scrollIntoView({block: "center"}), true)`); await shot(shotName); }
+  if (shotName) { await ev(`(document.querySelector("#pp_recepcion").scrollIntoView({block: "center"}), true)`); await shot(shotName);
+    await ev(`(async () => { const sel = document.querySelector("#d_promo"); sel.value = "cumple"; sel.dispatchEvent(new Event("change", {bubbles:true})); await __w(300); document.querySelector("#d_req").click(); document.querySelector("#d_mon").click(); await __w(300); __set("#d_mpct", "10"); await __w(300); document.querySelector("#disc").scrollIntoView({block: "start"}); return true; })()`);
+    await shot(shotName + "-descuentos"); }
   await ev(`(document.querySelector("#save").click(), true)`); await until(`document.querySelector("#scrim")`); await w(400);
   if (shotName) await shot(shotName + "-registrado");
   await ev(`(closeSheet(), true)`);
@@ -70,26 +72,23 @@ await ev(`(expenseSheet(), true)`); await w(500); await ev(`(__set("#ex_d", "Cep
 await ev(`(go("tablero"), true)`); await w(500); await ev(`(execSheet(), true)`); await w(600); await shot("admin-resumen"); await ev(`(closeSheet(), true)`);
 await ev(`(go("ajustes"), true)`); await w(900); await ev(`(document.querySelector("#uAdd").scrollIntoView({block: "center"}), true)`); await shot("admin-usuarios");
 await ev(`(document.querySelector("#p_ti").scrollIntoView({block: "center"}), true)`); await shot("admin-aviso");
+await ev(`(document.querySelector("#pAdd").scrollIntoView({block: "center"}), true)`); await shot("admin-promociones");
+await ev(`(promoSheet("miercolesnegro"), true)`); await w(500); await shot("admin-editar-promocion"); await ev(`(closeSheet(), true)`);
 await logout();
 await open(); await w(800);
 await shot("login");
 
-// ---- operaciones ----
-await login("pedro", "Ejemplo12345");
-await until(`orders.length === 2`);
-await ev(`(go("cola"), true)`); await w(800); await shot("ops-cola");
-await ev(`(() => { const o = orders.find(x => x.name === "Ana Torres"); orderSheet(o.id); return true; })()`); await until(`document.querySelectorAll("#phbox .thb").length === 3`); await w(600);
-await shot("ops-ficha-miniaturas");
-await ev(`(document.querySelector("#phbox .thb").click(), true)`); await until(`document.querySelector(".lightbox img") && document.querySelector(".lightbox img").src.length > 15000`); await w(500); await shot("ops-foto-grande");
-await ev(`(document.querySelector(".lightbox").click(), closeSheet(), true)`);
-await ev(`(async () => { const o = orders.find(x => x.name === "Ana Torres"); for (let i = 0; i < 4; i++) { await advance(o.id); await __w(500); } return true; })()`);
-await ev(`(go("insumos"), true)`); await w(700); await shot("ops-insumos");
-await ev(`(document.querySelector("[data-use]").click(), true)`); await w(400); await ev(`(__set("#us_q", "1"), true)`); await shot("ops-usar"); await ev(`(closeSheet(), true)`);
-await logout();
-
-// ---- recepción ----
+// ---- recepción: taller ----
 await login("maria", "Ejemplo12345");
 await until(`orders.length === 2`);
+await ev(`(go("cola"), true)`); await w(800); await shot("rec-taller");
+await ev(`(() => { const o = orders.find(x => x.name === "Ana Torres"); orderSheet(o.id); return true; })()`); await until(`document.querySelectorAll("#phbox .thb").length === 3`); await w(600);
+await ev(`(document.querySelector("#phbox").scrollIntoView({block: "center"}), true)`); await shot("rec-ficha-miniaturas");
+await ev(`(document.querySelector("#phbox .thb").click(), true)`); await until(`document.querySelector(".lightbox img") && document.querySelector(".lightbox img").src.length > 9000`); await w(500); await shot("rec-foto-grande");
+await ev(`(document.querySelector(".lightbox").click(), closeSheet(), true)`);
+await ev(`(async () => { const o = orders.find(x => x.name === "Ana Torres"); await advance(o.id); await __w(600); await advance(o.id); await __w(600); closeSheet(); return true; })()`);
+await ev(`(go("gastos"), true)`); await w(700); await ev(`(document.querySelector("[data-use]").click(), true)`); await w(400); await ev(`(__set("#us_q", "1"), true)`); await shot("rec-usar-insumo"); await ev(`(closeSheet(), true)`);
+// ---- recepción ----
 await nuevo("0995556677", "Carla Méndez", [0, 4], ["#e67e22", "#16a085"], "rec-nuevo");
 await ev(`(go("entregas"), true)`); await w(800); await shot("rec-entregas");
 await ev(`(async () => { const o = orders.find(x => x.name === "Ana Torres"); await advance(o.id); const t0 = Date.now(); while (document.querySelectorAll("#pp_entrega img.ref").length < 3 && Date.now() - t0 < 15000) await __w(200);

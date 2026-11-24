@@ -5,7 +5,7 @@ import { test, before, after, beforeEach } from "node:test";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
 
 let env;
-const USERS = { a1: ["admin", "admin"], r1: ["recepcion", "maria"], o1: ["operaciones", "pedro"] };
+const USERS = { a1: ["admin", "admin"], r1: ["recepcion", "maria"], o1: ["operaciones", "pedro"], p1: ["pruebas", "tester"] };
 const now = () => Date.now();
 const order = (o = {}) => Object.assign({
   id: "p1", num: "B000001", name: "Ana", phone: "0991234567", phoneKey: "0991234567",
@@ -273,3 +273,37 @@ test("recepción: pedido más completo posible (50 artículos, notas largas, pro
   items: Array.from({ length: 50 }, (_, i) => ({ key: "k" + i, label: "Art " + i, qty: 2, price: 4 })), subtotal: 400, promoName: "x".repeat(80), promoDisc: 40, manualPct: 15, manualDisc: 54, discount: 94, total: 306, abono: 100, paidFull: false,
   notes: "x".repeat(2000), photos: { recepcion: 30, entrega: 0 }, promoOk: true, method: "Transferencia" }))));
 test("recepción NO puede escribir etapas antiguas", () => assertFails(db("r1").doc("orders/p1").update({ lavadoAt: now() })));
+
+// ---------- Rol Pruebas, express, hora y consecutivo ----------
+test("rol Pruebas NO lee pedidos, gastos ni ajustes", async () => {
+  const f = db("p1");
+  await assertFails(f.doc("orders/p1").get());
+  await assertFails(f.doc("config/settings").get());
+  await assertFails(f.doc("expenses/x").get());
+});
+test("rol Pruebas NO escribe nada en la nube", async () => {
+  const f = db("p1");
+  await assertFails(f.doc("orders/zz").set(order({ id: "zz", createdBy: "tester" })));
+  await assertFails(f.doc("config/settings").update({ nextNumber: 11 }));
+});
+test("administrador crea un usuario con rol Pruebas", () => assertSucceeds(db("a1").doc("users/r1").update({ role: "pruebas" })));
+test("recepción NO se da el rol Pruebas ni Administrador", async () => {
+  await assertFails(db("r1").doc("users/r1").update({ role: "pruebas" }));
+});
+test("pedido con servicio express de $1 y hora de entrega", () => assertSucceeds(db("r1").doc("orders/e1").set(order({ id: "e1", expressFee: 1, dueTime: "17:30", total: 5, abono: 5, subtotal: 4 }))));
+test("express de $50 se rechaza", () => assertFails(db("r1").doc("orders/e2").set(order({ id: "e2", expressFee: 50 }))));
+const pend = async () => env.withSecurityRulesDisabled(async c => { await c.firestore().doc("orders/pe").set(order({ id: "pe", num: "BPEND-AB12CD34" })); });
+test("recepción pone el consecutivo a un pedido sin internet (en una sola operación)", async () => {
+  await pend(); const f = db("r1"); const b = f.batch();
+  b.update(f.doc("config/settings"), { nextNumber: 11 }); b.update(f.doc("orders/pe"), { num: "B000010" });
+  await assertSucceeds(b.commit());
+});
+test("recepción NO cambia el número sin tomar el consecutivo", async () => {
+  await pend(); await assertFails(db("r1").doc("orders/pe").update({ num: "B000010" }));
+});
+test("recepción NO cambia el número de un pedido que ya tiene consecutivo", async () => {
+  const f = db("r1"); const b = f.batch();
+  b.update(f.doc("config/settings"), { nextNumber: 11 }); b.update(f.doc("orders/p1"), { num: "B000099" });
+  await assertFails(b.commit());
+});
+test("administrador corrige el número de un pedido", () => assertSucceeds(db("a1").doc("orders/p1").update({ num: "C000018" })));

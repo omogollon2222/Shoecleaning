@@ -12,7 +12,8 @@ service cloud.firestore {
     function isOps()        { return active() && profile().role == 'operaciones'; }
     function isRecep()      { return active() && profile().role == 'recepcion'; }
     function bootstrapped() { return exists(/databases/$(db)/documents/config/bootstrap); }
-    function validRole(r)   { return r in ['admin', 'recepcion']; }
+    // 'pruebas' solo practica con datos de ejemplo en su equipo: active() no lo incluye, así que no lee ni escribe nada
+    function validRole(r)   { return r in ['admin', 'recepcion', 'pruebas']; }
     function str(v, n)      { return v is string && v.size() <= n; }
     function money(v)       { return v is number && v >= 0 && v < 1000000; }
     function ts(v)          { return v is number && v >= 0 && v < 4102444800000; }
@@ -28,7 +29,7 @@ service cloud.firestore {
     function orderKeys() {
       return stageKeys().concat(deliveryKeys()).concat(['id', 'num', 'name', 'phone', 'phoneKey', 'items',
         'subtotal', 'discount', 'discountPct', 'total', 'abono', 'method', 'notes', 'createdAt', 'dueDate',
-        'loyaltyRedeemed', 'createdBy', 'avisoOk', 'promoOk', 'erasedAt', 'promoName', 'promoDisc', 'manualPct', 'manualDisc']);
+        'loyaltyRedeemed', 'createdBy', 'avisoOk', 'promoOk', 'erasedAt', 'promoName', 'promoDisc', 'manualPct', 'manualDisc', 'expressFee', 'dueTime']);
     }
     // Revisa el tipo de cada campo que se escribe (ks = campos nuevos o cambiados). Es liviana a propósito:
     // Firebase permite máximo 1000 operaciones por escritura. La app además limpia todo dato al leerlo (norm).
@@ -58,6 +59,8 @@ service cloud.firestore {
         && (!('avisoOk' in ks)     || d.avisoOk is bool)
         && (!('promoOk' in ks)     || d.promoOk is bool)
         && (!('dueDate' in ks)     || d.dueDate is string)
+        && (!('dueTime' in ks)     || d.dueTime is string)
+        && (!('expressFee' in ks)  || (d.expressFee is number && d.expressFee >= 0 && d.expressFee <= 20))
         && (!('createdAt' in ks)   || (d.createdAt is number && d.createdAt <= request.time.toMillis() + 600000))
         && (!('readyAt' in ks)     || d.readyAt == null || d.readyAt is number)
         && (!('deliveredAt' in ks) || d.deliveredAt == null || d.deliveredAt is number)
@@ -117,6 +120,11 @@ service cloud.firestore {
           || (isRecep()
               && resource.data.status == 'entregado'
               && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photos', 'notifiedStatus', 'notifiedAt']))
+          // Recepción pone el consecutivo a un pedido registrado sin internet (PEND-…), tomando el número en la misma operación
+          || (isRecep()
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['num'])
+              && resource.data.num.matches('.*PEND-[A-Z0-9]+')
+              && getAfter(/databases/$(db)/documents/config/settings).data.nextNumber > get(/databases/$(db)/documents/config/settings).data.nextNumber)
         );
 
       allow delete: if isAdmin();

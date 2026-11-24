@@ -40,6 +40,13 @@ Si se agrega un script o dominio externo, actualizar la CSP de `.htaccess` o el 
 - **Recepción:** registrar pedidos y cobrar, fotos de recepción y entrega, entregas, buscar por N°, celular o nombre.
 - **Operaciones: RETIRADO el 22-nov-2026.** Recepción y administración reciben, pasan a producción y marcan listo (pestaña **Taller**). Un perfil con rol `operaciones` no tiene acceso (reglas: `active()` exige rol admin o recepcion; la app lo saca con un aviso).
 
+## v16 (24-nov-2026)
+- **Número de recibo:** consecutivo de uno en uno desde `config/settings.nextNumber` por transacción (`nextNumberTx`); NO hay bloques de 20 (eran la causa de los saltos y de los "CP…"). Sin internet el pedido se guarda con `num = <prefijo>PEND-XXXX` (`isPend`, se muestra "por asignar") y `assignPending()` le pone el consecutivo en orden al volver la conexión (regla: recepción puede cambiar solo `num` si el contador de settings avanza en la misma operación). `saveSettings()` ya no escribe `nextNumber` salvo que el admin lo cambie (`saveSettings(true)`). Admin: botón "Corregir N°" (`fixNumber`).
+- **Cámara/galería:** dos inputs por par; el de cámara lleva `capture="environment"`. Borrador del pedido en `sessionStorage` (`keepDraft`/`restoreDraft`) por si la tablet mata la pestaña al abrir la cámara.
+- **Express:** `EXPRESS_FEE = 1` por pedido, campo `expressFee` (se suma tras los descuentos). **Hora:** campo `dueTime` (HH:MM), obligatoria; `dueKey` ordena por fecha, express y hora.
+- **Rol Pruebas** (`pruebas`): `SANDBOX` (sessionStorage `sc_sandbox`) usa claves `sbx_*` y `sbx_sc_photos`, `cloud=false`, datos de ejemplo (`enterSandbox`), WhatsApp `[PRUEBA]` sin número. Las reglas no lo incluyen en `active()`. Todo localStorage pasa por `LS` (prefija `sbx_` en pruebas).
+- Pruebas e2e: `pruebas/e2e/e2e.mjs` (42 pasos), reglas 105.
+
 ## Cambios del 22 nov 2026 (v14)
 - **Etapas:** `recibido → produccion → listo → entregado` (`FLOW`). Estados antiguos lavado/secado/esterilizacion se leen como `produccion` (`OLD_PROC` en `norm`); las reglas ya no dejan escribir campos de etapas antiguas.
 - **Descuentos:** promoción del día (`settings.promos`, editables en Ajustes → Promociones; tipos `pct` y `nxm`, días, artículos, requisito) + descuento manual ≤ 15 % (`MANUAL_MAX`) sobre lo que queda tras la promoción. La fidelidad no se combina. Campos del pedido: `promoName`, `promoDisc`, `manualPct`, `manualDisc` (y `discount` = suma). Promociones de ejemplo en `DEFAULT_PROMOS`.

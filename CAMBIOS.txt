@@ -5,6 +5,45 @@ Desarrollo: Consultecapps
 Cada cambio nuevo se agrega ARRIBA, con su fecha.
 
 
+24-11-2026  (version 16)
+------------------------
+- Camara: cada par tiene dos botones, "Camara" (abre la camara de la tablet
+  directamente) y "Galeria" (elegir una foto guardada). Antes la tablet Redmi
+  solo ofrecia subir archivos.
+- Si la tablet cierra la app al abrir la camara (poca memoria), el pedido que
+  se estaba llenando, con sus fotos, se recupera solo (dentro de 1 hora).
+- Servicio express: casilla en el pedido, suma $1 por pedido (despues de los
+  descuentos). Sale en el total, la ficha, el WhatsApp, el reporte y el CSV
+  ("Express"). Los pedidos express aparecen primero entre los de la misma fecha.
+- Entrega estimada con fecha Y hora (por defecto 18:00). Es obligatoria, no
+  puede estar en el pasado, sale en el WhatsApp, y el pedido se marca como
+  atrasado cuando pasa la hora.
+- Rol "Pruebas": el administrador lo asigna en Ajustes -> Usuarios. Quien
+  entra con ese rol ve la app con datos de ejemplo guardados solo en su
+  equipo: no se conecta a la nube, no ve ni cambia datos reales, el WhatsApp
+  sale marcado [PRUEBA] y sin numero de cliente. Puede "Ver como Recepcion /
+  Administrador". Al salir se borra todo. Las reglas de la base tambien le
+  niegan cualquier lectura o escritura.
+- CORRECCION del N de recibo (el pedido de Angela salia CP1123-1351UE):
+  * Causa 1: cada vez que se abria la app se reservaban 20 numeros y se
+    perdian (el servidor saltaba 21, 41, 61...). Causa 2: si la reserva
+    tardaba unos segundos, el pedido recibia un numero provisional "P..."
+    aunque hubiera internet.
+  * Ahora el numero es consecutivo, de uno en uno, tomado de la nube.
+  * Sin internet el pedido queda "por asignar" y recibe su consecutivo solo,
+    en orden, cuando vuelve la conexion. El comprobante de WhatsApp se envia
+    despues, desde la ficha (para no mandar un numero provisional al cliente).
+  * Guardar los Ajustes ya no pisa el contador de pedidos.
+  * El administrador tiene el boton "Corregir N" en la ficha del pedido para
+    arreglar numeros ya emitidos (por ejemplo CP1123-1351UE -> C000018). Si
+    el contador de la nube quedo adelantado, ponerlo bien en Ajustes ->
+    Proximo N de pedido.
+  * Las fotos descargadas usan siempre el numero actual del pedido.
+- Pruebas: reglas 105/105; recorrido completo 42/42 en Chrome y Edge (con
+  sin internet y rol Pruebas) y 34/34 en Firefox.
+- Requiere publicar las reglas en Firebase antes de usar (rol Pruebas,
+  express, hora y consecutivo).
+
 22-11-2026  (version 14)
 ------------------------
 - Se retira el modulo de Operaciones. Recepcion y Administracion reciben,

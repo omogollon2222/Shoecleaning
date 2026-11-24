@@ -2,7 +2,7 @@
 // - Archivos de la app: primero la red (para tener la última versión) y, sin internet, la copia guardada.
 // - Librerías de Firebase (versión fija) y tipografías: se guardan y se usan desde el equipo.
 // - Los datos (pedidos, fotos, gastos) los guarda Firebase en el equipo y los sube al volver la conexión.
-const CACHE = "shoe-cleaning-v14";
+const CACHE = "shoe-cleaning-v16";
 const FILES = ["./", "index.html", "manifest.json", "icon.svg", "firebase-config.js", "app.js", "privacidad.html", "privacidad.js"];
 const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
 const CDN = [FB + "firebase-app-compat.js", FB + "firebase-auth-compat.js", FB + "firebase-firestore-compat.js"];

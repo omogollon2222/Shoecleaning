@@ -105,7 +105,7 @@ try {
 
   // 2. Usuarios: solo Administración y Recepción
   const roles = await ev(`(async () => { go("ajustes"); await __w(400); document.querySelector("#uAdd").click(); await __w(200); const r = [...document.querySelectorAll("#u_r [data-r]")].map(b => b.dataset.r); closeSheet(); return r; })()`);
-  ok(JSON.stringify(roles) === '["admin","recepcion"]', "al crear usuario solo se elige Administrador o Recepción", JSON.stringify(roles));
+  ok(JSON.stringify(roles) === '["admin","recepcion","pruebas"]', "al crear usuario se elige Administrador, Recepción o Pruebas (ya no Operaciones)", JSON.stringify(roles));
   ok(await ev(`cloudCreateUser("maria", "María", "recepcion", "Recep12345")`), "crea el usuario de recepción");
 
   // 3. Promociones de ejemplo y una nueva desde Ajustes
@@ -125,7 +125,7 @@ try {
     go("nuevo"); await __w(300);
     __set("#f_phone", "0991234567"); __set("#f_name", "Ana Prueba");
     const inc = [...document.querySelectorAll("[data-inc]")]; inc[0].click(); inc[0].click(); inc[1].click(); await __w(300);
-    const slots = document.querySelectorAll("#pp_recepcion [data-slot]").length;
+    const slots = document.querySelectorAll("#pp_recepcion .slot").length;
     const colors = ["#c0392b", "#2980b9", "#27ae60"];
     for (let i = 0; i < 3; i++) { const inp = document.querySelector("#pp_recepcion [data-slot]"); if (!inp) break; await __attach(inp, colors[i]); await __until(() => document.querySelectorAll("#pp_recepcion .th").length === i + 1, 15000); }
     const aviso = document.querySelector("#f_aviso"); if (!aviso.checked) aviso.click();
@@ -149,6 +149,33 @@ try {
     `2x1 regala el par más económico ($4) y el manual 10 % va sobre el resto: total $${nOrder.total}`, JSON.stringify(nOrder));
   ok(nOrder.photos && nOrder.photos.recepcion === 3, "el pedido se guarda con 3 fotos de recepción");
   const orderId = nOrder.id;
+  ok(nOrder.num === "B000574", `el primer pedido toma el consecutivo ${nOrder.num} (sin PEND ni saltos)`);
+
+  // 5b. Cámara y galería, express, fecha y hora de entrega
+  const ex2 = await ev(`(async () => {
+    go("nuevo"); await __w(400);
+    __set("#f_phone", "0995550000"); __set("#f_name", "Cliente Express");
+    document.querySelectorAll("[data-inc]")[0].click(); await __w(300);
+    const cam = [...document.querySelectorAll("#pp_recepcion input[capture]")].length, gal = document.querySelectorAll("#pp_recepcion label.gal").length;
+    const tot = () => Math.round(parseFloat(document.querySelector("#totals .big span:last-child").textContent.replace("$","")) * 100) / 100;
+    const before = tot();
+    document.querySelector("#f_express").click(); await __w(300);
+    const after = tot();
+    const hasExpressRow = /Servicio express/.test(document.querySelector("#totals").innerText);
+    const a = document.querySelector("#f_aviso"); if (!a.checked) a.click();
+    __set("#f_time", ""); document.querySelector("#save").click(); await __w(400);
+    const toasts = [...document.querySelectorAll(".toast")].map(t => t.textContent).join(" | "); const needTime = /hora/i.test(toasts);
+    const d = new Date(Date.now() + 2 * 86400000); const ds = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    __set("#f_due", ds); __set("#f_time", "16:30");
+    const nb = orders.length; document.querySelector("#save").click(); await __until(() => orders.length > nb && document.querySelector("#scrim"), 15000);
+    const wa = (document.querySelector("#scrim a.wa") || {}).href || ""; closeSheet();
+    const o = orders.find(x => x.name === "Cliente Express");
+    return { cam, gal, before, after, hasExpressRow, needTime, num: o.num, expressFee: o.expressFee, dueTime: o.dueTime, total: o.total, txt: dueTxt(o), wa: decodeURIComponent(wa) };
+  })()`);
+  ok(ex2.cam >= 1 && ex2.gal >= 1, `cada par tiene botón de Cámara (capture) y de Galería: ${ex2.cam} cámaras, ${ex2.gal} galerías`);
+  ok(Math.round((ex2.after - ex2.before) * 100) === 100 && ex2.hasExpressRow && ex2.expressFee === 1, `servicio express suma $1: $${ex2.before} → $${ex2.after}`, JSON.stringify(ex2));
+  ok(ex2.needTime && ex2.dueTime === "16:30" && /4:30 p\. m\./.test(ex2.txt), `pide la hora de entrega y la muestra: «${ex2.txt}»`, JSON.stringify(ex2));
+  ok(ex2.num === "B000575" && /Servicio express/.test(ex2.wa) && /B000575/.test(ex2.wa), "el consecutivo sigue en orden (B000575) y el mensaje de WhatsApp lleva express y el N°", JSON.stringify(ex2));
 
   // 6. Fotos livianas y respaldo ZIP con el N° de ticket
   const ph = await ev(`(async () => { const t = await loadThumbs(${JSON.stringify(orderId)}); const f = await Promise.all(t.map(x => loadFull(x.id)));
@@ -204,38 +231,44 @@ try {
 
   // 9. Sin internet (Chrome y Edge permiten cortar la red de la página)
   if (cdp) {
-    const pre = await ev(`(async () => { await navigator.serviceWorker.ready; await __until(() => getBlock(), 15000); const ks = await caches.keys(); const c = await caches.open(ks.find(k => k.startsWith("shoe-cleaning"))); const urls = (await c.keys()).map(r => r.url);
-      return { fbLibs: urls.filter(u => u.includes("firebasejs")).length, app: urls.some(u => u.endsWith("/app.js")), block: getBlock() }; })()`);
-    ok(pre.fbLibs === 3 && pre.app && pre.block, `la app y Firebase quedan guardados en el equipo; números reservados desde ${pre.block && pre.block.next}`, JSON.stringify(pre));
+    const pre = await ev(`(async () => { await navigator.serviceWorker.ready; const ks = await caches.keys(); const c = await caches.open(ks.find(k => k.startsWith("shoe-cleaning"))); const urls = (await c.keys()).map(r => r.url);
+      return { fbLibs: urls.filter(u => u.includes("firebasejs")).length, app: urls.some(u => u.endsWith("/app.js")), next: await fb.doc("config/settings").get().then(d => d.data().nextNumber) }; })()`);
+    ok(pre.fbLibs === 3 && pre.app, `la app y Firebase quedan guardados en el equipo; próximo consecutivo en la nube: ${pre.next}`, JSON.stringify(pre));
+    for (let k = 0; k < 3; k++) { await nav(APP); await waitApp(); await help(); await ev(`(async () => !!(await __until(() => me && orders.length, 15000)))()`); await w(1500); }
+    const nx = await ev(`fb.doc("config/settings").get().then(d => d.data().nextNumber)`);
+    ok(nx === pre.next, `abrir la app 3 veces no gasta números (siguen en ${nx})`, `antes ${pre.next}, después ${nx}`);
     stopWeb(); await cdp("Network.enable"); await cdp("Network.emulateNetworkConditions", { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
     await cdp("Page.reload", {}); await w(3000); const back = await waitApp(); await help();
     const off = await ev(`(async () => { await __until(() => me && orders.length, 20000);
       const out = { online: navigator.onLine, me: me && me.u, orders: orders.length };
-      go("nuevo"); await __w(300); __set("#f_phone", "0987654321"); __set("#f_name", "Cliente Sin Internet");
-      document.querySelectorAll("[data-inc]")[0].click(); await __w(200);
-      await __attach(document.querySelector("#pp_recepcion [data-slot]"), "#34495e"); await __until(() => document.querySelectorAll("#pp_recepcion .th").length === 1, 15000);
-      const a = document.querySelector("#f_aviso"); if (!a.checked) a.click();
-      const t0 = Date.now(), before = orders.length; document.querySelector("#save").click();
-      await __until(() => orders.length > before && document.querySelector("#scrim"), 15000); out.ms = Date.now() - t0; closeSheet();
-      const o = orders.find(x => x.name === "Cliente Sin Internet"); out.num = o && o.num; out.id = o && o.id;
+      const reg = async (name, color) => { go("nuevo"); await __w(300); __set("#f_phone", "0987654321"); __set("#f_name", name);
+        document.querySelectorAll("[data-inc]")[0].click(); await __w(200);
+        await __attach(document.querySelector("#pp_recepcion [data-slot]"), color); await __until(() => document.querySelectorAll("#pp_recepcion .th").length === 1, 15000);
+        const a = document.querySelector("#f_aviso"); if (!a.checked) a.click();
+        const before = orders.length; document.querySelector("#save").click();
+        await __until(() => orders.length > before && document.querySelector("#scrim"), 15000); const msg = document.querySelector("#scrim").innerText; closeSheet();
+        const o = orders.find(x => x.name === name); return { id: o.id, num: o.num, msg }; };
+      const t0 = Date.now(); out.a = await reg("Sin Internet Uno", "#34495e"); out.ms = Date.now() - t0; out.b = await reg("Sin Internet Dos", "#16a085");
       go("gastos"); await __w(300); document.querySelector("[data-expnew]").click(); await __until(() => document.querySelector("#ex_cat"));
       document.querySelector("#ex_cat [data-c='otros']").click(); await __w(200); __set("#ex_d", "Gasto sin internet"); __set("#ex_a", "2"); document.querySelector("#ex_save").click();
-      await __until(() => expenses.some(e => e.desc === "Gasto sin internet"), 10000); out.exp = expenses.some(e => e.desc === "Gasto sin internet");
+      await __until(() => expenses.some(e => e.desc === "Gasto sin internet"), 10000); out.exp = true;
       out.sync = document.querySelector("#sync").textContent;
       await logout(); out.stillIn = !!me;
       return out; })()`);
     ok(back && off.me === "maria" && off.orders > 0 && off.online === false, "sin internet la app vuelve a abrir con la sesión y los pedidos guardados en el equipo", JSON.stringify(off));
-    ok(off.id && off.ms < 8000 && /^B\d{6}$/.test(off.num || ""), `sin internet registra el pedido con foto en ${off.ms} ms con número reservado (${off.num})`, JSON.stringify(off));
+    ok(off.a.id && off.ms < 10000 && /PEND-/.test(off.a.num) && /PEND-/.test(off.b.num) && /por asignar/.test(off.a.msg), `sin internet registra pedidos con foto (${off.ms} ms) y quedan «por asignar» (${off.a.num})`, JSON.stringify(off.a));
     ok(off.exp && /Sin internet/.test(off.sync || ""), `sin internet registra gastos; arriba dice «${off.sync}»`);
     ok(off.stillIn, "no deja cerrar sesión mientras haya datos sin subir");
     await startWeb(); await cdp("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
-    const on = await ev(`(async () => { window.dispatchEvent(new Event("online")); const r = await __until(() => syncState === "ok" && /Sincronizado/.test(document.querySelector("#sync").textContent), 45000); return { ok: !!r, sync: document.querySelector("#sync").textContent }; })()`);
+    const on = await ev(`(async () => { window.dispatchEvent(new Event("online")); const r = await __until(() => syncState === "ok" && /Sincronizado/.test(document.querySelector("#sync").textContent) && !orders.some(isPend), 60000); return { ok: !!r, sync: document.querySelector("#sync").textContent, nums: orders.filter(o => /Sin Internet/.test(o.name)).sort((x,y) => x.createdAt - y.createdAt).map(o => o.num) }; })()`);
     const H = { Authorization: "Bearer owner" }, B = "http://127.0.0.1:8080/v1/projects/demo-shoecleaning/databases/(default)/documents/";
-    const od = await (await fetch(B + "orders/" + off.id, { headers: H })).json();
-    const th = await (await fetch(B + "thumbs?pageSize=300", { headers: H })).json();
-    const ex = await (await fetch(B + "expenses?pageSize=300", { headers: H })).json();
-    const thN = (th.documents || []).filter(d => d.fields.orderId.stringValue === off.id).length, exOk = (ex.documents || []).some(d => d.fields.desc.stringValue === "Gasto sin internet");
-    ok(on.ok && od.fields && od.fields.num.stringValue === off.num && thN === 1 && exOk, `al volver internet todo se sube solo: pedido, foto y gasto («${on.sync}»)`, JSON.stringify({ on, thN, exOk }));
+    const od = await (await fetch(B + "orders/" + off.a.id, { headers: H })).json(), od2 = await (await fetch(B + "orders/" + off.b.id, { headers: H })).json();
+    const th = await (await fetch(B + "thumbs?pageSize=300", { headers: H })).json(), ex = await (await fetch(B + "expenses?pageSize=300", { headers: H })).json();
+    const thN = (th.documents || []).filter(d => [off.a.id, off.b.id].includes(d.fields.orderId.stringValue)).length, exOk = (ex.documents || []).some(d => d.fields.desc.stringValue === "Gasto sin internet");
+    const nxt = await (await fetch(B + "config/settings", { headers: H })).json();
+    ok(on.ok && od.fields.num.stringValue === "B000576" && od2.fields.num.stringValue === "B000577" && thN === 2 && exOk,
+      `al volver internet los pedidos reciben su consecutivo en orden (${on.nums.join(", ")}), con sus fotos y el gasto («${on.sync}»)`, JSON.stringify({ on, a: od.fields.num, b: od2.fields.num, thN, exOk }));
+    ok(nxt.fields.nextNumber.integerValue === "578", "el consecutivo de la nube queda en 578 (sin saltos)", JSON.stringify(nxt.fields.nextNumber));
   }
 
   // 10. Safari (iPhone/iPad) no comprime en WebP: usa JPEG
@@ -244,6 +277,28 @@ try {
     webpOk = null; const r = await compressImage(await __img("#16a085")); HTMLCanvasElement.prototype.toDataURL = orig; webpOk = null;
     return { f: r.data.slice(5, 15), fl: r.data.length, tl: r.thumb.length }; })()`);
   ok(saf.f === "image/jpeg" && saf.fl < 110000 && saf.tl < 19000, `sin WebP (como Safari) usa JPEG liviano: ${saf.fl} B`);
+  // 11. Rol de pruebas: usa datos de ejemplo en el equipo y no toca los datos reales
+  await logout(); await nav(APP); await waitApp(); await help();
+  await ev(`(async () => { await __until(() => document.querySelector("#l_u")); __set("#l_u", "duena@prueba.test"); __set("#l_p", "Prueba12345"); document.querySelector("#gateForm").requestSubmit(); return !!(await __until(() => me && me.role === "admin", 20000)); })()`);
+  await help();
+  ok(await ev(`cloudCreateUser("tester", "Tester", "pruebas", "Prueba12345")`), "el administrador crea un usuario con rol Pruebas");
+  const realBefore = await ev(`orders.map(o => o.num).sort().join(",")`);
+  await logout(); await nav(APP); await waitApp(); await help();
+  try { await ev(`(async () => { await __until(() => document.querySelector("#l_u")); __set("#l_u", "tester"); __set("#l_p", "Prueba12345"); document.querySelector("#gateForm").requestSubmit(); return true; })()`); } catch {}
+  await w(5000); await waitApp(); await help();
+  const sb = await ev(`(async () => { await __until(() => me && me.u, 20000);
+    const out = { sandbox: SANDBOX, cloud, band: !!document.querySelector(".sbxband"), user: me && me.u, orders: orders.map(o => o.num) };
+    go("nuevo"); await __w(300); __set("#f_phone", "0991112222"); __set("#f_name", "Pedido de Practica"); document.querySelectorAll("[data-inc]")[0].click(); await __w(200);
+    const a = document.querySelector("#f_aviso"); if (!a.checked) a.click(); const nb = orders.length; document.querySelector("#save").click(); await __until(() => orders.length > nb && document.querySelector("#scrim"), 10000);
+    out.wa = decodeURIComponent((document.querySelector("#scrim a.wa") || {}).href || ""); closeSheet();
+    out.created = orders.some(o => o.name === "Pedido de Practica"); out.num = (orders.find(o => o.name === "Pedido de Practica") || {}).num;
+    return out; })()`);
+  ok(sb.sandbox && !sb.cloud && sb.band && sb.orders.length === 3 && /^T0000\d+$/.test(sb.orders[0]), `el rol Pruebas entra a un modo aparte con datos de ejemplo (${sb.orders.join(", ")}) y franja de aviso`, JSON.stringify(sb));
+  ok(sb.created && /^T/.test(sb.num) && /\[PRUEBA\]/.test(sb.wa) && !/wa\.me\/\d/.test(sb.wa), `puede practicar: registra un pedido de prueba (${sb.num}) y WhatsApp sale marcado [PRUEBA] y sin número del cliente`, JSON.stringify(sb));
+  const realAfter = await (async () => { const H = { Authorization: "Bearer owner" }; const d = await (await fetch("http://127.0.0.1:8080/v1/projects/demo-shoecleaning/databases/(default)/documents/orders?pageSize=300", { headers: H })).json(); return (d.documents || []).map(x => x.fields.num.stringValue).sort().join(","); })();
+  ok(!/T0000/.test(realAfter) && realAfter === realBefore, "los datos reales no cambiaron: la práctica no creó nada en la nube", realAfter);
+  try { await ev(`(async () => { exitSandbox(); return true; })()`); } catch {} await w(3500); await waitApp(); await help();
+  ok(await ev(`!SANDBOX && !Object.keys(localStorage).some(k => k.startsWith("sbx_")) && !sessionStorage.getItem("sc_sandbox")`), "al salir de pruebas se borra todo lo de práctica");
   const errs = errors.filter(e => !/favicon|fonts\.g|ERR_INTERNET|ERR_ABORTED|ERR_CONNECTION_REFUSED|Failed to load resource|Could not reach Cloud Firestore|offline|net::/i.test(e));
   ok(errs.length === 0, "sin errores de JavaScript en la consola", errs.slice(0, 5).join(" | "));
 } catch (e) { fail++; console.log("  FALLA excepción:", e.message); }
